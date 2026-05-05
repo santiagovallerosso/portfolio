@@ -2,18 +2,20 @@
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
 
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navLinks.classList.toggle('active');
-});
-
-// Cerrar menú al hacer clic en un enlace
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        hamburger.classList.remove('active');
-        navLinks.classList.remove('active');
+if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
     });
-});
+
+    // Cerrar menú al hacer clic en un enlace
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+}
 
 // ========== SMOOTH SCROLL ==========
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -101,16 +103,19 @@ if (aboutSection) {
 }
 
 function animateCounter(element) {
-    const finalValue = parseInt(element.textContent);
+    const originalText = element.textContent;
+    const finalValue = parseInt(originalText);
+    const suffix = originalText.includes('+') ? '+' : (originalText.includes('%') ? '%' : '');
+
     let currentValue = 0;
     const increment = finalValue / 50;
     const interval = setInterval(() => {
         currentValue += increment;
         if (currentValue >= finalValue) {
-            element.textContent = finalValue + (element.textContent.includes('+') ? '+' : element.textContent.includes('%') ? '%' : '');
+            element.textContent = finalValue + suffix;
             clearInterval(interval);
         } else {
-            element.textContent = Math.floor(currentValue) + (element.textContent.includes('+') ? '+' : element.textContent.includes('%') ? '%' : '');
+            element.textContent = Math.floor(currentValue) + suffix;
         }
     }, 30);
 }
@@ -135,10 +140,17 @@ document.querySelectorAll('.project-card, .skill-category, .stat').forEach(el =>
 // ========== EFECTO PARALLAX SIMPLE ==========
 window.addEventListener('scroll', () => {
     const hero = document.querySelector('.hero');
+    const heroCinematic = document.querySelector('.hero-cinematic');
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+    } else if (heroCinematic) {
+        // Video parallax or keep it static
+        const video = heroCinematic.querySelector('.hero-video');
+        if (video) {
+            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        }
     }
 });
 

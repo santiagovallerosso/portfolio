@@ -8,41 +8,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navegación -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">SV</div>
-            <ul class="nav-links">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#sobre-mi">Sobre mí</a></li>
-                <li><a href="#proyectos">Proyectos</a></li>
-                <li><a href="#habilidades">Habilidades</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-            </ul>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Sección Hero -->
-    <section id="inicio" class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">Hola, soy <span class="highlight">Santiago Vallerosso</span></h1>
-                <p class="hero-subtitle">Especialista en Edición de Audio y Video Profesional</p>
-                <div class="hero-buttons">
-                    <a href="#proyectos" class="btn btn-primary">Ver mis proyectos</a>
-                    <a href="#contacto" class="btn btn-secondary">Contactarme</a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <div class="placeholder-avatar">
-                    <i class="fas fa-film"></i>
-                </div>
-            </div>
+    <!-- Landing Cinematic -->
+    <section id="inicio" class="hero-cinematic">
+        <video class="hero-video" autoplay loop muted playsinline>
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Tu navegador no soporta el tag de video.
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-cinematic-content">
+            <h1 class="hero-title-cinematic">Santiago Valle Rosso</h1>
+            <p class="hero-subtitle-cinematic">Filmmaker, Video Editor and Sound Designer</p>
+            <a href="#proyectos" class="btn-cinematic">Selected Works</a>
         </div>
     </section>
 
@@ -205,12 +181,12 @@
                         <h3>Email</h3>
                         <p>tu-email@example.com</p>
                     </a>
-                    <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank" class="contact-card">
+                    <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank" rel="noopener noreferrer" class="contact-card">
                         <i class="fab fa-linkedin"></i>
                         <h3>LinkedIn</h3>
                         <p>Santiago Vallerosso</p>
                     </a>
-                    <a href="https://github.com/santiagovallerosso" target="_blank" class="contact-card">
+                    <a href="https://github.com/santiagovallerosso" target="_blank" rel="noopener noreferrer" class="contact-card">
                         <i class="fab fa-github"></i>
                         <h3>GitHub</h3>
                         <p>@santiagovallerosso</p>
@@ -238,9 +214,9 @@
         <div class="container">
             <p>&copy; 2026 Santiago Vallerosso. Todos los derechos reservados.</p>
             <div class="social-links">
-                <a href="https://github.com/santiagovallerosso" target="_blank"><i class="fab fa-github"></i></a>
-                <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank"><i class="fab fa-linkedin"></i></a>
-                <a href="https://twitter.com/santiagovallerosso" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="https://github.com/santiagovallerosso" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                <a href="https://twitter.com/santiagovallerosso" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
             </div>
         </div>
     </footer>
