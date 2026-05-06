@@ -79,64 +79,6 @@ if (contactForm) {
     });
 }
 
-// ========== ANIMACIÓN DE CONTADORES ==========
-const observerOptions = {
-    threshold: 0.5
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const stat = entry.target.querySelector('h3');
-            if (stat && !stat.classList.contains('animated')) {
-                animateCounter(stat);
-                stat.classList.add('animated');
-            }
-        }
-    });
-}, observerOptions);
-
-// Observar la sección de estadísticas
-const aboutSection = document.querySelector('.about');
-if (aboutSection) {
-    observer.observe(aboutSection);
-}
-
-function animateCounter(element) {
-    const originalText = element.textContent;
-    const finalValue = parseInt(originalText);
-    const suffix = originalText.includes('+') ? '+' : (originalText.includes('%') ? '%' : '');
-
-    let currentValue = 0;
-    const increment = finalValue / 50;
-    const interval = setInterval(() => {
-        currentValue += increment;
-        if (currentValue >= finalValue) {
-            element.textContent = finalValue + suffix;
-            clearInterval(interval);
-        } else {
-            element.textContent = Math.floor(currentValue) + suffix;
-        }
-    }, 30);
-}
-
-// ========== ANIMACIÓN AL SCROLL ==========
-const observerAnimation = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
-            observerAnimation.unobserve(entry.target);
-        }
-    });
-}, {
-    threshold: 0.2
-});
-
-// Observar elementos con clases específicas
-document.querySelectorAll('.project-card, .skill-category, .stat').forEach(el => {
-    observerAnimation.observe(el);
-});
-
 // ========== EFECTO PARALLAX SIMPLE ==========
 window.addEventListener('scroll', () => {
     const hero = document.querySelector('.hero');
@@ -233,3 +175,78 @@ if (isMobileDevice()) {
 // ========== CONSOLE LOG ==========
 console.log('✨ Portfolio cargado exitosamente');
 console.log('👨‍💻 Visita mi GitHub: https://github.com/santiagovallerosso');
+
+
+// ========== STICKY NAVBAR ==========
+const stickyNav = document.getElementById('sticky-nav');
+const heroSection = document.getElementById('inicio');
+
+if (stickyNav && heroSection) {
+    // Start hidden
+    stickyNav.classList.add('hidden');
+
+    window.addEventListener('scroll', () => {
+        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
+            stickyNav.classList.remove('hidden');
+        } else {
+            stickyNav.classList.add('hidden');
+        }
+    });
+}
+
+// ========== VIDEO MODAL ==========
+const modal = document.getElementById('video-modal');
+const closeBtn = document.querySelector('.close-modal');
+const youtubePlayer = document.getElementById('youtube-player');
+const portfolioCards = document.querySelectorAll('.portfolio-card');
+
+if (modal && closeBtn && youtubePlayer) {
+    portfolioCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const videoId = card.getAttribute('data-youtube-id');
+            if (videoId) {
+                // Set the src with autoplay
+                youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                modal.classList.add('show');
+            }
+        });
+    });
+
+    const closeModal = () => {
+        modal.classList.remove('show');
+        // Stop video playback by clearing src
+        setTimeout(() => {
+            youtubePlayer.src = '';
+        }, 300);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
+    // Close when clicking outside the video
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+// ========== BACK TO TOP BUTTON ==========
+const backToTopBtn = document.getElementById('back-to-top');
+
+if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 500) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
