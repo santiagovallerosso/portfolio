@@ -1047,3 +1047,48 @@ body {
 .back-to-top:hover {
     background-color: #555555;
 }
+
+/* ========== BRAND MODAL ========== */
+.brand-modal-content {
+    max-width: 1400px;
+    width: 95%;
+    padding: 20px;
+    background: transparent;
+}
+
+.brand-videos-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.close-brand-modal {
+    position: absolute;
+    top: -40px;
+    right: 20px;
+    color: #f1f1f1;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 2001;
+}
+
+.close-brand-modal:hover,
+.close-brand-modal:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .brand-videos-container {
+        grid-template-columns: 1fr;
+    }
+    .brand-modal-content {
+        padding: 10px;
+    }
+    .close-brand-modal {
+        right: 10px;
+    }
+}
