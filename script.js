@@ -172,11 +172,6 @@ if (isMobileDevice()) {
     document.body.classList.add('mobile');
 }
 
-// ========== CONSOLE LOG ==========
-console.log('✨ Portfolio cargado exitosamente');
-console.log('👨‍💻 Visita mi GitHub: https://github.com/santiagovallerosso');
-
-
 // ========== STICKY NAVBAR ==========
 const stickyNav = document.getElementById('sticky-nav');
 const heroSection = document.getElementById('inicio');
