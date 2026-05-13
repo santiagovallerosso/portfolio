@@ -291,3 +291,7 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
         }
     });
 }
+
+if (typeof module !== 'undefined') {
+    module.exports = { isMobileDevice };
+}
