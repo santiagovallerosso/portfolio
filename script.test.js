@@ -58,6 +58,17 @@ class MockElement {
 // Mock document
 const documentMock = {
     elements: {},
+    getElementById: (id) => {
+        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
+        if (id === 'inicio') return documentMock.elements.inicio;
+        if (id === 'video-modal') return documentMock.elements.videoModal;
+        if (id === 'youtube-player') return documentMock.elements.youtubePlayer;
+        if (id === 'back-to-top') return documentMock.elements.backToTop;
+        if (id === 'brand-modal') return documentMock.elements.brandModal;
+        if (id === 'brand-player-1') return documentMock.elements.brandPlayer1;
+        if (id === 'brand-player-2') return documentMock.elements.brandPlayer2;
+        return documentMock.elements[id] || new MockElement();
+    },
     querySelector: (sel) => {
         if (sel === '.hamburger') return documentMock.elements.hamburger;
         if (sel === '.nav-links') return documentMock.elements.navLinks;
@@ -99,6 +110,24 @@ documentMock.elements.about = new MockElement();
 documentMock.elements.hero = new MockElement();
 documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
 
+documentMock.elements.stickyNav = new MockElement();
+documentMock.elements.inicio = new MockElement();
+documentMock.elements.inicio.offsetTop = 0;
+documentMock.elements.inicio.offsetHeight = 800;
+documentMock.elements.videoModal = new MockElement();
+documentMock.elements.youtubePlayer = new MockElement();
+documentMock.elements.backToTop = new MockElement();
+documentMock.elements.brandModal = new MockElement();
+documentMock.elements.brandPlayer1 = new MockElement();
+documentMock.elements.brandPlayer2 = new MockElement();
+
+documentMock.elements.sections = [new MockElement('section'), new MockElement('section')];
+documentMock.elements.sections.forEach(s => {
+    s.offsetTop = 0;
+    s.clientHeight = 500;
+    s.getAttribute = (attr) => attr === 'id' ? 'test-id' : null;
+});
+
 const alertMock = jest.fn();
 const intersectionObserverMock = jest.fn().mockImplementation(() => ({
     observe: jest.fn(),
@@ -109,6 +138,7 @@ global.document = documentMock;
 global.window = {
     addEventListener: jest.fn(),
     pageYOffset: 0,
+    scrollY: 0,
     scrollTo: jest.fn(),
     IntersectionObserver: intersectionObserverMock,
     alert: alertMock,
