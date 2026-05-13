@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Santiago Vallerosso - Edición de Audio y Video</title>
+    <title>Santiago Valle Rosso - Portfolio</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -17,8 +17,8 @@
         <div class="hero-overlay"></div>
         <div class="hero-cinematic-content">
             <h1 class="hero-title-cinematic">Santiago Valle Rosso</h1>
-            <p class="hero-subtitle-cinematic">Filmmaker, Video Editor and Sound Designer</p>
-            <a href="#work" class="btn-cinematic">Selected Works</a>
+            <p class="hero-subtitle-cinematic" data-i18n="hero_subtitle">Filmmaker, Video Editor and Sound Designer</p>
+            <a href="#work" class="btn-cinematic" data-i18n="hero_btn">Selected Works</a>
         </div>
     </section>
 
@@ -28,13 +28,13 @@
         <div class="nav-left">
             <div class="nav-links-block">
                 <div class="nav-line">
-                    <a href="#work" class="active">WORK</a>
-                    <a href="#music-videos">MUSIC VIDEOS</a>
-                    <a href="#sound-design">SOUND DESIGN</a>
+                    <a href="#work" class="active" data-i18n="nav_work">WORK</a>
+                    <a href="#music-videos" data-i18n="nav_music_videos">MUSIC VIDEOS</a>
+                    <a href="#sound-design" data-i18n="nav_sound_design">SOUND DESIGN</a>
                 </div>
                 <div class="nav-line">
-                    <a href="#brand-content">BRAND CONTENT</a>
-                    <a href="#contacto">CONTACT</a>
+                    <a href="#brand-content" data-i18n="nav_brand_content">BRAND CONTENT</a>
+                    <a href="#contacto" data-i18n="nav_contact">CONTACT</a>
                 </div>
             </div>
         </div>
@@ -42,7 +42,11 @@
             <a href="#inicio" class="nav-title">SANTIAGO VALLE ROSSO | Portfolio</a>
         </div>
         <div class="nav-right">
-            <!-- Placeholder for balance if needed -->
+            <div class="lang-switch">
+                <button class="lang-btn" data-lang="es">ES</button>
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="pt">PT</button>
+            </div>
         </div>
     </nav>
 
@@ -87,7 +91,7 @@
     <!-- Section: Music Videos -->
     <section id="music-videos" class="gallery-section dark-bg">
         <div class="container">
-            <h2 class="section-title">Music Videos</h2>
+            <h2 class="section-title" data-i18n="section_music_videos">Music Videos</h2>
             <div class="portfolio-grid">
                 <div class="portfolio-card" data-youtube-id="dQw4w9WgXcQ">
                     <div class="card-image-container">
@@ -136,7 +140,7 @@
     <!-- Section: Sound Design -->
     <section id="sound-design" class="gallery-section dark-bg">
         <div class="container">
-            <h2 class="section-title">Sound Design</h2>
+            <h2 class="section-title" data-i18n="section_sound_design">Sound Design</h2>
             <div class="portfolio-grid">
                 <div class="portfolio-card" data-youtube-id="dQw4w9WgXcQ">
                     <div class="card-image-container">
@@ -165,7 +169,7 @@
     <!-- Section: Brand Content -->
     <section id="brand-content" class="gallery-section dark-bg">
         <div class="container">
-            <h2 class="section-title">Brand Content</h2>
+            <h2 class="section-title" data-i18n="section_brand_content">Brand Content</h2>
             <div class="portfolio-grid">
                 <div class="portfolio-card brand-card" data-video-1="dQw4w9WgXcQ" data-video-2="dQw4w9WgXcQ">
                     <div class="card-image-container">
@@ -211,12 +215,11 @@
         </div>
     </section>
 
-<!-- Sección Contacto -->
+<!-- Contact Section -->
     <section id="contacto" class="contact">
         <div class="container">
-            <h2 class="section-title">Ponte en contacto</h2>
+            <h2 class="section-title" data-i18n="contact_title">Ponte en contacto</h2>
             <div class="contact-content">
-                <p class="contact-description">¿Tienes un proyecto en mente o simplemente quieres saludar? ¡No dudes en contactarme!</p>
                 
                 <div class="contact-methods">
                     <a href="mailto:tu-email@example.com" class="contact-card">
@@ -224,29 +227,24 @@
                         <h3>Email</h3>
                         <p>tu-email@example.com</p>
                     </a>
-                    <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank" rel="noopener noreferrer" class="contact-card">
-                        <i class="fab fa-linkedin"></i>
-                        <h3>LinkedIn</h3>
-                        <p>Santiago Vallerosso</p>
-                    </a>
-                    <a href="https://github.com/santiagovallerosso" target="_blank" rel="noopener noreferrer" class="contact-card">
-                        <i class="fab fa-github"></i>
-                        <h3>GitHub</h3>
-                        <p>@santiagovallerosso</p>
+                    <a href="tel:+1234567890" class="contact-card">
+                        <i class="fas fa-phone"></i>
+                        <h3 data-i18n="contact_phone">Teléfono</h3>
+                        <p>+1234567890</p>
                     </a>
                 </div>
 
                 <form class="contact-form">
                     <div class="form-group">
-                        <input type="text" placeholder="Tu nombre" required>
+                        <input type="text" placeholder="Tu nombre" data-i18n-placeholder="contact_name" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="Tu email" required>
+                        <input type="email" placeholder="Tu email" data-i18n-placeholder="contact_email" required>
                     </div>
                     <div class="form-group">
-                        <textarea placeholder="Tu mensaje" rows="5" required></textarea>
+                        <textarea placeholder="Tu mensaje" data-i18n-placeholder="contact_message" rows="5" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="contact_send">Enviar mensaje</button>
                 </form>
             </div>
         </div>
@@ -255,7 +253,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Santiago Vallerosso. Todos los derechos reservados.</p>
+            <p data-i18n="footer_copy">&copy; 2026 Santiago Valle Rosso. Todos los derechos reservados.</p>
             <div class="social-links">
                 <a href="https://github.com/santiagovallerosso" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
                 <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
