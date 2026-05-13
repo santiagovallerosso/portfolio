@@ -1,0 +1,11 @@
+{
+  "name": "portfolio-tests",
+  "version": "1.0.0",
+  "description": "Pruebas unitarias para la validación del portfolio",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
