@@ -80,19 +80,18 @@ if (contactForm) {
 }
 
 // ========== EFECTO PARALLAX SIMPLE ==========
+const hero = document.querySelector('.hero');
+const heroCinematic = document.querySelector('.hero-cinematic');
+const heroVideo = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
+
 window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    const heroCinematic = document.querySelector('.hero-cinematic');
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
+    } else if (heroCinematic && heroVideo) {
         // Video parallax or keep it static
-        const video = heroCinematic.querySelector('.hero-video');
-        if (video) {
-            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-        }
+        heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
     }
 });
 
@@ -143,19 +142,21 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
+const sections = document.querySelectorAll('section');
+const navLinksItems = document.querySelectorAll('.nav-links a');
+
 window.addEventListener('scroll', () => {
     let current = '';
     
-    document.querySelectorAll('section').forEach(section => {
+    sections.forEach(section => {
         const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
         
         if (scrollY >= sectionTop - 200) {
             current = section.getAttribute('id');
         }
     });
 
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    navLinksItems.forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href').slice(1) === current) {
             link.classList.add('active');
