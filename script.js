@@ -80,19 +80,19 @@ if (contactForm) {
 }
 
 // ========== EFECTO PARALLAX SIMPLE ==========
+// Optimizando: Sacamos los querySelector fuera del listener
+const hero = document.querySelector('.hero');
+const heroCinematic = document.querySelector('.hero-cinematic');
+const heroVideo = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
+
 window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    const heroCinematic = document.querySelector('.hero-cinematic');
-    const scrollPosition = window.pageYOffset;
+    const scrollPosition = window.scrollY;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
+    } else if (heroCinematic && heroVideo) {
         // Video parallax or keep it static
-        const video = heroCinematic.querySelector('.hero-video');
-        if (video) {
-            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-        }
+        heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
     }
 });
 
