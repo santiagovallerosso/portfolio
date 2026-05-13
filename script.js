@@ -291,3 +291,11 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
         }
     });
 }
+
+
+// ========== EXPORTS FOR TESTING ==========
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = {
+        isMobileDevice
+    };
+}

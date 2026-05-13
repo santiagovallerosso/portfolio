@@ -1,0 +1,24 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Un template moderno, responsivo y completamente funcional para tu portfolio personal. ¡Perfecto para mostrar tus proyectos y habilidades!",
+  "main": "jest.config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/santiagovallerosso/portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/santiagovallerosso/portfolio/issues"
+  },
+  "homepage": "https://github.com/santiagovallerosso/portfolio#readme"
+}
