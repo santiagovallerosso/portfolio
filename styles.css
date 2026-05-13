@@ -779,6 +779,10 @@ body {
 .nav-left, .nav-right {
     flex: 1;
 }
+.nav-right {
+    display: flex;
+    justify-content: flex-end;
+}
 
 .nav-links-block {
     display: flex;
