@@ -40,7 +40,6 @@ if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const formData = new FormData(contactForm);
         const name = contactForm.querySelector('input[type="text"]').value;
         const email = contactForm.querySelector('input[type="email"]').value;
         const message = contactForm.querySelector('textarea').value;
@@ -80,18 +79,19 @@ if (contactForm) {
 }
 
 // ========== EFECTO PARALLAX SIMPLE ==========
+const hero = document.querySelector('.hero');
+const heroCinematic = document.querySelector('.hero-cinematic');
+const heroVideo = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
+
 window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    const heroCinematic = document.querySelector('.hero-cinematic');
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
     } else if (heroCinematic) {
         // Video parallax or keep it static
-        const video = heroCinematic.querySelector('.hero-video');
-        if (video) {
-            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        if (heroVideo) {
+            heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
         }
     }
 });
