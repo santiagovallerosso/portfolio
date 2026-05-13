@@ -84,6 +84,11 @@ const documentMock = {
         if (sel === '.project-card, .skill-category, .stat') return documentMock.elements.animated || [];
         return [];
     },
+    getElementById: (id) => {
+        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
+        if (id === 'inicio') return documentMock.elements.hero;
+        return null;
+    },
     createElement: (tag) => new MockElement(tag),
     head: new MockElement('head'),
     body: new MockElement('body'),
@@ -108,6 +113,7 @@ documentMock.elements.contactForm.querySelector = (sel) => {
 
 documentMock.elements.about = new MockElement();
 documentMock.elements.hero = new MockElement();
+documentMock.elements.stickyNav = new MockElement();
 documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
 
 documentMock.elements.stickyNav = new MockElement();
