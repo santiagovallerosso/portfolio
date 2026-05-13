@@ -1092,3 +1092,23 @@ body {
         right: 10px;
     }
 }
+
+/* Language Switcher */
+.lang-switch {
+    display: flex;
+    gap: 0.5rem;
+}
+.lang-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-color);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+.lang-btn:hover, .lang-btn.active {
+    background: var(--text-color);
+    color: var(--bg-color);
+}
