@@ -36,48 +36,35 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ========== VALIDACIÓN DE FORMULARIO ==========
 const contactForm = document.querySelector('.contact-form');
 
-if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
+function setupContactForm(formElement) {
+    if (!formElement) return;
+
+    formElement.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const formData = new FormData(contactForm);
-        const name = contactForm.querySelector('input[type="text"]').value;
-        const email = contactForm.querySelector('input[type="email"]').value;
-        const message = contactForm.querySelector('textarea').value;
+        const name = formElement.querySelector('input[type="text"]').value;
+        const email = formElement.querySelector('input[type="email"]').value;
+        const message = formElement.querySelector('textarea').value;
 
         // Validación básica
         if (!name || !email || !message) {
-            alert('Por favor completa todos los campos');
+            window.alert('Por favor completa todos los campos');
             return;
         }
 
         // Validación de email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            alert('Por favor ingresa un email válido');
+            window.alert('Por favor ingresa un email válido');
             return;
         }
 
-        // Aquí puedes integrar tu servicio de email
-        // Opción 1: Formspree
-        // const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-        //     method: 'POST',
-        //     body: JSON.stringify({ name, email, message }),
-        //     headers: { 'Content-Type': 'application/json' }
-        // });
-
-        // Opción 2: EmailJS (requiere librería)
-        // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-        //     from_name: name,
-        //     from_email: email,
-        //     message: message
-        // });
-
-        // Por ahora, solo mostrar mensaje de éxito
-        alert('¡Mensaje enviado! Gracias por contactarme.');
-        contactForm.reset();
+        window.alert('¡Mensaje enviado! Gracias por contactarme.');
+        formElement.reset();
     });
 }
+
+setupContactForm(contactForm);
 
 // ========== EFECTO PARALLAX SIMPLE ==========
 window.addEventListener('scroll', () => {
@@ -290,4 +277,11 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
             closeBrandModal();
         }
     });
+}
+
+// ========== EXPORTS FOR TESTING ==========
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        setupContactForm
+    };
 }
