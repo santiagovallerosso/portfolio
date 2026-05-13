@@ -291,3 +291,47 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
         }
     });
 }
+
+// ========== ANIMATE COUNTER ==========
+function animateCounter(element) {
+    const text = element.textContent;
+    const hasPlus = text.includes('+');
+    const hasPercent = text.includes('%');
+    const suffix = hasPlus ? '+' : hasPercent ? '%' : '';
+
+    const finalValue = parseInt(text);
+    if (isNaN(finalValue)) return;
+
+    let currentValue = 0;
+    const increment = finalValue / 50;
+
+    const interval = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= finalValue) {
+            element.textContent = finalValue + suffix;
+            clearInterval(interval);
+        } else {
+            element.textContent = Math.floor(currentValue) + suffix;
+        }
+    }, 30);
+}
+
+
+// ========== INTERSECTION OBSERVER PARA CONTADORES ==========
+if (typeof IntersectionObserver !== 'undefined' && typeof document !== 'undefined') {
+    const counterObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.5
+    });
+
+    document.querySelectorAll('.counter').forEach(counter => {
+        counterObserver.observe(counter);
+    });
+}
+if (typeof module !== 'undefined') module.exports = { animateCounter };
