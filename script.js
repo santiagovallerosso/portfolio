@@ -313,6 +313,31 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
     });
 }
 
-if (typeof module !== 'undefined') {
-    module.exports = { isMobileDevice };
+// ========== ANIMATE COUNTER ==========
+function animateCounter(element) {
+    const text = element.textContent;
+    const finalValue = parseInt(text);
+    if (isNaN(finalValue)) return;
+
+    let suffix = '';
+    if (text.includes('+')) suffix = '+';
+    else if (text.includes('%')) suffix = '%';
+
+    let currentValue = 0;
+    const increment = finalValue / 50;
+
+    const interval = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= finalValue) {
+            element.textContent = finalValue + suffix;
+            clearInterval(interval);
+        } else {
+            element.textContent = Math.floor(currentValue) + suffix;
+        }
+    }, 20);
+}
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { animateCounter };
 }

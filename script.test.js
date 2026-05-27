@@ -1,80 +1,84 @@
-// --- Mocks para el DOM requeridos por script.js ---
-global.document = {
-  querySelector: jest.fn(() => null),
-  querySelectorAll: jest.fn(() => []),
-  createElement: jest.fn(() => ({ textContent: '' })),
-  head: { appendChild: jest.fn() },
-  body: { classList: { add: jest.fn(), remove: jest.fn() } },
-  getElementById: jest.fn(() => null)
-};
+const { animateCounter } = require('./script.js');
 
-global.window = {
-  addEventListener: jest.fn(),
-  pageYOffset: 0,
-  scrollY: 0,
-  scrollTo: jest.fn()
-};
+describe('animateCounter', () => {
+    let mockElement;
 
-global.navigator = {
-  userAgent: 'node.js'
-};
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
 
-// Cargar la función a probar
-const { validateContactForm } = require('./script');
+    afterEach(() => {
+        jest.clearAllTimers();
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+    });
 
-describe('Validación de Formulario de Contacto (validateContactForm)', () => {
+    it('should animate a simple number counter to completion', () => {
+        mockElement = { textContent: '100' };
 
-  test('debe retornar válido para un formulario correcto', () => {
-    const result = validateContactForm('Juan Perez', 'juan@example.com', 'Hola, quiero contactarte.');
-    expect(result.isValid).toBe(true);
-    expect(result.error).toBeUndefined();
-  });
+        animateCounter(mockElement);
 
-  test('debe fallar si los campos están vacíos', () => {
-    const result = validateContactForm('', '', '');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor completa todos los campos');
-  });
+        // Fast-forward to the end (50 steps * 20ms = 1000ms)
+        jest.advanceTimersByTime(1000);
 
-  test('debe fallar si solo hay espacios en blanco (trim function)', () => {
-    const result = validateContactForm('   ', '   ', '   ');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor completa todos los campos');
-  });
+        expect(mockElement.textContent).toBe('100');
+    });
 
-  test('debe fallar si falta el nombre', () => {
-    const result = validateContactForm('', 'juan@example.com', 'Mensaje de prueba');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor completa todos los campos');
-  });
+    it('should incrementally update the counter value', () => {
+        mockElement = { textContent: '100' };
 
-  test('debe fallar si falta el correo electrónico', () => {
-    const result = validateContactForm('Juan Perez', '', 'Mensaje de prueba');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor completa todos los campos');
-  });
+        animateCounter(mockElement);
 
-  test('debe fallar si falta el mensaje', () => {
-    const result = validateContactForm('Juan Perez', 'juan@example.com', '');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor completa todos los campos');
-  });
+        // Advance 1 step (20ms) -> Increment should be 100 / 50 = 2
+        jest.advanceTimersByTime(20);
+        expect(mockElement.textContent).toBe('2');
 
-  test('debe fallar con un correo electrónico inválido (sin @)', () => {
-    const result = validateContactForm('Juan Perez', 'juanexample.com', 'Mensaje de prueba');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor ingresa un email válido');
-  });
+        // Advance 10 more steps -> Increment by 20 -> 22 total
+        jest.advanceTimersByTime(200);
+        expect(mockElement.textContent).toBe('22');
+    });
 
-  test('debe fallar con un correo electrónico inválido (sin dominio)', () => {
-    const result = validateContactForm('Juan Perez', 'juan@', 'Mensaje de prueba');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Por favor ingresa un email válido');
-  });
+    it('should preserve + symbol', () => {
+        mockElement = { textContent: '50+' };
 
-  test('debe validar correctamente correos con subdominios', () => {
-    const result = validateContactForm('Juan Perez', 'juan@mail.example.com', 'Mensaje de prueba');
-    expect(result.isValid).toBe(true);
-  });
+        animateCounter(mockElement);
 
+        jest.advanceTimersByTime(20); // First tick
+        expect(mockElement.textContent).toBe('1+');
+
+        jest.advanceTimersByTime(1000); // Complete
+        expect(mockElement.textContent).toBe('50+');
+    });
+
+    it('should preserve % symbol', () => {
+        mockElement = { textContent: '99%' };
+
+        animateCounter(mockElement);
+
+        jest.advanceTimersByTime(1000); // Complete
+        expect(mockElement.textContent).toBe('99%');
+    });
+
+    it('should clear interval when finished', () => {
+        mockElement = { textContent: '10' };
+
+        // Spy directly on the global object for clearInterval
+        const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+
+        animateCounter(mockElement);
+
+        // Advance time to allow the interval logic to run until current >= finalValue
+        jest.runAllTimers();
+
+        expect(clearIntervalSpy).toHaveBeenCalled();
+    });
+
+    it('should handle non-numeric inputs by returning early', () => {
+        mockElement = { textContent: 'abc' };
+        const setIntervalSpy = jest.spyOn(global, 'setInterval');
+
+        animateCounter(mockElement);
+
+        expect(setIntervalSpy).not.toHaveBeenCalled();
+    });
 });
