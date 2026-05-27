@@ -34,6 +34,25 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
+function validateContactForm(name, email, message) {
+    const cleanName = (name || '').trim();
+    const cleanEmail = (email || '').trim();
+    const cleanMessage = (message || '').trim();
+
+    // Validación básica
+    if (!cleanName || !cleanEmail || !cleanMessage) {
+        return { isValid: false, error: 'Por favor completa todos los campos' };
+    }
+
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+        return { isValid: false, error: 'Por favor ingresa un email válido' };
+    }
+
+    return { isValid: true };
+}
+
 const contactForm = document.querySelector('.contact-form');
 
 function setupContactForm(formElement) {
@@ -67,19 +86,22 @@ function setupContactForm(formElement) {
 setupContactForm(contactForm);
 
 // ========== EFECTO PARALLAX SIMPLE ==========
+const hero = document.querySelector('.hero');
+const heroCinematic = document.querySelector('.hero-cinematic');
+let cinematicVideo = null;
+
+if (heroCinematic) {
+    cinematicVideo = heroCinematic.querySelector('.hero-video');
+}
+
 window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    const heroCinematic = document.querySelector('.hero-cinematic');
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
+    } else if (heroCinematic && cinematicVideo) {
         // Video parallax or keep it static
-        const video = heroCinematic.querySelector('.hero-video');
-        if (video) {
-            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-        }
+        cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
     }
 });
 
@@ -130,24 +152,33 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
+const sections = document.querySelectorAll('section');
+const navItems = document.querySelectorAll('.nav-links a');
+
 window.addEventListener('scroll', () => {
     let current = '';
     
-    document.querySelectorAll('section').forEach(section => {
+    sections.forEach(section => {
         const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
         
         if (scrollY >= sectionTop - 200) {
             current = section.getAttribute('id');
         }
     });
 
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    navItems.forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href').slice(1) === current) {
             link.classList.add('active');
         }
-    });
+
+        // Añadimos la clase active a los enlaces nuevos
+        if (newActiveId && linksById[newActiveId]) {
+            linksById[newActiveId].forEach(link => link.classList.add("active"));
+        }
+
+        currentActiveId = newActiveId;
+    }
 });
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
@@ -158,11 +189,6 @@ function isMobileDevice() {
 if (isMobileDevice()) {
     document.body.classList.add('mobile');
 }
-
-// ========== CONSOLE LOG ==========
-console.log('✨ Portfolio cargado exitosamente');
-console.log('👨‍💻 Visita mi GitHub: https://github.com/santiagovallerosso');
-
 
 // ========== STICKY NAVBAR ==========
 const stickyNav = document.getElementById('sticky-nav');
