@@ -92,8 +92,29 @@ const documentMock = {
     createElement: (tag) => new MockElement(tag),
     head: new MockElement('head'),
     body: new MockElement('body'),
-    addEventListener: (event, callback) => {}
+    addEventListener: (event, callback) => {},
+    getElementById: (id) => {
+        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
+        if (id === 'inicio') return documentMock.elements.heroSection;
+        if (id === 'video-modal') return documentMock.elements.videoModal;
+        if (id === 'youtube-player') return documentMock.elements.youtubePlayer;
+        if (id === 'back-to-top') return documentMock.elements.backToTop;
+        if (id === 'brand-modal') return documentMock.elements.brandModal;
+        if (id === 'brand-player-1') return documentMock.elements.brandPlayer1;
+        if (id === 'brand-player-2') return documentMock.elements.brandPlayer2;
+        return null;
+    }
 };
+
+// Setup more elements
+documentMock.elements.stickyNav = new MockElement();
+documentMock.elements.heroSection = new MockElement();
+documentMock.elements.videoModal = new MockElement();
+documentMock.elements.youtubePlayer = new MockElement();
+documentMock.elements.backToTop = new MockElement();
+documentMock.elements.brandModal = new MockElement();
+documentMock.elements.brandPlayer1 = new MockElement();
+documentMock.elements.brandPlayer2 = new MockElement();
 
 // Setup elements
 documentMock.elements.hamburger = new MockElement();

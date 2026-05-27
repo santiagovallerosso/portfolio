@@ -88,7 +88,7 @@ window.addEventListener('scroll', () => {
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
+    } else if (heroCinematic && heroVideo) {
         // Video parallax or keep it static
         if (heroVideo) {
             heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
