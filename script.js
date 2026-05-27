@@ -316,12 +316,12 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
 // ========== ANIMATE COUNTER ==========
 function animateCounter(element) {
     const text = element.textContent;
+    const hasPlus = text.includes('+');
+    const hasPercent = text.includes('%');
+    const suffix = hasPlus ? '+' : hasPercent ? '%' : '';
+
     const finalValue = parseInt(text);
     if (isNaN(finalValue)) return;
-
-    let suffix = '';
-    if (text.includes('+')) suffix = '+';
-    else if (text.includes('%')) suffix = '%';
 
     let currentValue = 0;
     const increment = finalValue / 50;
@@ -334,10 +334,25 @@ function animateCounter(element) {
         } else {
             element.textContent = Math.floor(currentValue) + suffix;
         }
-    }, 20);
+    }, 30);
 }
 
-// Export for testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { animateCounter };
+
+// ========== INTERSECTION OBSERVER PARA CONTADORES ==========
+if (typeof IntersectionObserver !== 'undefined' && typeof document !== 'undefined') {
+    const counterObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.5
+    });
+
+    document.querySelectorAll('.counter').forEach(counter => {
+        counterObserver.observe(counter);
+    });
 }
+if (typeof module !== 'undefined') module.exports = { animateCounter };

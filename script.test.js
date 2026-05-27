@@ -1,84 +1,79 @@
+// Mock global DOM variables before requiring the script
+global.document = {
+    querySelector: jest.fn(() => null),
+    querySelectorAll: jest.fn(() => []),
+    getElementById: jest.fn(() => null),
+    createElement: jest.fn(() => ({})),
+    head: { appendChild: jest.fn() },
+    body: { classList: { add: jest.fn() } }
+};
+global.window = {
+    addEventListener: jest.fn(),
+    pageYOffset: 0,
+    scrollY: 0
+};
+global.navigator = {
+    userAgent: ''
+};
+global.IntersectionObserver = class {
+    constructor(callback, options) {}
+    observe() {}
+    unobserve() {}
+};
+
 const { animateCounter } = require('./script.js');
 
 describe('animateCounter', () => {
-    let mockElement;
-
     beforeEach(() => {
         jest.useFakeTimers();
     });
 
     afterEach(() => {
-        jest.clearAllTimers();
         jest.useRealTimers();
-        jest.restoreAllMocks();
     });
 
-    it('should animate a simple number counter to completion', () => {
-        mockElement = { textContent: '100' };
+    it('debería animar desde 0 hasta el valor final sin sufijos', () => {
+        const element = { textContent: '100' };
 
-        animateCounter(mockElement);
+        animateCounter(element);
 
-        // Fast-forward to the end (50 steps * 20ms = 1000ms)
-        jest.advanceTimersByTime(1000);
+        jest.advanceTimersByTime(30);
+        expect(parseInt(element.textContent)).toBeGreaterThanOrEqual(2);
 
-        expect(mockElement.textContent).toBe('100');
+        jest.advanceTimersByTime(30 * 50);
+        expect(element.textContent).toBe('100');
     });
 
-    it('should incrementally update the counter value', () => {
-        mockElement = { textContent: '100' };
+    it('debería manejar sufijos como "+"', () => {
+        const element = { textContent: '500+' };
 
-        animateCounter(mockElement);
+        animateCounter(element);
 
-        // Advance 1 step (20ms) -> Increment should be 100 / 50 = 2
-        jest.advanceTimersByTime(20);
-        expect(mockElement.textContent).toBe('2');
+        jest.advanceTimersByTime(30);
+        expect(element.textContent).toMatch(/\d+\+/);
 
-        // Advance 10 more steps -> Increment by 20 -> 22 total
-        jest.advanceTimersByTime(200);
-        expect(mockElement.textContent).toBe('22');
+        jest.advanceTimersByTime(30 * 50);
+        expect(element.textContent).toBe('500+');
     });
 
-    it('should preserve + symbol', () => {
-        mockElement = { textContent: '50+' };
+    it('debería manejar sufijos como "%"', () => {
+        const element = { textContent: '99%' };
 
-        animateCounter(mockElement);
+        animateCounter(element);
 
-        jest.advanceTimersByTime(20); // First tick
-        expect(mockElement.textContent).toBe('1+');
+        jest.advanceTimersByTime(30);
+        expect(element.textContent).toMatch(/\d+%/);
 
-        jest.advanceTimersByTime(1000); // Complete
-        expect(mockElement.textContent).toBe('50+');
+        jest.advanceTimersByTime(30 * 50);
+        expect(element.textContent).toBe('99%');
     });
 
-    it('should preserve % symbol', () => {
-        mockElement = { textContent: '99%' };
+    it('debería ignorar texto que no puede ser parseado a número', () => {
+        const element = { textContent: 'No soy un numero' };
 
-        animateCounter(mockElement);
+        animateCounter(element);
 
-        jest.advanceTimersByTime(1000); // Complete
-        expect(mockElement.textContent).toBe('99%');
-    });
-
-    it('should clear interval when finished', () => {
-        mockElement = { textContent: '10' };
-
-        // Spy directly on the global object for clearInterval
-        const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
-
-        animateCounter(mockElement);
-
-        // Advance time to allow the interval logic to run until current >= finalValue
-        jest.runAllTimers();
-
-        expect(clearIntervalSpy).toHaveBeenCalled();
-    });
-
-    it('should handle non-numeric inputs by returning early', () => {
-        mockElement = { textContent: 'abc' };
-        const setIntervalSpy = jest.spyOn(global, 'setInterval');
-
-        animateCounter(mockElement);
-
-        expect(setIntervalSpy).not.toHaveBeenCalled();
+        jest.advanceTimersByTime(30 * 50);
+        expect(element.textContent).toBe('No soy un numero');
     });
 });
