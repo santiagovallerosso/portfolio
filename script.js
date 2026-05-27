@@ -55,31 +55,35 @@ function validateContactForm(name, email, message) {
 
 const contactForm = document.querySelector('.contact-form');
 
-if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
+function setupContactForm(formElement) {
+    if (!formElement) return;
+
+    formElement.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const name = contactForm.querySelector('input[type="text"]').value;
-        const email = contactForm.querySelector('input[type="email"]').value;
-        const message = contactForm.querySelector('textarea').value;
+        const name = formElement.querySelector('input[type="text"]').value;
+        const email = formElement.querySelector('input[type="email"]').value;
+        const message = formElement.querySelector('textarea').value;
 
-        const validation = validateContactForm(name, email, message);
-
-        if (!validation.isValid) {
-            alert(validation.error);
+        // Validación básica
+        if (!name || !email || !message) {
+            window.alert('Por favor completa todos los campos');
             return;
         }
 
-        // Por ahora, solo mostrar mensaje de éxito
-        alert('¡Mensaje enviado! Gracias por contactarme.');
-        contactForm.reset();
+        // Validación de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            window.alert('Por favor ingresa un email válido');
+            return;
+        }
+
+        window.alert('¡Mensaje enviado! Gracias por contactarme.');
+        formElement.reset();
     });
 }
 
-// Export for testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { validateContactForm };
-}
+setupContactForm(contactForm);
 
 // ========== EFECTO PARALLAX SIMPLE ==========
 const hero = document.querySelector('.hero');
@@ -301,46 +305,9 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
     });
 }
 
-// ========== ANIMATE COUNTER ==========
-function animateCounter(element) {
-    const text = element.textContent;
-    const hasPlus = text.includes('+');
-    const hasPercent = text.includes('%');
-    const suffix = hasPlus ? '+' : hasPercent ? '%' : '';
-
-    const finalValue = parseInt(text);
-    if (isNaN(finalValue)) return;
-
-    let currentValue = 0;
-    const increment = finalValue / 50;
-
-    const interval = setInterval(() => {
-        currentValue += increment;
-        if (currentValue >= finalValue) {
-            element.textContent = finalValue + suffix;
-            clearInterval(interval);
-        } else {
-            element.textContent = Math.floor(currentValue) + suffix;
-        }
-    }, 30);
+// ========== EXPORTS FOR TESTING ==========
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        setupContactForm
+    };
 }
-
-
-// ========== INTERSECTION OBSERVER PARA CONTADORES ==========
-if (typeof IntersectionObserver !== 'undefined' && typeof document !== 'undefined') {
-    const counterObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                animateCounter(entry.target);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.5
-    });
-
-    document.querySelectorAll('.counter').forEach(counter => {
-        counterObserver.observe(counter);
-    });
-}
-if (typeof module !== 'undefined') module.exports = { animateCounter };

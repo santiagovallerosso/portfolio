@@ -1,9 +1,11 @@
 {
-  "name": "portfolio-test",
+  "name": "portfolio-tests",
   "version": "1.0.0",
-  "description": "Portfolio testing configuration",
+  "description": "Tests for portfolio website",
+  "main": "script.js",
   "scripts": {
     "test": "jest"
   },
-  "devDependencies": {}
+  "author": "",
+  "license": "ISC"
 }
