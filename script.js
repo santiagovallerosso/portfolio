@@ -171,14 +171,7 @@ window.addEventListener('scroll', () => {
         if (link.getAttribute('href').slice(1) === current) {
             link.classList.add('active');
         }
-
-        // Añadimos la clase active a los enlaces nuevos
-        if (newActiveId && linksById[newActiveId]) {
-            linksById[newActiveId].forEach(link => link.classList.add("active"));
-        }
-
-        currentActiveId = newActiveId;
-    }
+    });
 });
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
