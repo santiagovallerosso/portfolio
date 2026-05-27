@@ -40,7 +40,6 @@ if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const formData = new FormData(contactForm);
         const name = contactForm.querySelector('input[type="text"]').value;
         const email = contactForm.querySelector('input[type="email"]').value;
         const message = contactForm.querySelector('textarea').value;
@@ -80,18 +79,19 @@ if (contactForm) {
 }
 
 // ========== EFECTO PARALLAX SIMPLE ==========
+const hero = document.querySelector('.hero');
+const heroCinematic = document.querySelector('.hero-cinematic');
+const heroVideo = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
+
 window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    const heroCinematic = document.querySelector('.hero-cinematic');
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
+    } else if (heroCinematic && heroVideo) {
         // Video parallax or keep it static
-        const video = heroCinematic.querySelector('.hero-video');
-        if (video) {
-            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        if (heroVideo) {
+            heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
         }
     }
 });
@@ -143,24 +143,47 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
-window.addEventListener('scroll', () => {
-    let current = '';
+// Caching de elementos del DOM para evitar consultas constantes durante el scroll
+const sections = document.querySelectorAll("section");
+const navLinksAnchors = document.querySelectorAll(".nav-links a");
+
+// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
+const linksById = {};
+navLinksAnchors.forEach(link => {
+    const id = link.getAttribute("href").slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+    }
+    linksById[id].push(link);
+});
+
+// Guardamos el ID actual para no modificar el DOM innecesariamente
+let currentActiveId = "";
+
+window.addEventListener("scroll", () => {
+    let newActiveId = "";
     
-    document.querySelectorAll('section').forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        
-        if (scrollY >= sectionTop - 200) {
-            current = section.getAttribute('id');
+    // Identificamos la sección actual basada en la regla original (top - 200)
+    sections.forEach(section => {
+        if (window.scrollY >= section.offsetTop - 200) {
+            newActiveId = section.getAttribute("id");
         }
     });
 
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href').slice(1) === current) {
-            link.classList.add('active');
+    // Optimización crítica: Solo manipulamos las clases del DOM si la sección activa REALMENTE ha cambiado.
+    if (newActiveId !== currentActiveId) {
+        // Removemos la clase active de los enlaces anteriores
+        if (currentActiveId && linksById[currentActiveId]) {
+            linksById[currentActiveId].forEach(link => link.classList.remove("active"));
         }
-    });
+
+        // Añadimos la clase active a los enlaces nuevos
+        if (newActiveId && linksById[newActiveId]) {
+            linksById[newActiveId].forEach(link => link.classList.add("active"));
+        }
+
+        currentActiveId = newActiveId;
+    }
 });
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
@@ -171,11 +194,6 @@ function isMobileDevice() {
 if (isMobileDevice()) {
     document.body.classList.add('mobile');
 }
-
-// ========== CONSOLE LOG ==========
-console.log('✨ Portfolio cargado exitosamente');
-console.log('👨‍💻 Visita mi GitHub: https://github.com/santiagovallerosso');
-
 
 // ========== STICKY NAVBAR ==========
 const stickyNav = document.getElementById('sticky-nav');
