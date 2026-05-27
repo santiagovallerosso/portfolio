@@ -152,26 +152,49 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
-const sections = document.querySelectorAll('section');
-const navItems = document.querySelectorAll('.nav-links a');
+// Caching de elementos del DOM para evitar consultas constantes durante el scroll
+const sections = document.querySelectorAll("section");
+const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
-window.addEventListener('scroll', () => {
-    let current = '';
+// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
+const linksById = {};
+navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+    }
+    linksById[id].push(link);
+});
+
+// Guardamos el ID actual para no modificar el DOM innecesariamente
+let currentActiveId = "";
+
+window.addEventListener("scroll", () => {
+    let newActiveId = "";
     
+    // Identificamos la sección actual basada en la regla original (top - 200)
     sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        
-        if (scrollY >= sectionTop - 200) {
-            current = section.getAttribute('id');
+        if (window.scrollY >= section.offsetTop - 200) {
+            newActiveId = section.getAttribute("id");
         }
     });
 
-    navItems.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href').slice(1) === current) {
-            link.classList.add('active');
+    // Optimización crítica: Solo manipulamos las clases del DOM si la sección activa REALMENTE ha cambiado.
+    if (newActiveId !== currentActiveId) {
+        // Removemos la clase active de los enlaces anteriores
+        if (currentActiveId && linksById[currentActiveId]) {
+            linksById[currentActiveId].forEach(link => link.classList.remove("active"));
         }
-    });
+
+        // Añadimos la clase active a los enlaces nuevos
+        if (newActiveId && linksById[newActiveId]) {
+            linksById[newActiveId].forEach(link => link.classList.add("active"));
+        }
+
+        currentActiveId = newActiveId;
+    }
 });
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
@@ -298,9 +321,124 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
     });
 }
 
-// ========== EXPORTS FOR TESTING ==========
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        setupContactForm
-    };
+// Language Translations
+const translations = {
+    es: {
+        hero_subtitle: "Filmmaker, Editor de Video y Diseñador de Sonido",
+        hero_btn: "Trabajos Destacados",
+        nav_work: "TRABAJOS",
+        nav_music_videos: "VIDEOCLIPS",
+        nav_sound_design: "DISEÑO DE SONIDO",
+        nav_brand_content: "CONTENIDO DE MARCA",
+        nav_contact: "CONTACTO",
+        section_work: "Trabajos",
+        section_music_videos: "Videoclips",
+        section_sound_design: "Diseño de Sonido",
+        section_brand_content: "Contenido de Marca",
+        contact_title: "Contacto",
+        contact_phone: "Teléfono",
+        contact_send: "Enviar mensaje",
+        footer_copy: "&copy; 2026 Santiago Valle Rosso. Todos los derechos reservados.",
+        cat_short_film: "Cortometraje",
+        cat_documentary: "Documental",
+        cat_music_video: "Videoclip",
+        cat_campaign: "Campaña"
+    },
+    en: {
+        hero_subtitle: "Filmmaker, Video Editor and Sound Designer",
+        hero_btn: "Selected Works",
+        nav_work: "WORK",
+        nav_music_videos: "MUSIC VIDEOS",
+        nav_sound_design: "SOUND DESIGN",
+        nav_brand_content: "BRAND CONTENT",
+        nav_contact: "CONTACT",
+        section_work: "Work",
+        section_music_videos: "Music Videos",
+        section_sound_design: "Sound Design",
+        section_brand_content: "Brand Content",
+        contact_title: "Contact",
+        contact_phone: "Phone",
+        contact_send: "Send message",
+        footer_copy: "&copy; 2026 Santiago Valle Rosso. All rights reserved.",
+        cat_short_film: "Short Film",
+        cat_documentary: "Documentary",
+        cat_music_video: "Music Video",
+        cat_campaign: "Campaign"
+    },
+    pt: {
+        hero_subtitle: "Cineasta, Editor de Vídeo e Designer de Som",
+        hero_btn: "Trabalhos Selecionados",
+        nav_work: "TRABALHOS",
+        nav_music_videos: "VIDEOCLIPES",
+        nav_sound_design: "DESIGN DE SOM",
+        nav_brand_content: "CONTEÚDO DE MARCA",
+        nav_contact: "CONTATO",
+        section_work: "Trabalhos",
+        section_music_videos: "Videoclipes",
+        section_sound_design: "Design de Som",
+        section_brand_content: "Conteúdo de Marca",
+        contact_title: "Contato",
+        contact_phone: "Telefone",
+        contact_send: "Enviar mensagem",
+        footer_copy: "&copy; 2026 Santiago Valle Rosso. Todos os direitos reservados.",
+        cat_short_film: "Curta-metragem",
+        cat_documentary: "Documentário",
+        cat_music_video: "Videoclipe",
+        cat_campaign: "Campanha"
+    }
+};
+
+const placeholders = {
+    es: {
+        contact_name: "Tu nombre",
+        contact_email: "Tu email",
+        contact_message: "Tu mensaje"
+    },
+    en: {
+        contact_name: "Your name",
+        contact_email: "Your email",
+        contact_message: "Your message"
+    },
+    pt: {
+        contact_name: "Seu nome",
+        contact_email: "Seu email",
+        contact_message: "Sua mensagem"
+    }
+};
+
+function changeLanguage(lang) {
+    document.documentElement.lang = lang;
+
+    // Update active button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+
+    // Update text content
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (translations[lang] && translations[lang][key]) {
+            el.innerHTML = translations[lang][key];
+        }
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.dataset.i18nPlaceholder;
+        if (placeholders[lang] && placeholders[lang][key]) {
+            el.placeholder = placeholders[lang][key];
+        }
+    });
 }
+
+// Initialize language switcher
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        changeLanguage(e.target.dataset.lang);
+    });
+});
+
+// Call changeLanguage('en') on load
+document.addEventListener('DOMContentLoaded', () => {
+    changeLanguage('en');
+});

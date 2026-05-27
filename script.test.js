@@ -1,162 +1,231 @@
-// --- Manual Mocks ---
+// Simple DOM element mock
 class MockElement {
-  constructor(tag = 'div') {
-    this.tag = tag;
-    this.value = '';
-    this.classList = {
-      toggle: jest.fn(),
-      add: jest.fn(),
-      remove: jest.fn()
-    };
-    this.style = {};
-    this.attributes = {};
-    this.listeners = {};
-    this.children = [];
-  }
-
-  getAttribute(attr) {
-    return this.attributes[attr];
-  }
-
-  setAttribute(attr, val) {
-    this.attributes[attr] = val;
-  }
-
-  addEventListener(event, callback) {
-    if (!this.listeners[event]) this.listeners[event] = [];
-    this.listeners[event].push(callback);
-  }
-
-  querySelector(selector) {
-    if (selector === 'input[type="text"]') {
-        return this.children.find(c => c.tag === 'input' && c.getAttribute('type') === 'text') || new MockElement('input');
+    constructor(tagName = 'div') {
+        this.tagName = tagName.toUpperCase();
+        this.classList = {
+            classes: new Set(),
+            add: (c) => this.classList.classes.add(c),
+            remove: (c) => this.classList.classes.delete(c),
+            toggle: (c) => {
+                if (this.classList.classes.has(c)) {
+                    this.classList.classes.delete(c);
+                } else {
+                    this.classList.classes.add(c);
+                }
+            },
+            contains: (c) => this.classList.classes.has(c)
+        };
+        this.listeners = {};
+        this.attributes = {};
+        this.style = {};
+        this.innerHTML = '';
+        this.textContent = '';
+        this.value = '';
     }
-    if (selector === 'input[type="email"]') {
-        return this.children.find(c => c.tag === 'input' && c.getAttribute('type') === 'email') || new MockElement('input');
+
+    addEventListener(event, callback) {
+        if (!this.listeners[event]) this.listeners[event] = [];
+        this.listeners[event].push(callback);
     }
-    if (selector === 'textarea') {
-        return this.children.find(c => c.tag === 'textarea') || new MockElement('textarea');
+
+    dispatchEvent(event) {
+        const eventName = typeof event === 'string' ? event : event.type;
+        if (this.listeners[eventName]) {
+            this.listeners[eventName].forEach(cb => cb.call(this, {
+                preventDefault: () => {},
+                target: this,
+                getAttribute: (attr) => this.getAttribute(attr)
+            }));
+        }
     }
-    return new MockElement();
-  }
 
-  querySelectorAll(selector) {
-    return [];
-  }
+    click() {
+        this.dispatchEvent('click');
+    }
 
-  reset() {
-      // simulate form reset
-      this.children.forEach(c => c.value = '');
-  }
-
-  appendChild(child) {
-      this.children.push(child);
-  }
+    setAttribute(name, value) { this.attributes[name] = value; }
+    getAttribute(name) { return this.attributes[name] || null; }
+    querySelector(sel) { return null; }
+    querySelectorAll(sel) { return []; }
+    reset() {
+        this.classList.classes.clear();
+        this.value = '';
+    }
+    scrollIntoView() {}
+    appendChild() {}
 }
 
-// Global mocks required by script.js globally
-global.document = {
-  querySelector: jest.fn(() => new MockElement()),
-  querySelectorAll: jest.fn(() => []),
-  createElement: jest.fn((tag) => new MockElement(tag)),
-  head: new MockElement('head'),
-  body: new MockElement('body'),
-  getElementById: jest.fn(() => new MockElement())
+// Mock document
+const documentMock = {
+    elements: {},
+    getElementById: (id) => {
+        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
+        if (id === 'inicio') return documentMock.elements.inicio;
+        if (id === 'video-modal') return documentMock.elements.videoModal;
+        if (id === 'youtube-player') return documentMock.elements.youtubePlayer;
+        if (id === 'back-to-top') return documentMock.elements.backToTop;
+        if (id === 'brand-modal') return documentMock.elements.brandModal;
+        if (id === 'brand-player-1') return documentMock.elements.brandPlayer1;
+        if (id === 'brand-player-2') return documentMock.elements.brandPlayer2;
+        return documentMock.elements[id] || new MockElement();
+    },
+    querySelector: (sel) => {
+        if (sel === '.hamburger') return documentMock.elements.hamburger;
+        if (sel === '.nav-links') return documentMock.elements.navLinks;
+        if (sel === '.contact-form') return documentMock.elements.contactForm;
+        if (sel === '.about') return documentMock.elements.about;
+        if (sel === '.hero') return documentMock.elements.hero;
+        return new MockElement(); // fallback
+    },
+    querySelectorAll: (sel) => {
+        if (sel === '.nav-links a') return documentMock.elements.navLinksAs || [];
+        if (sel === 'a[href^="#"]') return documentMock.elements.anchors || [];
+        if (sel === 'section') return documentMock.elements.sections || [];
+        if (sel === '.project-card, .skill-category, .stat') return documentMock.elements.animated || [];
+        return [];
+    },
+    getElementById: (id) => {
+        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
+        if (id === 'inicio') return documentMock.elements.hero;
+        return null;
+    },
+    createElement: (tag) => new MockElement(tag),
+    head: new MockElement('head'),
+    body: new MockElement('body'),
+    addEventListener: (event, callback) => {}
 };
 
+// Setup elements
+documentMock.elements.hamburger = new MockElement();
+documentMock.elements.navLinks = new MockElement();
+documentMock.elements.contactForm = new MockElement('form');
+documentMock.elements.contactForm.reset = jest.fn();
+documentMock.elements.nameInput = new MockElement('input');
+documentMock.elements.emailInput = new MockElement('input');
+documentMock.elements.messageTextArea = new MockElement('textarea');
+
+documentMock.elements.contactForm.querySelector = (sel) => {
+    if (sel === 'input[type="text"]') return documentMock.elements.nameInput;
+    if (sel === 'input[type="email"]') return documentMock.elements.emailInput;
+    if (sel === 'textarea') return documentMock.elements.messageTextArea;
+    return new MockElement('input');
+};
+
+documentMock.elements.about = new MockElement();
+documentMock.elements.hero = new MockElement();
+documentMock.elements.stickyNav = new MockElement();
+documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
+
+documentMock.elements.stickyNav = new MockElement();
+documentMock.elements.inicio = new MockElement();
+documentMock.elements.inicio.offsetTop = 0;
+documentMock.elements.inicio.offsetHeight = 800;
+documentMock.elements.videoModal = new MockElement();
+documentMock.elements.youtubePlayer = new MockElement();
+documentMock.elements.backToTop = new MockElement();
+documentMock.elements.brandModal = new MockElement();
+documentMock.elements.brandPlayer1 = new MockElement();
+documentMock.elements.brandPlayer2 = new MockElement();
+
+documentMock.elements.sections = [new MockElement('section'), new MockElement('section')];
+documentMock.elements.sections.forEach(s => {
+    s.offsetTop = 0;
+    s.clientHeight = 500;
+    s.getAttribute = (attr) => attr === 'id' ? 'test-id' : null;
+});
+
+const alertMock = jest.fn();
+const intersectionObserverMock = jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn()
+}));
+
+global.document = documentMock;
 global.window = {
-  addEventListener: jest.fn(),
-  pageYOffset: 0,
-  scrollY: 0,
-  alert: jest.fn(),
-  scrollTo: jest.fn()
+    addEventListener: jest.fn(),
+    pageYOffset: 0,
+    scrollY: 0,
+    scrollTo: jest.fn(),
+    IntersectionObserver: intersectionObserverMock,
+    alert: alertMock,
+    navigator: {
+        userAgent: 'node'
+    }
 };
+global.alert = alertMock;
+global.IntersectionObserver = intersectionObserverMock;
+global.FormData = jest.fn();
 
-global.navigator = {
-  userAgent: 'node.js'
-};
+// Execute script
+require('./script.js');
 
-// Requires to run script.js top-level execution
-const { setupContactForm } = require('./script.js');
-
-describe('Form Validation (setupContactForm)', () => {
-    let formElement;
-    let nameInput;
-    let emailInput;
-    let messageTextarea;
-    let submitEvent;
-
+describe('Portfolio Script Tests', () => {
     beforeEach(() => {
-        formElement = new MockElement('form');
-
-        nameInput = new MockElement('input');
-        nameInput.setAttribute('type', 'text');
-
-        emailInput = new MockElement('input');
-        emailInput.setAttribute('type', 'email');
-
-        messageTextarea = new MockElement('textarea');
-
-        formElement.appendChild(nameInput);
-        formElement.appendChild(emailInput);
-        formElement.appendChild(messageTextarea);
-
-        formElement.reset = jest.fn();
-
-        submitEvent = { preventDefault: jest.fn() };
-
-        // Reset the alert mock
-        window.alert.mockClear();
+        jest.clearAllMocks();
+        documentMock.elements.hamburger.classList.classes.clear();
+        documentMock.elements.navLinks.classList.classes.clear();
+        documentMock.elements.nameInput.value = '';
+        documentMock.elements.emailInput.value = '';
+        documentMock.elements.messageTextArea.value = '';
     });
 
-    test('should prevent submission and alert if any field is empty', async () => {
-        setupContactForm(formElement);
+    test('Hamburger menu toggles active class', () => {
+        const hamburger = documentMock.elements.hamburger;
+        const navLinks = documentMock.elements.navLinks;
 
-        // Set empty values
-        nameInput.value = '';
-        emailInput.value = 'test@example.com';
-        messageTextarea.value = 'Hello';
+        hamburger.click();
 
-        // Trigger submit
-        const submitCallback = formElement.listeners['submit'][0];
-        await submitCallback(submitEvent);
+        expect(hamburger.classList.contains('active')).toBe(true);
+        expect(navLinks.classList.contains('active')).toBe(true);
 
-        expect(submitEvent.preventDefault).toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalledWith('Por favor completa todos los campos');
-        expect(formElement.reset).not.toHaveBeenCalled();
+        hamburger.click();
+        expect(hamburger.classList.contains('active')).toBe(false);
+        expect(navLinks.classList.contains('active')).toBe(false);
     });
 
-    test('should prevent submission and alert if email is invalid', async () => {
-        setupContactForm(formElement);
+    test('Clicking a nav link closes the menu', () => {
+        const hamburger = documentMock.elements.hamburger;
+        const navLinks = documentMock.elements.navLinks;
+        const link = documentMock.elements.navLinksAs[0];
 
-        // Set invalid email
-        nameInput.value = 'John Doe';
-        emailInput.value = 'invalid-email';
-        messageTextarea.value = 'Hello';
+        // Open first
+        hamburger.classList.add('active');
+        navLinks.classList.add('active');
 
-        // Trigger submit
-        const submitCallback = formElement.listeners['submit'][0];
-        await submitCallback(submitEvent);
+        link.click();
 
-        expect(submitEvent.preventDefault).toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalledWith('Por favor ingresa un email válido');
-        expect(formElement.reset).not.toHaveBeenCalled();
+        expect(hamburger.classList.contains('active')).toBe(false);
+        expect(navLinks.classList.contains('active')).toBe(false);
     });
 
-    test('should succeed and alert success if fields are valid', async () => {
-        setupContactForm(formElement);
+    test('Contact form validation - empty fields', () => {
+        const form = documentMock.elements.contactForm;
 
-        // Set valid values
-        nameInput.value = 'John Doe';
-        emailInput.value = 'john@example.com';
-        messageTextarea.value = 'Hello';
+        form.dispatchEvent('submit');
 
-        // Trigger submit
-        const submitCallback = formElement.listeners['submit'][0];
-        await submitCallback(submitEvent);
+        expect(alertMock).toHaveBeenCalledWith('Por favor completa todos los campos');
+    });
 
-        expect(submitEvent.preventDefault).toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
-        expect(formElement.reset).toHaveBeenCalled();
+    test('Contact form validation - invalid email', () => {
+        const form = documentMock.elements.contactForm;
+        documentMock.elements.nameInput.value = 'John Doe';
+        documentMock.elements.emailInput.value = 'invalid-email';
+        documentMock.elements.messageTextArea.value = 'Hello';
+
+        form.dispatchEvent('submit');
+
+        expect(alertMock).toHaveBeenCalledWith('Por favor ingresa un email válido');
+    });
+
+    test('Contact form validation - success', () => {
+        const form = documentMock.elements.contactForm;
+        documentMock.elements.nameInput.value = 'John Doe';
+        documentMock.elements.emailInput.value = 'test@example.com';
+        documentMock.elements.messageTextArea.value = 'Hello';
+
+        form.dispatchEvent('submit');
+
+        expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
+        expect(form.reset).toHaveBeenCalled();
     });
 });
