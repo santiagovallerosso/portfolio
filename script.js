@@ -94,16 +94,7 @@ if (heroCinematic) {
     cinematicVideo = heroCinematic.querySelector('.hero-video');
 }
 
-window.addEventListener('scroll', () => {
-    const scrollPosition = window.pageYOffset;
-    
-    if (hero) {
-        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic && cinematicVideo) {
-        // Video parallax or keep it static
-        cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-    }
-});
+
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
 const style = document.createElement('style');
@@ -171,29 +162,67 @@ navLinksAnchors.forEach(link => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-window.addEventListener("scroll", () => {
+
+
+
+// ========== CENTRALIZED SCROLL LISTENER ==========
+let isScrolling = false;
+
+function handleScroll() {
+    const scrollPosition = window.pageYOffset;
+    const scrollY = window.scrollY;
+
+    // 1. Efecto Parallax Simple
+    if (hero) {
+        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+    } else if (heroCinematic && cinematicVideo) {
+        cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+    }
+
+    // 2. Activar Enlace De Navegación Actual
     let newActiveId = "";
-    
-    // Identificamos la sección actual basada en la regla original (top - 200)
     sections.forEach(section => {
-        if (window.scrollY >= section.offsetTop - 200) {
+        if (scrollY >= section.offsetTop - 200) {
             newActiveId = section.getAttribute("id");
         }
     });
 
-    // Optimización crítica: Solo manipulamos las clases del DOM si la sección activa REALMENTE ha cambiado.
     if (newActiveId !== currentActiveId) {
-        // Removemos la clase active de los enlaces anteriores
         if (currentActiveId && linksById[currentActiveId]) {
             linksById[currentActiveId].forEach(link => link.classList.remove("active"));
         }
-
-        // Añadimos la clase active a los enlaces nuevos
         if (newActiveId && linksById[newActiveId]) {
             linksById[newActiveId].forEach(link => link.classList.add("active"));
         }
-
         currentActiveId = newActiveId;
+    }
+
+    // 3. Sticky Navbar
+    if (stickyNav && heroSection) {
+        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        if (scrollY > heroBottom - 100) {
+            stickyNav.classList.remove('hidden');
+        } else {
+            stickyNav.classList.add('hidden');
+        }
+    }
+
+    // 4. Back To Top Button
+    if (backToTopBtn) {
+        if (scrollY > 500) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    }
+
+    isScrolling = false;
+}
+
+window.addEventListener('scroll', () => {
+    if (!isScrolling) {
+        window.requestAnimationFrame(handleScroll);
+        isScrolling = true;
     }
 });
 
@@ -214,14 +243,7 @@ if (stickyNav && heroSection) {
     // Start hidden
     stickyNav.classList.add('hidden');
 
-    window.addEventListener('scroll', () => {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
-            stickyNav.classList.remove('hidden');
-        } else {
-            stickyNav.classList.add('hidden');
-        }
-    });
+
 }
 
 // ========== VIDEO MODAL ==========
@@ -264,13 +286,7 @@ if (modal && closeBtn && youtubePlayer) {
 const backToTopBtn = document.getElementById('back-to-top');
 
 if (backToTopBtn) {
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 500) {
-            backToTopBtn.classList.add('visible');
-        } else {
-            backToTopBtn.classList.remove('visible');
-        }
-    });
+
 
     backToTopBtn.addEventListener('click', () => {
         window.scrollTo({
