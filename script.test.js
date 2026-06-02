@@ -148,6 +148,16 @@ global.window = {
     scrollTo: jest.fn(),
     IntersectionObserver: intersectionObserverMock,
     alert: alertMock,
+    matchMedia: jest.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+    })),
     navigator: {
         userAgent: 'node'
     }
@@ -227,5 +237,49 @@ describe('Portfolio Script Tests', () => {
 
         expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
         expect(form.reset).toHaveBeenCalled();
+    });
+});
+
+describe('checkMobileDevice Tests', () => {
+    let originalMatchMedia;
+
+    beforeEach(() => {
+        originalMatchMedia = global.window.matchMedia;
+    });
+
+    afterEach(() => {
+        global.window.matchMedia = originalMatchMedia;
+        document.body.classList.remove('mobile');
+    });
+
+    test('adds mobile class when matches is true', () => {
+        global.window.matchMedia = jest.fn().mockImplementation(query => ({
+            matches: true,
+            media: query,
+            addEventListener: jest.fn(),
+        }));
+
+        // Re-require to run logic
+        jest.isolateModules(() => {
+            require('./script.js');
+        });
+
+        expect(document.body.classList.contains('mobile')).toBe(true);
+    });
+
+    test('removes mobile class when matches is false', () => {
+        document.body.classList.add('mobile');
+        global.window.matchMedia = jest.fn().mockImplementation(query => ({
+            matches: false,
+            media: query,
+            addEventListener: jest.fn(),
+        }));
+
+        // Re-require to run logic
+        jest.isolateModules(() => {
+            require('./script.js');
+        });
+
+        expect(document.body.classList.contains('mobile')).toBe(false);
     });
 });

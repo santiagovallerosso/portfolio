@@ -150,7 +150,9 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
-    const id = link.getAttribute("href").slice(1);
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
     }
@@ -187,13 +189,38 @@ window.addEventListener("scroll", () => {
 });
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+function checkMobileDevice() {
+
+    const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
+
+
+
+    const handleDeviceChange = (e) => {
+
+        if (e.matches) {
+
+            document.body.classList.add("mobile");
+
+        } else {
+
+            document.body.classList.remove("mobile");
+
+        }
+
+    };
+
+
+
+    handleDeviceChange(mobileMediaQuery);
+
+    mobileMediaQuery.addEventListener("change", handleDeviceChange);
+
 }
 
-if (isMobileDevice()) {
-    document.body.classList.add('mobile');
-}
+
+
+checkMobileDevice();
 
 // ========== STICKY NAVBAR ==========
 const stickyNav = document.getElementById('sticky-nav');
