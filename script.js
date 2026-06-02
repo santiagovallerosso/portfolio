@@ -150,7 +150,9 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
-    const id = link.getAttribute("href").slice(1);
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
     }
@@ -160,13 +162,20 @@ navLinksAnchors.forEach(link => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-window.addEventListener("scroll", () => {
+function updateActiveNavLink(scrollY, sections, linksById, reset = false) {
+    if (reset) {
+        currentActiveId = "";
+        return;
+    }
     let newActiveId = "";
     
     // Identificamos la sección actual basada en la regla original (top - 200)
     sections.forEach(section => {
-        if (window.scrollY >= section.offsetTop - 200) {
-            newActiveId = section.getAttribute("id");
+        // En un entorno de test mock, las iteraciones sobre arrays simulados pueden devolver null/undefined
+        if (section) {
+            if (scrollY >= section.offsetTop - 200) {
+                newActiveId = section.getAttribute("id");
+            }
         }
     });
 
@@ -184,6 +193,11 @@ window.addEventListener("scroll", () => {
 
         currentActiveId = newActiveId;
     }
+    return currentActiveId;
+}
+
+window.addEventListener("scroll", () => {
+    updateActiveNavLink(window.scrollY, sections, linksById);
 });
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
@@ -431,3 +445,8 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     changeLanguage('en');
 });
+
+
+if (typeof module !== 'undefined') {
+    module.exports = { updateActiveNavLink };
+}
