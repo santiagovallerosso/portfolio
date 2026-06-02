@@ -338,7 +338,7 @@ const translations = {
         contact_title: "Contacto",
         contact_phone: "Teléfono",
         contact_send: "Enviar mensaje",
-        footer_copy: "&copy; 2026 Santiago Valle Rosso. Todos los derechos reservados.",
+        footer_copy: "© 2026 Santiago Valle Rosso. Todos los derechos reservados.",
         cat_short_film: "Cortometraje",
         cat_documentary: "Documental",
         cat_music_video: "Videoclip",
@@ -359,7 +359,7 @@ const translations = {
         contact_title: "Contact",
         contact_phone: "Phone",
         contact_send: "Send message",
-        footer_copy: "&copy; 2026 Santiago Valle Rosso. All rights reserved.",
+        footer_copy: "© 2026 Santiago Valle Rosso. All rights reserved.",
         cat_short_film: "Short Film",
         cat_documentary: "Documentary",
         cat_music_video: "Music Video",
@@ -380,7 +380,7 @@ const translations = {
         contact_title: "Contato",
         contact_phone: "Telefone",
         contact_send: "Enviar mensagem",
-        footer_copy: "&copy; 2026 Santiago Valle Rosso. Todos os direitos reservados.",
+        footer_copy: "© 2026 Santiago Valle Rosso. Todos os direitos reservados.",
         cat_short_film: "Curta-metragem",
         cat_documentary: "Documentário",
         cat_music_video: "Videoclipe",
@@ -418,7 +418,7 @@ function changeLanguage(lang) {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.dataset.i18n;
         if (translations[lang] && translations[lang][key]) {
-            el.innerHTML = translations[lang][key];
+            el.textContent = translations[lang][key];
         }
     });
 

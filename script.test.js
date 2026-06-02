@@ -18,7 +18,7 @@ class MockElement {
         this.listeners = {};
         this.attributes = {};
         this.style = {};
-        this.innerHTML = '';
+
         this.textContent = '';
         this.value = '';
     }
