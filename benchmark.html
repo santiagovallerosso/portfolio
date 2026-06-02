@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Performance Optimizer & Benchmark Lab</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+
+            --color-emerald: #10b981;
+            --color-amber: #f59e0b;
+            --color-crimson: #ef4444;
+            --color-blue: #3b82f6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .lab-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Left Column - Controls */
+        .control-panel {
+            flex: 0 0 450px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 0 24px 0;
+        }
+
+        /* Strategy Selector */
+        .strategy-section {
+            margin-bottom: 24px;
+        }
+
+        .strategy-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .strategy-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .strategy-btn strong {
+            display: block;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .strategy-btn span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .strategy-btn:hover {
+            border-color: var(--text-muted);
+        }
+
+        .strategy-btn.active-1 { border-color: var(--color-crimson); background-color: rgba(239, 68, 68, 0.1); }
+        .strategy-btn.active-2 { border-color: var(--color-amber); background-color: rgba(245, 158, 11, 0.1); }
+        .strategy-btn.active-3 { border-color: var(--color-emerald); background-color: rgba(16, 185, 129, 0.1); }
+
+        /* Stress Test Button */
+        .stress-test-btn {
+            background-color: var(--color-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stress-test-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .stress-test-btn:disabled {
+            background-color: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Metrics Panel */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .val-1 { color: var(--color-crimson); }
+        .val-2 { color: var(--color-amber); }
+        .val-3 { color: var(--color-emerald); }
+
+        /* Console Log */
+        .console-panel {
+            flex: 1;
+            background-color: #000;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        .console-line { margin-bottom: 4px; }
+        .log-info { color: var(--color-blue); }
+        .log-warn { color: var(--color-amber); }
+        .log-success { color: var(--color-emerald); }
+        .log-error { color: var(--color-crimson); }
+
+        /* Right Column - Simulator */
+        .simulator-panel {
+            flex: 1;
+            background-color: #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .simulator-header {
+            background: #cbd5e1;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: bold;
+            border-bottom: 1px solid #94a3b8;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .simulator-viewport {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            background-color: #fff;
+            color: #333;
+        }
+
+        /* Mock Content inside Simulator */
+        .mock-hero {
+            height: 600px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .mock-content {
+            height: 3000px;
+            background: repeating-linear-gradient(
+                0deg,
+                #f8fafc,
+                #f8fafc 100px,
+                #f1f5f9 100px,
+                #f1f5f9 200px
+            );
+            padding: 40px;
+        }
+
+        .mock-paragraph {
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            height: 20px;
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        /* Sticky Nav */
+        .mock-sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            font-weight: bold;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .mock-sticky-nav.visible {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="lab-container">
+        <!-- Controles y Métricas -->
+        <div class="control-panel">
+            <div class="header">
+                <h1>Scroll Optimizer Lab</h1>
+                <p>Interactive Performance & Benchmark Dashboard</p>
+            </div>
+
+            <div class="strategy-section">
+                <h2>Paradigm Selection</h2>
+                <button class="strategy-btn active-1" data-strategy="1">
+                    <strong>1. Unoptimized (Anti-Pattern)</strong>
+                    <span>Synchronous offsetTop/Height in scroll event. Forced reflows.</span>
+                </button>
+                <button class="strategy-btn" data-strategy="2">
+                    <strong>2. Cached & Throttled (rAF)</strong>
+                    <span>Cached dimensions + requestAnimationFrame throttling.</span>
+                </button>
+                <button class="strategy-btn" data-strategy="3">
+                    <strong>3. IntersectionObserver (Modern Async)</strong>
+                    <span>0% Main thread usage for layout. Native async API.</span>
+                </button>
+            </div>
+
+            <button class="stress-test-btn" id="stress-test-btn">Run Stress Test</button>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-label">Events Fired</span>
+                    <span class="metric-value val-1" id="val-events">0</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Forced Reflows</span>
+                    <span class="metric-value val-1" id="val-reflows">0</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">JS Exec Time</span>
+                    <span class="metric-value val-1" id="val-time">0ms</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Avg FPS</span>
+                    <span class="metric-value val-1" id="val-fps">0</span>
+                </div>
+            </div>
+
+            <div class="console-panel" id="console-output">
+                <div class="console-line log-info">> System Initialized. Ready for stress test.</div>
+            </div>
+        </div>
+
+        <!-- Simulador -->
+        <div class="simulator-panel">
+            <div class="simulator-header">
+                <span>Live Viewport Simulator</span>
+                <span id="sim-status">IDLE</span>
+            </div>
+            <div class="simulator-viewport" id="viewport">
+                <!-- Se ha movido el absolute nav dentro del viewport para que el sticky dependa del viewport, no de root -->
+                <div class="mock-sticky-nav" id="mock-nav" style="position: absolute; width: 100%; box-sizing: border-box;">
+                    <span>WORK</span>
+                    <span>MUSIC VIDEOS</span>
+                    <span>SOUND DESIGN</span>
+                </div>
+
+                <div class="mock-hero" id="mock-hero">
+                    HERO SECTION (600px)
+                </div>
+
+                <div class="mock-content">
+                    <h2 style="text-align: center; margin-bottom: 40px; color: #475569;">CONTENT AREA</h2>
+                    <!-- Generate some paragraphs to make the content heavy -->
+                    <script>
+                        for(let i=0; i<30; i++) {
+                            document.write('<div class="mock-paragraph"></div>');
+                            document.write('<div class="mock-paragraph" style="width: 80%;"></div>');
+                            document.write('<div class="mock-paragraph" style="width: 60%; margin-bottom: 60px;"></div>');
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="benchmark.js"></script>
+</body>
+</html>

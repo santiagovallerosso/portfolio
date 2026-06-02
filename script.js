@@ -203,14 +203,23 @@ if (stickyNav && heroSection) {
     // Start hidden
     stickyNav.classList.add('hidden');
 
-    window.addEventListener('scroll', () => {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
-            stickyNav.classList.remove('hidden');
-        } else {
-            stickyNav.classList.add('hidden');
-        }
+    // Optimizacion: Usar IntersectionObserver en lugar de scroll event (Layout Thrashing fix)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                stickyNav.classList.remove('hidden');
+            } else {
+                stickyNav.classList.add('hidden');
+            }
+        });
+    }, {
+        root: null, // viewport
+        // El umbral se ajusta a -100px para igualar el comportamiento original de 'heroBottom - 100'
+        rootMargin: "0px 0px -100px 0px",
+        threshold: 0
     });
+
+    observer.observe(heroSection);
 }
 
 // ========== VIDEO MODAL ==========

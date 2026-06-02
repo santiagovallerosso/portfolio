@@ -115,6 +115,8 @@ documentMock.elements.about = new MockElement();
 documentMock.elements.hero = new MockElement();
 documentMock.elements.stickyNav = new MockElement();
 documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
+documentMock.elements.navLinksAs[0].getAttribute = (attr) => attr === 'href' ? '#inicio' : null;
+documentMock.elements.navLinksAs[1].getAttribute = (attr) => attr === 'href' ? '#work' : null;
 
 documentMock.elements.stickyNav = new MockElement();
 documentMock.elements.inicio = new MockElement();
@@ -157,11 +159,13 @@ global.IntersectionObserver = intersectionObserverMock;
 global.FormData = jest.fn();
 
 // Execute script
+
 require('./script.js');
+
 
 describe('Portfolio Script Tests', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        // jest.clearAllMocks();
         documentMock.elements.hamburger.classList.classes.clear();
         documentMock.elements.navLinks.classList.classes.clear();
         documentMock.elements.nameInput.value = '';
@@ -228,4 +232,19 @@ describe('Portfolio Script Tests', () => {
         expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
         expect(form.reset).toHaveBeenCalled();
     });
+
+    test('Sticky Nav visibility is toggled by IntersectionObserver', () => {
+        // Now mock.calls shouldn't be cleared!
+        expect(intersectionObserverMock).toHaveBeenCalled();
+        const observerCallback = intersectionObserverMock.mock.calls[0][0];
+
+        // entry1: Intersection = false (Fuera de pantalla) => Muestra sticky nav
+        observerCallback([{ isIntersecting: false }]);
+        expect(documentMock.elements.stickyNav.classList.contains('hidden')).toBe(false);
+
+        // entry2: Intersection = true (En pantalla) => Oculta sticky nav
+        observerCallback([{ isIntersecting: true }]);
+        expect(documentMock.elements.stickyNav.classList.contains('hidden')).toBe(true);
+    });
+
 });
