@@ -143,48 +143,64 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
-// Caching de elementos del DOM para evitar consultas constantes durante el scroll
-const sections = document.querySelectorAll("section");
-const navLinksAnchors = document.querySelectorAll(".nav-links a");
+function initStickyNavbar() {
+    // Caching de elementos del DOM para evitar consultas constantes
+    const sections = document.querySelectorAll("section");
+    const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
-// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
-const linksById = {};
-navLinksAnchors.forEach(link => {
-    const id = link.getAttribute("href").slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
-    }
-    linksById[id].push(link);
-});
-
-// Guardamos el ID actual para no modificar el DOM innecesariamente
-let currentActiveId = "";
-
-window.addEventListener("scroll", () => {
-    let newActiveId = "";
-    
-    // Identificamos la sección actual basada en la regla original (top - 200)
-    sections.forEach(section => {
-        if (window.scrollY >= section.offsetTop - 200) {
-            newActiveId = section.getAttribute("id");
+    // Agrupamos los enlaces por ID para soportar múltiples menús apuntando a la misma sección
+    const linksById = {};
+    navLinksAnchors.forEach(link => {
+        const href = link.getAttribute("href");
+        if (href) {
+            const id = href.slice(1);
+            if (!linksById[id]) {
+                linksById[id] = [];
+            }
+            linksById[id].push(link);
         }
     });
 
-    // Optimización crítica: Solo manipulamos las clases del DOM si la sección activa REALMENTE ha cambiado.
-    if (newActiveId !== currentActiveId) {
-        // Removemos la clase active de los enlaces anteriores
-        if (currentActiveId && linksById[currentActiveId]) {
-            linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-        }
+    let currentActiveId = "";
 
-        // Añadimos la clase active a los enlaces nuevos
-        if (newActiveId && linksById[newActiveId]) {
-            linksById[newActiveId].forEach(link => link.classList.add("active"));
+    // Actualizamos las clases en el DOM solo si ha cambiado el id activo
+    const updateActiveLink = (newActiveId) => {
+        if (newActiveId !== currentActiveId) {
+            if (currentActiveId && linksById[currentActiveId]) {
+                linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+            }
+            if (newActiveId && linksById[newActiveId]) {
+                linksById[newActiveId].forEach(link => link.classList.add("active"));
+            }
+            currentActiveId = newActiveId;
         }
+    };
 
-        currentActiveId = newActiveId;
-    }
-});
+    // Usamos IntersectionObserver para evitar el layout thrashing en eventos de scroll
+    const observerOptions = {
+        root: null,
+        rootMargin: "-200px 0px -40% 0px",
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute("id");
+                if (id) {
+                    updateActiveLink(id);
+                }
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+}
+
+// Inicializar de inmediato para rastrear los enlaces de navegación
+initStickyNavbar();
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
 function isMobileDevice() {
