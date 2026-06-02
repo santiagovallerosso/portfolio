@@ -258,6 +258,14 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    if (href) {
+        const id = href.slice(1);
+        if (!linksById[id]) {
+            linksById[id] = [];
+        }
+        linksById[id].push(link);
+    }
     const href = link.getAttribute("href"); if (!href) return; const id = href.slice(1);
     const href = link.getAttribute("href");
     if (!href) return;
@@ -279,6 +287,38 @@ navLinksAnchors.forEach((link) => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
+// Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
+const observerOptions = {
+    root: null,
+    rootMargin: '-200px 0px -50% 0px', // Aproximación a la lógica top - 200 y evitando activación doble
+    threshold: 0
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const newActiveId = entry.target.getAttribute("id");
+
+            if (newActiveId !== currentActiveId) {
+                // Removemos la clase active de los enlaces anteriores
+                if (currentActiveId && linksById[currentActiveId]) {
+                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+                }
+
+                // Añadimos la clase active a los enlaces nuevos
+                if (newActiveId && linksById[newActiveId]) {
+                    linksById[newActiveId].forEach(link => link.classList.add("active"));
+                }
+
+                currentActiveId = newActiveId;
+            }
+        }
+    });
+}, observerOptions);
+
+// Observar cada sección
+sections.forEach(section => {
+    observer.observe(section);
 const observerOptions = {
     root: null,
     rootMargin: "-200px 0px 0px 0px", // Equivalent to top - 200
