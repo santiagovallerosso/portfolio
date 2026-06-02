@@ -114,7 +114,12 @@ documentMock.elements.contactForm.querySelector = (sel) => {
 documentMock.elements.about = new MockElement();
 documentMock.elements.hero = new MockElement();
 documentMock.elements.stickyNav = new MockElement();
-documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
+
+documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a'), new MockElement('a')];
+documentMock.elements.navLinksAs[0].setAttribute('href', '#home');
+documentMock.elements.navLinksAs[1].setAttribute('href', '#about');
+documentMock.elements.navLinksAs[2].setAttribute('href', '#contact');
+
 
 documentMock.elements.stickyNav = new MockElement();
 documentMock.elements.inicio = new MockElement();
@@ -127,12 +132,7 @@ documentMock.elements.brandModal = new MockElement();
 documentMock.elements.brandPlayer1 = new MockElement();
 documentMock.elements.brandPlayer2 = new MockElement();
 
-documentMock.elements.sections = [new MockElement('section'), new MockElement('section')];
-documentMock.elements.sections.forEach(s => {
-    s.offsetTop = 0;
-    s.clientHeight = 500;
-    s.getAttribute = (attr) => attr === 'id' ? 'test-id' : null;
-});
+
 
 const alertMock = jest.fn();
 const intersectionObserverMock = jest.fn().mockImplementation(() => ({
@@ -141,33 +141,67 @@ const intersectionObserverMock = jest.fn().mockImplementation(() => ({
 }));
 
 global.document = documentMock;
-global.window = {
-    addEventListener: jest.fn(),
-    pageYOffset: 0,
-    scrollY: 0,
-    scrollTo: jest.fn(),
-    IntersectionObserver: intersectionObserverMock,
-    alert: alertMock,
-    navigator: {
-        userAgent: 'node'
+
+class MockWindow {
+    constructor() {
+        this.listeners = {};
+        this.pageYOffset = 0;
+        this.scrollY = 0;
+        this.scrollTo = jest.fn();
+        this.IntersectionObserver = intersectionObserverMock;
+        this.alert = alertMock;
+        this.navigator = {
+            userAgent: 'node'
+        };
     }
-};
+
+    addEventListener(event, callback) {
+        if (!this.listeners[event]) this.listeners[event] = [];
+        this.listeners[event].push(callback);
+    }
+
+    dispatchEvent(event) {
+        const eventName = typeof event === 'string' ? event : event.type;
+        if (this.listeners[eventName]) {
+            this.listeners[eventName].forEach(cb => cb.call(this, event));
+        }
+    }
+}
+
+global.window = new MockWindow();
 global.alert = alertMock;
 global.IntersectionObserver = intersectionObserverMock;
 global.FormData = jest.fn();
 
+documentMock.elements.sections = [new MockElement('section'), new MockElement('section'), new MockElement('section')];
+const sectionIds = ['home', 'about', 'contact'];
+documentMock.elements.sections.forEach((s, index) => {
+    s.offsetTop = index * 800; // home: 0, about: 800, contact: 1600
+    s.clientHeight = 800;
+    s.getAttribute = (attr) => attr === 'id' ? sectionIds[index] : null;
+});
+
 // Execute script
-require('./script.js');
+
 
 describe('Portfolio Script Tests', () => {
+
     beforeEach(() => {
         jest.clearAllMocks();
+        // Reset classes
         documentMock.elements.hamburger.classList.classes.clear();
         documentMock.elements.navLinks.classList.classes.clear();
+        documentMock.elements.navLinksAs.forEach(l => l.classList.classes.clear());
         documentMock.elements.nameInput.value = '';
         documentMock.elements.emailInput.value = '';
         documentMock.elements.messageTextArea.value = '';
+
+        // Reset script file cache and re-evaluate script so logic can pick up modified DOM (if necessary, though we just modify scrollY)
+        jest.isolateModules(() => {
+           require('./script.js');
+        });
     });
+
 
     test('Hamburger menu toggles active class', () => {
         const hamburger = documentMock.elements.hamburger;
@@ -227,5 +261,50 @@ describe('Portfolio Script Tests', () => {
 
         expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
         expect(form.reset).toHaveBeenCalled();
+    });
+
+
+    test('Navigation scroll updates active link - scrollY = 0', () => {
+        // Reset classes
+        documentMock.elements.navLinksAs.forEach(l => l.classList.classes.clear());
+
+        // Simulate scroll at top
+        global.window.scrollY = 0;
+        global.window.dispatchEvent(new Event('scroll'));
+
+        // First link should be active
+        expect(documentMock.elements.navLinksAs[0].classList.contains('active')).toBe(true);
+        expect(documentMock.elements.navLinksAs[1].classList.contains('active')).toBe(false);
+        expect(documentMock.elements.navLinksAs[2].classList.contains('active')).toBe(false);
+    });
+
+
+    test('Navigation scroll updates active link - scrolled to middle section', () => {
+        // Reset classes
+        documentMock.elements.navLinksAs.forEach(l => l.classList.classes.clear());
+
+        // Simulate scroll to the second section (offsetTop is 800)
+        // With threshold of 200 (800 - 200 = 600), so 600 should trigger it.
+        global.window.scrollY = 650;
+        global.window.dispatchEvent(new Event('scroll'));
+
+        // Second link should be active
+        expect(documentMock.elements.navLinksAs[0].classList.contains('active')).toBe(false);
+        expect(documentMock.elements.navLinksAs[1].classList.contains('active')).toBe(true);
+        expect(documentMock.elements.navLinksAs[2].classList.contains('active')).toBe(false);
+    });
+
+    test('Navigation scroll updates active link - scrolled to bottom section', () => {
+        // Reset classes
+        documentMock.elements.navLinksAs.forEach(l => l.classList.classes.clear());
+
+        // Simulate scroll to the last section (offsetTop is 1600)
+        global.window.scrollY = 1500; // >= 1600 - 200 (1400)
+        global.window.dispatchEvent(new Event('scroll'));
+
+        // Third link should be active
+        expect(documentMock.elements.navLinksAs[0].classList.contains('active')).toBe(false);
+        expect(documentMock.elements.navLinksAs[1].classList.contains('active')).toBe(false);
+        expect(documentMock.elements.navLinksAs[2].classList.contains('active')).toBe(true);
     });
 });
