@@ -14,3 +14,9 @@ global.window = {
 global.navigator = {
     userAgent: ''
 };
+global.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+};
+global.window.requestAnimationFrame = jest.fn(cb => cb());
