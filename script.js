@@ -112,6 +112,20 @@ function setupContactForm(formElement) {
 setupContactForm(contactForm);
 
 // ========== EFECTO PARALLAX SIMPLE ==========
+document.addEventListener('DOMContentLoaded', () => {
+    const hero = document.querySelector('.hero');
+    const heroCinematic = document.querySelector('.hero-cinematic');
+    const video = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
+    
+    window.addEventListener('scroll', () => {
+        const scrollPosition = window.pageYOffset;
+
+        if (hero) {
+            hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+        } else if (heroCinematic && video) {
+            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        }
+    });
 const hero = document.querySelector(".hero");
 const heroCinematic = document.querySelector(".hero-cinematic");
 let cinematicVideo = null;
