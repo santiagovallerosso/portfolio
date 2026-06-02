@@ -1,5 +1,27 @@
 // Simple DOM element mock
 class MockElement {
+    constructor(tagName = 'div') {
+        this.tagName = tagName.toUpperCase();
+        this.classList = {
+            classes: new Set(),
+            add: (c) => this.classList.classes.add(c),
+            remove: (c) => this.classList.classes.delete(c),
+            toggle: (c) => {
+                if (this.classList.classes.has(c)) {
+                    this.classList.classes.delete(c);
+                } else {
+                    this.classList.classes.add(c);
+                }
+            },
+            contains: (c) => this.classList.classes.has(c)
+        };
+        this.listeners = {};
+        this.attributes = {};
+        this.style = {};
+
+        this.textContent = '';
+        this.value = '';
+    }
   constructor(tagName = "div") {
     this.tagName = tagName.toUpperCase();
     this.classList = {
