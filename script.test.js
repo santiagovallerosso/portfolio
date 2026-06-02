@@ -162,6 +162,9 @@ documentMock.elements.heroCinematic.querySelector = (sel) => {
     return null;
 };
 documentMock.elements.stickyNav = new MockElement();
+documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
+documentMock.elements.navLinksAs[0].setAttribute('href', '#test-id');
+documentMock.elements.navLinksAs[1].setAttribute('href', '#other-id');
 documentMock.elements.navLinksAs = [new MockElement("a"), new MockElement("a")];
 
 documentMock.elements.stickyNav = new MockElement();
@@ -202,6 +205,14 @@ documentMock.elements.sections.forEach((s) => {
 });
 
 const alertMock = jest.fn();
+let lastObserverCallback = null;
+const intersectionObserverMock = jest.fn().mockImplementation((callback) => {
+    lastObserverCallback = callback;
+    return {
+        observe: jest.fn(),
+        unobserve: jest.fn()
+    };
+});
 const intersectionObserverMock = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
@@ -570,5 +581,36 @@ describe('checkMobileDevice Tests', () => {
         });
 
         expect(document.body.classList.contains('mobile')).toBe(false);
+    });
+
+    test('IntersectionObserver toggles active class on nav links', () => {
+        // Trigger observer callback with an intersection entry
+        expect(lastObserverCallback).not.toBeNull();
+
+        const mockEntry = {
+            isIntersecting: true,
+            target: {
+                getAttribute: (attr) => attr === 'id' ? 'test-id' : null
+            }
+        };
+
+        lastObserverCallback([mockEntry]);
+
+        // Check if the link corresponding to 'test-id' got the 'active' class
+        const testLink = documentMock.elements.navLinksAs[0];
+        expect(testLink.classList.contains('active')).toBe(true);
+
+        // Now intersecting another element
+        const otherEntry = {
+            isIntersecting: true,
+            target: {
+                getAttribute: (attr) => attr === 'id' ? 'other-id' : null
+            }
+        };
+        lastObserverCallback([otherEntry]);
+
+        const otherLink = documentMock.elements.navLinksAs[1];
+        expect(otherLink.classList.contains('active')).toBe(true);
+        expect(testLink.classList.contains('active')).toBe(false);
     });
 });
