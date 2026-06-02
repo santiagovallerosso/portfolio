@@ -184,6 +184,41 @@ function handleScroll() {
     sections.forEach(section => {
         if (scrollY >= section.offsetTop - 200) {
             newActiveId = section.getAttribute("id");
+// Variables para caché de posiciones de secciones
+let sectionOffsets = [];
+
+// Función para actualizar la caché
+function updateSectionOffsets() {
+    sectionOffsets = Array.from(sections).map(section => ({
+        id: section.getAttribute("id"),
+        top: section.offsetTop
+    }));
+}
+
+// Inicializar la caché
+updateSectionOffsets();
+
+// Observar cambios de tamaño en el documento (ResizeObserver) para actualizar la caché
+// Esto cubre cambios de ventana, carga diferida, modales, y cambios de orientación
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(() => {
+        // Usamos requestAnimationFrame para no bloquear la renderización actual si ocurre muy seguido
+        window.requestAnimationFrame(updateSectionOffsets);
+    });
+    // Observamos el body para capturar cambios globales en el layout
+    observer.observe(document.body);
+} else {
+    // Fallback para navegadores antiguos
+    window.addEventListener('resize', updateSectionOffsets);
+}
+
+window.addEventListener("scroll", () => {
+    let newActiveId = "";
+    
+    // Identificamos la sección actual utilizando nuestra caché
+    sectionOffsets.forEach(section => {
+        if (window.scrollY >= section.top - 200) {
+            newActiveId = section.id;
         }
     });
 
