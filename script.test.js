@@ -1,6 +1,6 @@
 // Simple DOM element mock
 class MockElement {
-    constructor(tagName = 'div') {
+    constructor(tagName = 'div', options = {}) {
         this.tagName = tagName.toUpperCase();
         this.classList = {
             classes: new Set(),
@@ -21,6 +21,10 @@ class MockElement {
 
         this.textContent = '';
         this.value = '';
+
+        this.offsetTop = options.offsetTop || 0;
+        this.clientHeight = options.clientHeight || 0;
+        this.offsetHeight = options.offsetHeight || 0;
     }
   constructor(tagName = "div") {
     this.tagName = tagName.toUpperCase();
@@ -254,6 +258,7 @@ global.IntersectionObserver = intersectionObserverMock;
 global.FormData = jest.fn();
 
 // Execute script
+const { updateActiveNavLink } = require('./script.js');
 require("./script.js");
 
 describe("Portfolio Script Tests", () => {
@@ -612,5 +617,89 @@ describe('checkMobileDevice Tests', () => {
         const otherLink = documentMock.elements.navLinksAs[1];
         expect(otherLink.classList.contains('active')).toBe(true);
         expect(testLink.classList.contains('active')).toBe(false);
+    });
+
+    describe('updateActiveNavLink', () => {
+        let sections;
+        let linksById;
+        let link1, link2, link3, link4;
+
+        beforeEach(() => {
+            // Setup sections with heights
+            const s1 = new MockElement('section', { offsetTop: 0, clientHeight: 800 });
+            s1.setAttribute('id', 'hero');
+            const s2 = new MockElement('section', { offsetTop: 800, clientHeight: 600 });
+            s2.setAttribute('id', 'about');
+            const s3 = new MockElement('section', { offsetTop: 1400, clientHeight: 800 });
+            s3.setAttribute('id', 'portfolio');
+            const s4 = new MockElement('section', { offsetTop: 2200, clientHeight: 600 });
+            s4.setAttribute('id', 'contact');
+
+            sections = [s1, s2, s3, s4];
+
+            link1 = new MockElement('a');
+            link2 = new MockElement('a');
+            link3 = new MockElement('a');
+            link4 = new MockElement('a');
+
+            linksById = {
+                'hero': [link1],
+                'about': [link2],
+                'portfolio': [link3],
+                'contact': [link4]
+            };
+
+            // Reset state
+            updateActiveNavLink(0, sections, linksById, true);
+        });
+
+        test('Scroll = 0 (Initial case)', () => {
+            updateActiveNavLink(0, sections, linksById);
+            expect(link1.classList.contains('active')).toBe(true);
+            expect(link2.classList.contains('active')).toBe(false);
+            expect(link3.classList.contains('active')).toBe(false);
+            expect(link4.classList.contains('active')).toBe(false);
+        });
+
+        test('Crossing threshold (Scroll down to about section)', () => {
+            // s2.offsetTop - 200 = 600
+            updateActiveNavLink(601, sections, linksById);
+            expect(link1.classList.contains('active')).toBe(false);
+            expect(link2.classList.contains('active')).toBe(true);
+            expect(link3.classList.contains('active')).toBe(false);
+            expect(link4.classList.contains('active')).toBe(false);
+        });
+
+        test('Entering specific section (Scroll within portfolio)', () => {
+            // s3.offsetTop - 200 = 1200
+            updateActiveNavLink(1500, sections, linksById);
+            expect(link1.classList.contains('active')).toBe(false);
+            expect(link2.classList.contains('active')).toBe(false);
+            expect(link3.classList.contains('active')).toBe(true);
+            expect(link4.classList.contains('active')).toBe(false);
+        });
+
+        test('Returning to 0', () => {
+            // First go down
+            updateActiveNavLink(1500, sections, linksById);
+            expect(link3.classList.contains('active')).toBe(true);
+
+            // Then back to top
+            updateActiveNavLink(0, sections, linksById);
+            expect(link1.classList.contains('active')).toBe(true);
+            expect(link2.classList.contains('active')).toBe(false);
+            expect(link3.classList.contains('active')).toBe(false);
+        });
+
+        test('Rapid scrolling to end', () => {
+            // s4.offsetTop - 200 = 2000
+            updateActiveNavLink(3000, sections, linksById);
+            expect(link1.classList.contains('active')).toBe(false);
+            expect(link2.classList.contains('active')).toBe(false);
+            expect(link3.classList.contains('active')).toBe(false);
+            expect(link4.classList.contains('active')).toBe(true);
+        });
+
+
     });
 });

@@ -301,6 +301,11 @@ navLinksAnchors.forEach((link) => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
+function updateActiveNavLink(scrollY, sections, linksById, reset = false) {
+    if (reset) {
+        currentActiveId = "";
+        return;
+    }
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
 const observerOptions = {
     root: null,
@@ -408,6 +413,11 @@ function handleScroll() {
     // 2. Activar Enlace De Navegación Actual
     let newActiveId = "";
     sections.forEach(section => {
+        // En un entorno de test mock, las iteraciones sobre arrays simulados pueden devolver null/undefined
+        if (section) {
+            if (scrollY >= section.offsetTop - 200) {
+                newActiveId = section.getAttribute("id");
+            }
         if (scrollY >= section.offsetTop - 200) {
             newActiveId = section.getAttribute("id");
 // Variables para caché de posiciones de secciones
@@ -457,6 +467,11 @@ window.addEventListener("scroll", () => {
         }
         currentActiveId = newActiveId;
     }
+    return currentActiveId;
+}
+
+window.addEventListener("scroll", () => {
+    updateActiveNavLink(window.scrollY, sections, linksById);
 
     // 3. Sticky Navbar
     if (stickyNav && heroSection) {
@@ -855,6 +870,9 @@ document.addEventListener("DOMContentLoaded", () => {
   changeLanguage("en");
 });
 
+
+if (typeof module !== 'undefined') {
+    module.exports = { updateActiveNavLink };
 if (typeof module !== 'undefined') {
     module.exports = { handleParallaxScroll };
     module.exports = { isMobileDevice };
