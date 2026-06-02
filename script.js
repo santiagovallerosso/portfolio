@@ -40,9 +40,14 @@ if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const name = contactForm.querySelector('input[type="text"]').value;
-        const email = contactForm.querySelector('input[type="email"]').value;
-        const message = contactForm.querySelector('textarea').value;
+        const nameInput = contactForm.querySelector('input[type="text"]');
+        const emailInput = contactForm.querySelector('input[type="email"]');
+        const messageInput = contactForm.querySelector('textarea');
+
+        // Use optional chaining and trim, handle cases where element might not be found gracefully
+        const name = nameInput?.value.trim() || '';
+        const email = emailInput?.value.trim() || '';
+        const message = messageInput?.value.trim() || '';
 
         // Validación básica
         if (!name || !email || !message) {
@@ -57,24 +62,23 @@ if (contactForm) {
             return;
         }
 
-        // Aquí puedes integrar tu servicio de email
-        // Opción 1: Formspree
-        // const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-        //     method: 'POST',
-        //     body: JSON.stringify({ name, email, message }),
-        //     headers: { 'Content-Type': 'application/json' }
-        // });
+        // Aquí puedes integrar la lógica de envío a un servicio de email (ej. Formspree, EmailJS, etc.)
 
-        // Opción 2: EmailJS (requiere librería)
-        // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-        //     from_name: name,
-        //     from_email: email,
-        //     message: message
-        // });
+        // Mostrar mensaje de éxito en la UI
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        const originalBg = submitBtn.style.background;
 
-        // Por ahora, solo mostrar mensaje de éxito
-        alert('¡Mensaje enviado! Gracias por contactarme.');
-        contactForm.reset();
+        submitBtn.textContent = '¡Mensaje enviado con éxito!';
+        submitBtn.style.background = '#10b981'; // Tailwind emerald-500
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.style.background = originalBg;
+            submitBtn.disabled = false;
+            contactForm.reset();
+        }, 3000);
     });
 }
 
@@ -150,7 +154,9 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
-    const id = link.getAttribute("href").slice(1);
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
     }

@@ -218,14 +218,41 @@ describe('Portfolio Script Tests', () => {
     });
 
     test('Contact form validation - success', () => {
+        jest.useFakeTimers();
         const form = documentMock.elements.contactForm;
+
+        // Mock the submit button
+        const mockSubmitBtn = new MockElement('button');
+        mockSubmitBtn.setAttribute('type', 'submit');
+        mockSubmitBtn.textContent = 'Enviar mensaje';
+        mockSubmitBtn.style = {};
+
+        // Add querySelector override specifically for this test
+        const originalQuerySelector = form.querySelector;
+        form.querySelector = (sel) => {
+            if (sel === 'input[type="text"]') return documentMock.elements.nameInput;
+            if (sel === 'input[type="email"]') return documentMock.elements.emailInput;
+            if (sel === 'textarea') return documentMock.elements.messageTextArea;
+            if (sel === 'button[type="submit"]') return mockSubmitBtn;
+            return originalQuerySelector(sel);
+        };
+
         documentMock.elements.nameInput.value = 'John Doe';
         documentMock.elements.emailInput.value = 'test@example.com';
         documentMock.elements.messageTextArea.value = 'Hello';
 
         form.dispatchEvent('submit');
 
-        expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
+        expect(mockSubmitBtn.textContent).toBe('¡Mensaje enviado con éxito!');
+        expect(mockSubmitBtn.disabled).toBe(true);
+        expect(mockSubmitBtn.style.background).toBe('#10b981');
+
+        jest.runAllTimers();
+
+        expect(mockSubmitBtn.textContent).toBe('Enviar mensaje');
+        expect(mockSubmitBtn.disabled).toBe(false);
         expect(form.reset).toHaveBeenCalled();
+
+        jest.useRealTimers();
     });
 });
