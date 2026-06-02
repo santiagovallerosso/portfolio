@@ -31,7 +31,7 @@ class MockElement {
     dispatchEvent(event) {
         const eventName = typeof event === 'string' ? event : event.type;
         if (this.listeners[eventName]) {
-            this.listeners[eventName].forEach(cb => cb.call(this, {
+            this.listeners[eventName].forEach(cb => cb.call(this, typeof event === 'object' ? event : {
                 preventDefault: () => {},
                 target: this,
                 getAttribute: (attr) => this.getAttribute(attr)
@@ -75,6 +75,7 @@ const documentMock = {
         if (sel === '.contact-form') return documentMock.elements.contactForm;
         if (sel === '.about') return documentMock.elements.about;
         if (sel === '.hero') return documentMock.elements.hero;
+        if (sel === '.close-modal') return documentMock.elements.closeModalBtn;
         return new MockElement(); // fallback
     },
     querySelectorAll: (sel) => {
@@ -82,13 +83,10 @@ const documentMock = {
         if (sel === 'a[href^="#"]') return documentMock.elements.anchors || [];
         if (sel === 'section') return documentMock.elements.sections || [];
         if (sel === '.project-card, .skill-category, .stat') return documentMock.elements.animated || [];
+        if (sel === '.portfolio-card') return documentMock.elements.portfolioCards || [];
         return [];
     },
-    getElementById: (id) => {
-        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
-        if (id === 'inicio') return documentMock.elements.hero;
-        return null;
-    },
+
     createElement: (tag) => new MockElement(tag),
     head: new MockElement('head'),
     body: new MockElement('body'),
@@ -114,7 +112,10 @@ documentMock.elements.contactForm.querySelector = (sel) => {
 documentMock.elements.about = new MockElement();
 documentMock.elements.hero = new MockElement();
 documentMock.elements.stickyNav = new MockElement();
-documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
+documentMock.elements.navLinksAs = [
+        (() => { const a = new MockElement('a'); a.setAttribute('href', '#inicio'); return a; })(),
+        (() => { const a = new MockElement('a'); a.setAttribute('href', '#about'); return a; })()
+    ];
 
 documentMock.elements.stickyNav = new MockElement();
 documentMock.elements.inicio = new MockElement();
@@ -133,6 +134,14 @@ documentMock.elements.sections.forEach(s => {
     s.clientHeight = 500;
     s.getAttribute = (attr) => attr === 'id' ? 'test-id' : null;
 });
+documentMock.elements.closeModalBtn = new MockElement();
+
+const validCard = new MockElement();
+validCard.setAttribute('data-youtube-id', 'dQw4w9WgXcQ');
+const invalidCard = new MockElement();
+
+documentMock.elements.portfolioCards = [validCard, invalidCard];
+
 
 const alertMock = jest.fn();
 const intersectionObserverMock = jest.fn().mockImplementation(() => ({
@@ -157,6 +166,7 @@ global.IntersectionObserver = intersectionObserverMock;
 global.FormData = jest.fn();
 
 // Execute script
+jest.resetModules();
 require('./script.js');
 
 describe('Portfolio Script Tests', () => {
@@ -167,6 +177,8 @@ describe('Portfolio Script Tests', () => {
         documentMock.elements.nameInput.value = '';
         documentMock.elements.emailInput.value = '';
         documentMock.elements.messageTextArea.value = '';
+        documentMock.elements.videoModal.classList.classes.clear();
+        documentMock.elements.youtubePlayer.src = '';
     });
 
     test('Hamburger menu toggles active class', () => {
@@ -227,5 +239,71 @@ describe('Portfolio Script Tests', () => {
 
         expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
         expect(form.reset).toHaveBeenCalled();
+    });
+
+    test('Clicking a valid portfolio card opens the modal', () => {
+        const validCard = documentMock.elements.portfolioCards[0];
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        validCard.click();
+
+        expect(modal.classList.contains('show')).toBe(true);
+        expect(player.src).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1');
+    });
+
+    test('Clicking an invalid portfolio card does not open the modal', () => {
+        const invalidCard = documentMock.elements.portfolioCards[1];
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        modal.classList.classes.clear();
+        player.src = '';
+
+        invalidCard.click();
+
+        expect(modal.classList.contains('show')).toBe(false);
+        expect(player.src).toBe('');
+    });
+
+    test('Clicking close button closes the modal and clears src', () => {
+        jest.useFakeTimers();
+
+        const closeBtn = documentMock.elements.closeModalBtn;
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        modal.classList.add('show');
+        player.src = 'some-video';
+
+        closeBtn.click();
+
+        expect(modal.classList.contains('show')).toBe(false);
+        expect(player.src).toBe('some-video'); // Before timeout
+
+        jest.advanceTimersByTime(300);
+
+        expect(player.src).toBe('');
+
+        jest.useRealTimers();
+    });
+
+    test('Clicking outside the modal closes it', () => {
+        jest.useFakeTimers();
+
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        modal.classList.add('show');
+        player.src = 'some-video';
+
+        modal.dispatchEvent({ type: 'click', target: modal });
+
+        expect(modal.classList.contains('show')).toBe(false);
+
+        jest.advanceTimersByTime(300);
+        expect(player.src).toBe('');
+
+        jest.useRealTimers();
     });
 });
