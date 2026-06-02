@@ -116,6 +116,20 @@ const hero = document.querySelector(".hero");
 const heroCinematic = document.querySelector(".hero-cinematic");
 let cinematicVideo = null;
 
+function handleParallaxScroll() {
+    const scrollPosition = window.pageYOffset;
+    
+    if (hero) {
+        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+    } else if (heroCinematic) {
+        // Video parallax or keep it static
+        if (heroVideo) {
+            heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        }
+    }
+}
+
+window.addEventListener('scroll', handleParallaxScroll);
 if (heroCinematic) {
   cinematicVideo = heroCinematic.querySelector(".hero-video");
 }
@@ -186,6 +200,7 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href"); if (!href) return; const id = href.slice(1);
     const href = link.getAttribute("href");
     if (!href) return;
     const id = href.slice(1);
@@ -729,5 +744,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
+    module.exports = { handleParallaxScroll };
     module.exports = { isMobileDevice };
 }
