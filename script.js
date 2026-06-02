@@ -83,7 +83,7 @@ const hero = document.querySelector('.hero');
 const heroCinematic = document.querySelector('.hero-cinematic');
 const heroVideo = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
 
-window.addEventListener('scroll', () => {
+function handleParallaxScroll() {
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
@@ -94,7 +94,9 @@ window.addEventListener('scroll', () => {
             heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
         }
     }
-});
+}
+
+window.addEventListener('scroll', handleParallaxScroll);
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
 const style = document.createElement('style');
@@ -150,7 +152,7 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
-    const id = link.getAttribute("href").slice(1);
+    const href = link.getAttribute("href"); if (!href) return; const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
     }
@@ -431,3 +433,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     changeLanguage('en');
 });
+
+if (typeof module !== 'undefined') {
+    module.exports = { handleParallaxScroll };
+}

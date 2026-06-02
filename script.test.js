@@ -113,6 +113,12 @@ documentMock.elements.contactForm.querySelector = (sel) => {
 
 documentMock.elements.about = new MockElement();
 documentMock.elements.hero = new MockElement();
+documentMock.elements.heroCinematic = new MockElement();
+documentMock.elements.heroVideo = new MockElement();
+documentMock.elements.heroCinematic.querySelector = (sel) => {
+    if (sel === '.hero-video') return documentMock.elements.heroVideo;
+    return null;
+};
 documentMock.elements.stickyNav = new MockElement();
 documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
 
@@ -228,4 +234,61 @@ describe('Portfolio Script Tests', () => {
         expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
         expect(form.reset).toHaveBeenCalled();
     });
+
+
+    describe('Parallax Simple Effect Tests', () => {
+        let originalPageYOffset;
+
+        beforeAll(() => {
+            originalPageYOffset = global.window.pageYOffset;
+        });
+
+        afterAll(() => {
+            global.window.pageYOffset = originalPageYOffset;
+        });
+
+        test('calculates correct background position for .hero', () => {
+            const { handleParallaxScroll } = require('./script.js');
+
+            // Set mock scroll position
+            global.window.pageYOffset = 200;
+
+            // Execute parallax handler
+            handleParallaxScroll();
+
+            // Expect backgroundPosition to be centered and 50% of scroll position
+            expect(documentMock.elements.hero.style.backgroundPosition).toBe('center 100px');
+        });
+
+        test('applies correct transform to .hero-video when .hero is null and .hero-cinematic exists', () => {
+            // To test the "else if" branch, we have to isolate require caching.
+            // Jest allows jest.isolateModules to test files again, or resetModules.
+            jest.resetModules();
+
+            // Override querySelector to simulate a page with heroCinematic but NO hero
+            const originalQuerySelector = documentMock.querySelector;
+            documentMock.querySelector = (sel) => {
+                if (sel === '.hero') return null; // simulate no hero
+                if (sel === '.hero-cinematic') return documentMock.elements.heroCinematic;
+                if (sel === '.hero-video') return documentMock.elements.heroVideo;
+                return originalQuerySelector(sel);
+            };
+
+            const freshScript = require('./script.js');
+
+            // Set mock scroll position
+            global.window.pageYOffset = 300;
+
+            // Execute parallax handler
+            freshScript.handleParallaxScroll();
+
+            // Assert style is applied (300 * 0.3 = 90)
+            expect(documentMock.elements.heroVideo.style.transform).toBe('translateX(-50%) translateY(calc(-50% + 90px))');
+
+            // Restore mock
+            documentMock.querySelector = originalQuerySelector;
+            // Restore modules to their previous state to not break other tests, or just let them continue
+        });
+    });
+
 });
