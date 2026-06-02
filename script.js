@@ -80,20 +80,20 @@ if (contactForm) {
 }
 
 // ========== EFECTO PARALLAX SIMPLE ==========
-window.addEventListener('scroll', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const hero = document.querySelector('.hero');
     const heroCinematic = document.querySelector('.hero-cinematic');
-    const scrollPosition = window.pageYOffset;
+    const video = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
     
-    if (hero) {
-        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
-        // Video parallax or keep it static
-        const video = heroCinematic.querySelector('.hero-video');
-        if (video) {
+    window.addEventListener('scroll', () => {
+        const scrollPosition = window.pageYOffset;
+
+        if (hero) {
+            hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+        } else if (heroCinematic && video) {
             video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
         }
-    }
+    });
 });
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
