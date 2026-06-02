@@ -55,6 +55,14 @@ function validateContactForm(name, email, message) {
 
 const contactForm = document.querySelector(".contact-form");
 
+        const nameInput = contactForm.querySelector('input[type="text"]');
+        const emailInput = contactForm.querySelector('input[type="email"]');
+        const messageInput = contactForm.querySelector('textarea');
+
+        // Use optional chaining and trim, handle cases where element might not be found gracefully
+        const name = nameInput?.value.trim() || '';
+        const email = emailInput?.value.trim() || '';
+        const message = messageInput?.value.trim() || '';
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -65,6 +73,24 @@ function setupContactForm(formElement) {
     const email = formElement.querySelector('input[type="email"]').value;
     const message = formElement.querySelector("textarea").value;
 
+        // Aquí puedes integrar la lógica de envío a un servicio de email (ej. Formspree, EmailJS, etc.)
+
+        // Mostrar mensaje de éxito en la UI
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        const originalBg = submitBtn.style.background;
+
+        submitBtn.textContent = '¡Mensaje enviado con éxito!';
+        submitBtn.style.background = '#10b981'; // Tailwind emerald-500
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.style.background = originalBg;
+            submitBtn.disabled = false;
+            contactForm.reset();
+        }, 3000);
+    });
     // Validación básica
     if (!name || !email || !message) {
       window.alert("Por favor completa todos los campos");
@@ -159,6 +185,14 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
+navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+    }
+    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
