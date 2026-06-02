@@ -229,3 +229,78 @@ describe('Portfolio Script Tests', () => {
         expect(form.reset).toHaveBeenCalled();
     });
 });
+
+describe('isMobileDevice tests', () => {
+    let originalNavigator;
+
+    beforeEach(() => {
+        // Save the original navigator object to restore it later
+        originalNavigator = global.navigator;
+        // Mock body classList
+        documentMock.elements.body = new MockElement('body');
+        global.document.body = documentMock.elements.body;
+    });
+
+    afterEach(() => {
+        // Restore original navigator
+        global.navigator = originalNavigator;
+        global.window.navigator = originalNavigator;
+        jest.resetModules(); // Important to clear cached module for the re-require
+    });
+
+    test('should return true for iPhone user agent', () => {
+        const mockNavigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1' };
+        global.navigator = mockNavigator;
+        global.window.navigator = mockNavigator;
+
+        const { isMobileDevice } = require('./script.js');
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    test('should return true for Android user agent', () => {
+        const mockNavigator = { userAgent: 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36' };
+        global.navigator = mockNavigator;
+        global.window.navigator = mockNavigator;
+
+        const { isMobileDevice } = require('./script.js');
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    test('should return false for desktop Windows Chrome user agent', () => {
+        const mockNavigator = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3' };
+        global.navigator = mockNavigator;
+        global.window.navigator = mockNavigator;
+
+        const { isMobileDevice } = require('./script.js');
+        expect(isMobileDevice()).toBe(false);
+    });
+
+    test('should return false for desktop Mac Safari user agent', () => {
+        const mockNavigator = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15' };
+        global.navigator = mockNavigator;
+        global.window.navigator = mockNavigator;
+
+        const { isMobileDevice } = require('./script.js');
+        expect(isMobileDevice()).toBe(false);
+    });
+
+    test('should add "mobile" class to body when on mobile device', () => {
+        const mockNavigator = { userAgent: 'iPhone' };
+        global.navigator = mockNavigator;
+        global.window.navigator = mockNavigator;
+
+        require('./script.js');
+
+        expect(global.document.body.classList.contains('mobile')).toBe(true);
+    });
+
+    test('should NOT add "mobile" class to body when on desktop device', () => {
+        const mockNavigator = { userAgent: 'Windows' };
+        global.navigator = mockNavigator;
+        global.window.navigator = mockNavigator;
+
+        require('./script.js');
+
+        expect(global.document.body.classList.contains('mobile')).toBe(false);
+    });
+});

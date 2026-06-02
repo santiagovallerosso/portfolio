@@ -171,32 +171,39 @@ navLinksAnchors.forEach(link => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-window.addEventListener("scroll", () => {
-    let newActiveId = "";
-    
-    // Identificamos la sección actual basada en la regla original (top - 200)
-    sections.forEach(section => {
-        if (window.scrollY >= section.offsetTop - 200) {
-            newActiveId = section.getAttribute("id");
+const observerOptions = {
+    root: null,
+    rootMargin: "-200px 0px 0px 0px", // Equivalent to top - 200
+    threshold: 0 // Trigger as soon as it intersects the margin
+};
+
+const observerCallback = (entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const newActiveId = entry.target.getAttribute("id");
+
+            if (newActiveId !== currentActiveId) {
+                // Removemos la clase active de los enlaces anteriores
+                if (currentActiveId && linksById[currentActiveId]) {
+                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+                }
+
+                // Añadimos la clase active a los enlaces nuevos
+                if (newActiveId && linksById[newActiveId]) {
+                    linksById[newActiveId].forEach(link => link.classList.add("active"));
+                }
+
+                currentActiveId = newActiveId;
+            }
         }
     });
+};
 
-    // Optimización crítica: Solo manipulamos las clases del DOM si la sección activa REALMENTE ha cambiado.
-    if (newActiveId !== currentActiveId) {
-        // Removemos la clase active de los enlaces anteriores
-        if (currentActiveId && linksById[currentActiveId]) {
-            linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-        }
+const navObserver = new IntersectionObserver(observerCallback, observerOptions);
 
-        // Añadimos la clase active a los enlaces nuevos
-        if (newActiveId && linksById[newActiveId]) {
-            linksById[newActiveId].forEach(link => link.classList.add("active"));
-        }
-
-        currentActiveId = newActiveId;
-    }
+sections.forEach(section => {
+    navObserver.observe(section);
 });
-
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -442,3 +449,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     changeLanguage('en');
 });
+
+if (typeof module !== 'undefined') {
+    module.exports = { isMobileDevice };
+}
