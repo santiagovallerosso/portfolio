@@ -26,6 +26,15 @@ class MockElement {
         this.clientHeight = options.clientHeight || 0;
         this.offsetHeight = options.offsetHeight || 0;
     }
+
+    dispatchEvent(event) {
+        const eventName = typeof event === 'string' ? event : event.type;
+        if (this.listeners[eventName]) {
+            this.listeners[eventName].forEach(cb => cb.call(this, typeof event === 'object' ? event : {
+                preventDefault: () => {},
+                target: this,
+                getAttribute: (attr) => this.getAttribute(attr)
+            }));
   constructor(tagName = "div") {
     this.tagName = tagName.toUpperCase();
     this.classList = {
@@ -95,6 +104,40 @@ class MockElement {
 
 // Mock document
 const documentMock = {
+    elements: {},
+    getElementById: (id) => {
+        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
+        if (id === 'inicio') return documentMock.elements.inicio;
+        if (id === 'video-modal') return documentMock.elements.videoModal;
+        if (id === 'youtube-player') return documentMock.elements.youtubePlayer;
+        if (id === 'back-to-top') return documentMock.elements.backToTop;
+        if (id === 'brand-modal') return documentMock.elements.brandModal;
+        if (id === 'brand-player-1') return documentMock.elements.brandPlayer1;
+        if (id === 'brand-player-2') return documentMock.elements.brandPlayer2;
+        return documentMock.elements[id] || new MockElement();
+    },
+    querySelector: (sel) => {
+        if (sel === '.hamburger') return documentMock.elements.hamburger;
+        if (sel === '.nav-links') return documentMock.elements.navLinks;
+        if (sel === '.contact-form') return documentMock.elements.contactForm;
+        if (sel === '.about') return documentMock.elements.about;
+        if (sel === '.hero') return documentMock.elements.hero;
+        if (sel === '.close-modal') return documentMock.elements.closeModalBtn;
+        return new MockElement(); // fallback
+    },
+    querySelectorAll: (sel) => {
+        if (sel === '.nav-links a') return documentMock.elements.navLinksAs || [];
+        if (sel === 'a[href^="#"]') return documentMock.elements.anchors || [];
+        if (sel === 'section') return documentMock.elements.sections || [];
+        if (sel === '.project-card, .skill-category, .stat') return documentMock.elements.animated || [];
+        if (sel === '.portfolio-card') return documentMock.elements.portfolioCards || [];
+        return [];
+    },
+
+    createElement: (tag) => new MockElement(tag),
+    head: new MockElement('head'),
+    body: new MockElement('body'),
+    addEventListener: (event, callback) => {}
   elements: {},
   getElementById: (id) => {
     if (id === "sticky-nav") return documentMock.elements.stickyNav;
@@ -166,6 +209,10 @@ documentMock.elements.heroCinematic.querySelector = (sel) => {
     return null;
 };
 documentMock.elements.stickyNav = new MockElement();
+documentMock.elements.navLinksAs = [
+        (() => { const a = new MockElement('a'); a.setAttribute('href', '#inicio'); return a; })(),
+        (() => { const a = new MockElement('a'); a.setAttribute('href', '#about'); return a; })()
+    ];
 documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a')];
 documentMock.elements.navLinksAs[0].setAttribute('href', '#test-id');
 documentMock.elements.navLinksAs[1].setAttribute('href', '#other-id');
@@ -207,6 +254,14 @@ documentMock.elements.sections.forEach((s) => {
   s.clientHeight = 500;
   s.getAttribute = (attr) => (attr === "id" ? "test-id" : null);
 });
+documentMock.elements.closeModalBtn = new MockElement();
+
+const validCard = new MockElement();
+validCard.setAttribute('data-youtube-id', 'dQw4w9WgXcQ');
+const invalidCard = new MockElement();
+
+documentMock.elements.portfolioCards = [validCard, invalidCard];
+
 
 const alertMock = jest.fn();
 let lastObserverCallback = null;
@@ -258,6 +313,8 @@ global.IntersectionObserver = intersectionObserverMock;
 global.FormData = jest.fn();
 
 // Execute script
+jest.resetModules();
+require('./script.js');
 const { updateActiveNavLink } = require('./script.js');
 require("./script.js");
 
@@ -356,6 +413,14 @@ describe('isMobileDevice tests', () => {
     let originalNavigator;
 
     beforeEach(() => {
+        jest.clearAllMocks();
+        documentMock.elements.hamburger.classList.classes.clear();
+        documentMock.elements.navLinks.classList.classes.clear();
+        documentMock.elements.nameInput.value = '';
+        documentMock.elements.emailInput.value = '';
+        documentMock.elements.messageTextArea.value = '';
+        documentMock.elements.videoModal.classList.classes.clear();
+        documentMock.elements.youtubePlayer.src = '';
         // Save the original navigator object to restore it later
         originalNavigator = global.navigator;
         // Mock body classList
@@ -701,5 +766,71 @@ describe('checkMobileDevice Tests', () => {
         });
 
 
+    });
+
+    test('Clicking a valid portfolio card opens the modal', () => {
+        const validCard = documentMock.elements.portfolioCards[0];
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        validCard.click();
+
+        expect(modal.classList.contains('show')).toBe(true);
+        expect(player.src).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1');
+    });
+
+    test('Clicking an invalid portfolio card does not open the modal', () => {
+        const invalidCard = documentMock.elements.portfolioCards[1];
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        modal.classList.classes.clear();
+        player.src = '';
+
+        invalidCard.click();
+
+        expect(modal.classList.contains('show')).toBe(false);
+        expect(player.src).toBe('');
+    });
+
+    test('Clicking close button closes the modal and clears src', () => {
+        jest.useFakeTimers();
+
+        const closeBtn = documentMock.elements.closeModalBtn;
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        modal.classList.add('show');
+        player.src = 'some-video';
+
+        closeBtn.click();
+
+        expect(modal.classList.contains('show')).toBe(false);
+        expect(player.src).toBe('some-video'); // Before timeout
+
+        jest.advanceTimersByTime(300);
+
+        expect(player.src).toBe('');
+
+        jest.useRealTimers();
+    });
+
+    test('Clicking outside the modal closes it', () => {
+        jest.useFakeTimers();
+
+        const modal = documentMock.elements.videoModal;
+        const player = documentMock.elements.youtubePlayer;
+
+        modal.classList.add('show');
+        player.src = 'some-video';
+
+        modal.dispatchEvent({ type: 'click', target: modal });
+
+        expect(modal.classList.contains('show')).toBe(false);
+
+        jest.advanceTimersByTime(300);
+        expect(player.src).toBe('');
+
+        jest.useRealTimers();
     });
 });
