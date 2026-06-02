@@ -364,6 +364,33 @@ sections.forEach(section => {
     navObserver.observe(section);
 });
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
+
+function checkMobileDevice() {
+
+    const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
+
+
+
+    const handleDeviceChange = (e) => {
+
+        if (e.matches) {
+
+            document.body.classList.add("mobile");
+
+        } else {
+
+            document.body.classList.remove("mobile");
+
+        }
+
+    };
+
+
+
+    handleDeviceChange(mobileMediaQuery);
+
+    mobileMediaQuery.addEventListener("change", handleDeviceChange);
+
 function isMobileDevice() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent,
@@ -373,6 +400,10 @@ function isMobileDevice() {
 if (isMobileDevice()) {
   document.body.classList.add("mobile");
 }
+
+
+
+checkMobileDevice();
 
 // ========== STICKY NAVBAR ==========
 const stickyNav = document.getElementById("sticky-nav");
