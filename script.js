@@ -55,42 +55,20 @@ function validateContactForm(name, email, message) {
 
 const contactForm = document.querySelector(".contact-form");
 
-        const nameInput = contactForm.querySelector('input[type="text"]');
-        const emailInput = contactForm.querySelector('input[type="email"]');
-        const messageInput = contactForm.querySelector('textarea');
-
-        // Use optional chaining and trim, handle cases where element might not be found gracefully
-        const name = nameInput?.value.trim() || '';
-        const email = emailInput?.value.trim() || '';
-        const message = messageInput?.value.trim() || '';
 function setupContactForm(formElement) {
   if (!formElement) return;
 
   formElement.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const name = formElement.querySelector('input[type="text"]').value;
-    const email = formElement.querySelector('input[type="email"]').value;
-    const message = formElement.querySelector("textarea").value;
+    const nameInput = formElement.querySelector('input[type="text"]');
+    const emailInput = formElement.querySelector('input[type="email"]');
+    const messageInput = formElement.querySelector("textarea");
 
-        // Aquí puedes integrar la lógica de envío a un servicio de email (ej. Formspree, EmailJS, etc.)
+    const name = nameInput?.value.trim() || '';
+    const email = emailInput?.value.trim() || '';
+    const message = messageInput?.value.trim() || '';
 
-        // Mostrar mensaje de éxito en la UI
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        const originalBg = submitBtn.style.background;
-
-        submitBtn.textContent = '¡Mensaje enviado con éxito!';
-        submitBtn.style.background = '#10b981'; // Tailwind emerald-500
-        submitBtn.disabled = true;
-
-        setTimeout(() => {
-            submitBtn.textContent = originalText;
-            submitBtn.style.background = originalBg;
-            submitBtn.disabled = false;
-            contactForm.reset();
-        }, 3000);
-    });
     // Validación básica
     if (!name || !email || !message) {
       window.alert("Por favor completa todos los campos");
@@ -104,61 +82,52 @@ function setupContactForm(formElement) {
       return;
     }
 
-    window.alert("¡Mensaje enviado! Gracias por contactarme.");
-    formElement.reset();
+    // Mostrar mensaje de éxito en la UI
+    const submitBtn = formElement.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        const originalText = submitBtn.textContent;
+        const originalBg = submitBtn.style.background;
+
+        submitBtn.textContent = '¡Mensaje enviado con éxito!';
+        submitBtn.style.background = '#10b981'; // Tailwind emerald-500
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.style.background = originalBg;
+            submitBtn.disabled = false;
+            formElement.reset();
+        }, 3000);
+    } else {
+        window.alert("¡Mensaje enviado! Gracias por contactarme.");
+        formElement.reset();
+    }
   });
 }
 
 setupContactForm(contactForm);
 
 // ========== EFECTO PARALLAX SIMPLE ==========
-document.addEventListener('DOMContentLoaded', () => {
-    const hero = document.querySelector('.hero');
-    const heroCinematic = document.querySelector('.hero-cinematic');
-    const video = heroCinematic ? heroCinematic.querySelector('.hero-video') : null;
-    
-    window.addEventListener('scroll', () => {
-        const scrollPosition = window.pageYOffset;
-
-        if (hero) {
-            hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-        } else if (heroCinematic && video) {
-            video.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-        }
-    });
 const hero = document.querySelector(".hero");
 const heroCinematic = document.querySelector(".hero-cinematic");
 let cinematicVideo = null;
+
+if (heroCinematic) {
+  cinematicVideo = heroCinematic.querySelector(".hero-video");
+}
 
 function handleParallaxScroll() {
     const scrollPosition = window.pageYOffset;
     
     if (hero) {
         hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic) {
+    } else if (heroCinematic && cinematicVideo) {
         // Video parallax or keep it static
-        if (heroVideo) {
-            heroVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-        }
+        cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
     }
 }
 
 window.addEventListener('scroll', handleParallaxScroll);
-if (heroCinematic) {
-  cinematicVideo = heroCinematic.querySelector(".hero-video");
-}
-
-window.addEventListener("scroll", () => {
-  const scrollPosition = window.pageYOffset;
-
-  if (hero) {
-    hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-  } else if (heroCinematic && cinematicVideo) {
-    // Video parallax or keep it static
-    cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-  }
-});
-
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
 const style = document.createElement("style");
@@ -198,10 +167,11 @@ style.textContent = `
 
     .project-card {
         animation: fadeInUp 0.6s ease forwards;
+        opacity: 0;
     }
 
-    .skill-category {
-        animation: fadeInUp 0.6s ease forwards;
+    .section-title {
+        animation: slideInLeft 0.6s ease forwards;
     }
 `;
 document.head.appendChild(style);
@@ -339,230 +309,161 @@ const observer = new IntersectionObserver((entries) => {
 // Observar cada sección
 sections.forEach(section => {
     observer.observe(section);
+// Intersection Observer para animar elementos cuando son visibles
 const observerOptions = {
-    root: null,
-    rootMargin: "-200px 0px 0px 0px", // Equivalent to top - 200
-    threshold: 0 // Trigger as soon as it intersects the margin
+  root: null,
+  rootMargin: "0px",
+  threshold: 0.1,
 };
 
-const observerCallback = (entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const newActiveId = entry.target.getAttribute("id");
-
-            if (newActiveId !== currentActiveId) {
-                // Removemos la clase active de los enlaces anteriores
-                if (currentActiveId && linksById[currentActiveId]) {
-                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-                }
-
-                // Añadimos la clase active a los enlaces nuevos
-                if (newActiveId && linksById[newActiveId]) {
-                    linksById[newActiveId].forEach(link => link.classList.add("active"));
-                }
-
-                currentActiveId = newActiveId;
-            }
-        }
-    });
-};
-
-const navObserver = new IntersectionObserver(observerCallback, observerOptions);
-window.addEventListener("scroll", () => {
-  let newActiveId = "";
-
-  // Identificamos la sección actual basada en la regla original (top - 200)
-  sections.forEach((section) => {
-    if (window.scrollY >= section.offsetTop - 200) {
-      newActiveId = section.getAttribute("id");
+const observer = new IntersectionObserver((entries, observer) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = "running";
+      observer.unobserve(entry.target);
     }
   });
+}, observerOptions);
 
-  // Optimización crítica: Solo manipulamos las clases del DOM si la sección activa REALMENTE ha cambiado.
-  if (newActiveId !== currentActiveId) {
-    // Removemos la clase active de los enlaces anteriores
-    if (currentActiveId && linksById[currentActiveId]) {
-      linksById[currentActiveId].forEach((link) =>
-        link.classList.remove("active"),
-      );
-    }
+document.querySelectorAll(".project-card, .section-title").forEach((el) => {
+  el.style.animationPlayState = "paused";
+  observer.observe(el);
+});
 
-    // Añadimos la clase active a los enlaces nuevos
-    if (newActiveId && linksById[newActiveId]) {
-      linksById[newActiveId].forEach((link) => link.classList.add("active"));
-    }
+// Cursor personalizado
+const cursor = document.querySelector('.custom-cursor');
+const links = document.querySelectorAll('a, button');
 
-    currentActiveId = newActiveId;
-  }
-
-
-
-// ========== CENTRALIZED SCROLL LISTENER ==========
-let isScrolling = false;
-
-function handleScroll() {
-    const scrollPosition = window.pageYOffset;
-    const scrollY = window.scrollY;
-
-    // 1. Efecto Parallax Simple
-    if (hero) {
-        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic && cinematicVideo) {
-        cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
-    }
-
-    // 2. Activar Enlace De Navegación Actual
-    let newActiveId = "";
-    sections.forEach(section => {
-        // En un entorno de test mock, las iteraciones sobre arrays simulados pueden devolver null/undefined
-        if (section) {
-            if (scrollY >= section.offsetTop - 200) {
-                newActiveId = section.getAttribute("id");
-            }
-        if (scrollY >= section.offsetTop - 200) {
-            newActiveId = section.getAttribute("id");
-// Variables para caché de posiciones de secciones
-let sectionOffsets = [];
-
-// Función para actualizar la caché
-function updateSectionOffsets() {
-    sectionOffsets = Array.from(sections).map(section => ({
-        id: section.getAttribute("id"),
-        top: section.offsetTop
-    }));
-}
-
-// Inicializar la caché
-updateSectionOffsets();
-
-// Observar cambios de tamaño en el documento (ResizeObserver) para actualizar la caché
-// Esto cubre cambios de ventana, carga diferida, modales, y cambios de orientación
-if (typeof ResizeObserver !== 'undefined') {
-    const observer = new ResizeObserver(() => {
-        // Usamos requestAnimationFrame para no bloquear la renderización actual si ocurre muy seguido
-        window.requestAnimationFrame(updateSectionOffsets);
+if (cursor) {
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
     });
-    // Observamos el body para capturar cambios globales en el layout
-    observer.observe(document.body);
-} else {
-    // Fallback para navegadores antiguos
-    window.addEventListener('resize', updateSectionOffsets);
+
+    document.addEventListener('mousedown', () => cursor.classList.add('click'));
+    document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+    links.forEach(link => {
+        link.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        link.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
 }
 
-window.addEventListener("scroll", () => {
-    let newActiveId = "";
+// Filtro de categorías
+const filterBtns = document.querySelectorAll('.filter-btn');
+const projectCards = document.querySelectorAll('.project-card');
+
+if (filterBtns.length > 0 && projectCards.length > 0) {
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            btn.classList.add('active');
+
+            const filterValue = btn.getAttribute('data-filter');
+
+            projectCards.forEach(card => {
+                const category = card.getAttribute('data-category');
+
+                if (filterValue === 'all' || filterValue === category) {
+                    card.style.display = 'block';
+                    // Re-trigger animation
+                    card.style.animation = 'none';
+                    card.offsetHeight; // trigger reflow
+                    card.style.animation = 'fadeInUp 0.6s ease forwards';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
+// Navegación Activa en Scroll
+const sections = document.querySelectorAll('section');
+const navItems = document.querySelectorAll('.nav-links a');
+
+function updateActiveNavLink() {
+    let current = '';
     
-    // Identificamos la sección actual utilizando nuestra caché
-    sectionOffsets.forEach(section => {
-        if (window.scrollY >= section.top - 200) {
-            newActiveId = section.id;
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+            current = section.getAttribute('id');
         }
     });
 
-    if (newActiveId !== currentActiveId) {
-        if (currentActiveId && linksById[currentActiveId]) {
-            linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === `#${current}`) {
+            item.classList.add('active');
         }
-        if (newActiveId && linksById[newActiveId]) {
-            linksById[newActiveId].forEach(link => link.classList.add("active"));
-        }
-        currentActiveId = newActiveId;
-    }
-    return currentActiveId;
+    });
 }
 
-window.addEventListener("scroll", () => {
-    updateActiveNavLink(window.scrollY, sections, linksById);
+window.addEventListener('scroll', updateActiveNavLink);
 
-    // 3. Sticky Navbar
-    if (stickyNav && heroSection) {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-        if (scrollY > heroBottom - 100) {
-            stickyNav.classList.remove('hidden');
-        } else {
-            stickyNav.classList.add('hidden');
-        }
-    }
-
-    // 4. Back To Top Button
-    if (backToTopBtn) {
-        if (scrollY > 500) {
-            backToTopBtn.classList.add('visible');
-        } else {
-            backToTopBtn.classList.remove('visible');
-        }
-    }
-
-    isScrolling = false;
-}
-
-window.addEventListener('scroll', () => {
-    if (!isScrolling) {
-        window.requestAnimationFrame(handleScroll);
-        isScrolling = true;
-    }
-});
-
-sections.forEach(section => {
-    navObserver.observe(section);
-});
-// ========== DETECTAR DISPOSITIVO MÓVIL ==========
-
-function checkMobileDevice() {
-
-    const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
-
-
-
-    const handleDeviceChange = (e) => {
-
-        if (e.matches) {
-
-            document.body.classList.add("mobile");
-
-        } else {
-
-            document.body.classList.remove("mobile");
-
-        }
-
-    };
-
-
-
-    handleDeviceChange(mobileMediaQuery);
-
-    mobileMediaQuery.addEventListener("change", handleDeviceChange);
 
 function isMobileDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent,
-  );
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-if (isMobileDevice()) {
-  document.body.classList.add("mobile");
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // Animación de entrada suave para la página
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.8s ease-in-out';
+
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
+
+    // Si es móvil, podemos aplicar algunos ajustes específicos aquí
+    if (isMobileDevice()) {
+        const body = document.body;
+        body.classList.add('is-mobile');
+    }
+});
 
 
+// Navbar interactivo - Esconder al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
+let lastScrollTop = 0;
+const stickyNav = document.querySelector('.sticky-nav');
 
-checkMobileDevice();
+if (stickyNav) {
+  window.addEventListener('scroll', () => {
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-// ========== STICKY NAVBAR ==========
-const stickyNav = document.getElementById("sticky-nav");
-const heroSection = document.getElementById("inicio");
+    // Only show sticky nav if scrolled past hero section
+    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
 
-if (stickyNav && heroSection) {
-  // Start hidden
-  stickyNav.classList.add("hidden");
-
-  window.addEventListener("scroll", () => {
-    const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-    if (window.scrollY > heroBottom - 100) {
-      // Adjust threshold as needed
-      stickyNav.classList.remove("hidden");
+    if (scrollTop > heroBottom) {
+        stickyNav.classList.remove('hidden');
+        if (scrollTop > lastScrollTop) {
+            // Scroll down - hide
+            stickyNav.style.transform = 'translateY(-100%)';
+        } else {
+            // Scroll up - show
+            stickyNav.style.transform = 'translateY(0)';
+        }
     } else {
-      stickyNav.classList.add("hidden");
+        stickyNav.classList.add('hidden');
+    }
+
+    lastScrollTop = scrollTop;
+  });
+
+  // Check initial scroll position
+  window.addEventListener('DOMContentLoaded', () => {
+    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+    if (window.pageYOffset > heroBottom) {
+        stickyNav.classList.remove("hidden");
+    } else {
+        stickyNav.classList.add("hidden");
     }
   });
     // Start hidden
@@ -741,69 +642,6 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
 
 // Language Translations
 const translations = {
-    es: {
-        hero_subtitle: "Filmmaker, Editor de Video y Diseñador de Sonido",
-        hero_btn: "Trabajos Destacados",
-        nav_work: "TRABAJOS",
-        nav_music_videos: "VIDEOCLIPS",
-        nav_sound_design: "DISEÑO DE SONIDO",
-        nav_brand_content: "CONTENIDO DE MARCA",
-        nav_contact: "CONTACTO",
-        section_work: "Trabajos",
-        section_music_videos: "Videoclips",
-        section_sound_design: "Diseño de Sonido",
-        section_brand_content: "Contenido de Marca",
-        contact_title: "Contacto",
-        contact_phone: "Teléfono",
-        contact_send: "Enviar mensaje",
-        footer_copy: "© 2026 Santiago Valle Rosso. Todos los derechos reservados.",
-        cat_short_film: "Cortometraje",
-        cat_documentary: "Documental",
-        cat_music_video: "Videoclip",
-        cat_campaign: "Campaña"
-    },
-    en: {
-        hero_subtitle: "Filmmaker, Video Editor and Sound Designer",
-        hero_btn: "Selected Works",
-        nav_work: "WORK",
-        nav_music_videos: "MUSIC VIDEOS",
-        nav_sound_design: "SOUND DESIGN",
-        nav_brand_content: "BRAND CONTENT",
-        nav_contact: "CONTACT",
-        section_work: "Work",
-        section_music_videos: "Music Videos",
-        section_sound_design: "Sound Design",
-        section_brand_content: "Brand Content",
-        contact_title: "Contact",
-        contact_phone: "Phone",
-        contact_send: "Send message",
-        footer_copy: "© 2026 Santiago Valle Rosso. All rights reserved.",
-        cat_short_film: "Short Film",
-        cat_documentary: "Documentary",
-        cat_music_video: "Music Video",
-        cat_campaign: "Campaign"
-    },
-    pt: {
-        hero_subtitle: "Cineasta, Editor de Vídeo e Designer de Som",
-        hero_btn: "Trabalhos Selecionados",
-        nav_work: "TRABALHOS",
-        nav_music_videos: "VIDEOCLIPES",
-        nav_sound_design: "DESIGN DE SOM",
-        nav_brand_content: "CONTEÚDO DE MARCA",
-        nav_contact: "CONTATO",
-        section_work: "Trabalhos",
-        section_music_videos: "Videoclipes",
-        section_sound_design: "Design de Som",
-        section_brand_content: "Conteúdo de Marca",
-        contact_title: "Contato",
-        contact_phone: "Telefone",
-        contact_send: "Enviar mensagem",
-        footer_copy: "© 2026 Santiago Valle Rosso. Todos os direitos reservados.",
-        cat_short_film: "Curta-metragem",
-        cat_documentary: "Documentário",
-        cat_music_video: "Videoclipe",
-        cat_campaign: "Campanha"
-    }
   es: {
     hero_subtitle: "Filmmaker, Editor de Video y Diseñador de Sonido",
     hero_btn: "Trabajos Destacados",
@@ -888,20 +726,6 @@ const placeholders = {
 };
 
 function changeLanguage(lang) {
-    document.documentElement.lang = lang;
-
-    // Update active button
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
-    });
-
-    // Update text content
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.dataset.i18n;
-        if (translations[lang] && translations[lang][key]) {
-            el.textContent = translations[lang][key];
-        }
-    });
   document.documentElement.lang = lang;
 
   // Update active button
@@ -933,15 +757,11 @@ document.querySelectorAll(".lang-btn").forEach((btn) => {
   });
 });
 
-// Call changeLanguage('en') on load
+// Call changeLanguage('es') on load as user wants Spanish
 document.addEventListener("DOMContentLoaded", () => {
-  changeLanguage("en");
+  changeLanguage("es");
 });
 
-
 if (typeof module !== 'undefined') {
-    module.exports = { updateActiveNavLink };
-if (typeof module !== 'undefined') {
-    module.exports = { handleParallaxScroll };
-    module.exports = { isMobileDevice };
+    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
 }
