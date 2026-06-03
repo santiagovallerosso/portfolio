@@ -426,6 +426,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ========== STICKY NAVBAR ==========
+function initStickyNavbar() {
+    const stickyNav = document.getElementById('sticky-nav');
+    const heroSection = document.getElementById('inicio');
+
+    if (!stickyNav || !heroSection) return () => {};
+
+    // Start hidden
+    stickyNav.classList.add('hidden');
+
+    const handleScroll = () => {
+        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
+            stickyNav.classList.remove('hidden');
 
 // Navbar interactivo - Esconder al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
 let lastScrollTop = 0;
@@ -448,6 +462,18 @@ if (stickyNav) {
             // Scroll up - show
             stickyNav.style.transform = 'translateY(0)';
         }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Return cleanup function
+    return () => {
+        window.removeEventListener('scroll', handleScroll);
+    };
+}
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    initStickyNavbar();
     } else {
         stickyNav.classList.add('hidden');
     }
@@ -763,5 +789,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
+    module.exports = { initStickyNavbar };
     module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
 }
