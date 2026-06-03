@@ -150,7 +150,9 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
 navLinksAnchors.forEach(link => {
-    const id = link.getAttribute("href").slice(1);
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
     }
@@ -196,21 +198,34 @@ if (isMobileDevice()) {
 }
 
 // ========== STICKY NAVBAR ==========
-const stickyNav = document.getElementById('sticky-nav');
-const heroSection = document.getElementById('inicio');
+function initStickyNavbar() {
+    const stickyNav = document.getElementById('sticky-nav');
+    const heroSection = document.getElementById('inicio');
 
-if (stickyNav && heroSection) {
+    if (!stickyNav || !heroSection) return () => {};
+
     // Start hidden
     stickyNav.classList.add('hidden');
 
-    window.addEventListener('scroll', () => {
+    const handleScroll = () => {
         const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
         if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
             stickyNav.classList.remove('hidden');
         } else {
             stickyNav.classList.add('hidden');
         }
-    });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Return cleanup function
+    return () => {
+        window.removeEventListener('scroll', handleScroll);
+    };
+}
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    initStickyNavbar();
 }
 
 // ========== VIDEO MODAL ==========
@@ -431,3 +446,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     changeLanguage('en');
 });
+
+if (typeof module !== 'undefined') {
+    module.exports = { initStickyNavbar };
+}

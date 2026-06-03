@@ -84,11 +84,7 @@ const documentMock = {
         if (sel === '.project-card, .skill-category, .stat') return documentMock.elements.animated || [];
         return [];
     },
-    getElementById: (id) => {
-        if (id === 'sticky-nav') return documentMock.elements.stickyNav;
-        if (id === 'inicio') return documentMock.elements.hero;
-        return null;
-    },
+
     createElement: (tag) => new MockElement(tag),
     head: new MockElement('head'),
     body: new MockElement('body'),
@@ -141,8 +137,22 @@ const intersectionObserverMock = jest.fn().mockImplementation(() => ({
 }));
 
 global.document = documentMock;
+const windowListeners = {};
 global.window = {
-    addEventListener: jest.fn(),
+    addEventListener: (event, callback) => {
+        if (!windowListeners[event]) windowListeners[event] = [];
+        windowListeners[event].push(callback);
+    },
+    removeEventListener: (event, callback) => {
+        if (windowListeners[event]) {
+            windowListeners[event] = windowListeners[event].filter(cb => cb !== callback);
+        }
+    },
+    dispatchEvent: (eventName) => {
+        if (windowListeners[eventName]) {
+            windowListeners[eventName].forEach(cb => cb({ type: eventName }));
+        }
+    },
     pageYOffset: 0,
     scrollY: 0,
     scrollTo: jest.fn(),
@@ -150,7 +160,8 @@ global.window = {
     alert: alertMock,
     navigator: {
         userAgent: 'node'
-    }
+    },
+    __listeners: windowListeners
 };
 global.alert = alertMock;
 global.IntersectionObserver = intersectionObserverMock;
@@ -227,5 +238,92 @@ describe('Portfolio Script Tests', () => {
 
         expect(alertMock).toHaveBeenCalledWith('¡Mensaje enviado! Gracias por contactarme.');
         expect(form.reset).toHaveBeenCalled();
+    });
+});
+
+describe('Sticky Navbar Tests', () => {
+    let initStickyNavbar;
+    let cleanup;
+
+    beforeEach(() => {
+        // Require again to get the function
+        const script = require('./script.js');
+        initStickyNavbar = script.initStickyNavbar;
+
+        // Reset mocks
+        documentMock.elements.stickyNav.classList.classes.clear();
+        global.window.scrollY = 0;
+        global.window.__listeners['scroll'] = [];
+    });
+
+    afterEach(() => {
+        if (cleanup) cleanup();
+    });
+
+    test('Initializes with hidden class', () => {
+        cleanup = initStickyNavbar();
+        const stickyNav = documentMock.elements.stickyNav;
+        expect(stickyNav.classList.contains('hidden')).toBe(true);
+    });
+
+    test('Removes hidden class when scrolling down beyond threshold', () => {
+        cleanup = initStickyNavbar();
+        const stickyNav = documentMock.elements.stickyNav;
+        const heroSection = documentMock.elements.inicio;
+
+        // Set threshold
+        const threshold = heroSection.offsetTop + heroSection.offsetHeight - 100;
+
+        // Scroll beyond threshold
+        global.window.scrollY = threshold + 1;
+        global.window.dispatchEvent('scroll');
+
+        expect(stickyNav.classList.contains('hidden')).toBe(false);
+    });
+
+    test('Adds hidden class when scrolling up above threshold', () => {
+        cleanup = initStickyNavbar();
+        const stickyNav = documentMock.elements.stickyNav;
+        const heroSection = documentMock.elements.inicio;
+
+        // Set threshold
+        const threshold = heroSection.offsetTop + heroSection.offsetHeight - 100;
+
+        // First scroll down
+        global.window.scrollY = threshold + 1;
+        global.window.dispatchEvent('scroll');
+        expect(stickyNav.classList.contains('hidden')).toBe(false);
+
+        // Then scroll back up
+        global.window.scrollY = threshold - 1;
+        global.window.dispatchEvent('scroll');
+        expect(stickyNav.classList.contains('hidden')).toBe(true);
+    });
+
+    test('Boundary match: scrollY exactly equals threshold adds hidden class', () => {
+        cleanup = initStickyNavbar();
+        const stickyNav = documentMock.elements.stickyNav;
+        const heroSection = documentMock.elements.inicio;
+
+        // Set threshold
+        const threshold = heroSection.offsetTop + heroSection.offsetHeight - 100;
+
+        // Ensure scrollY equals threshold (the condition is > threshold, so equal should add hidden)
+        global.window.scrollY = threshold;
+        global.window.dispatchEvent('scroll');
+
+        expect(stickyNav.classList.contains('hidden')).toBe(true);
+    });
+
+    test('Unmount / Cleanup: Event listener is removed', () => {
+        cleanup = initStickyNavbar();
+        expect(global.window.__listeners['scroll'].length).toBe(1);
+
+        cleanup(); // Call the cleanup function
+
+        expect(global.window.__listeners['scroll'].length).toBe(0);
+
+        // Prevent afterEach from calling it again
+        cleanup = null;
     });
 });
