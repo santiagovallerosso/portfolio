@@ -70,19 +70,11 @@ function setupContactForm(formElement) {
     const message = messageInput?.value.trim() || '';
 
     // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
-      return;
-    }
-
-    // Mostrar mensaje de éxito en la UI
     const submitBtn = formElement.querySelector('button[type="submit"]');
     if (submitBtn) {
         const originalText = submitBtn.textContent;
