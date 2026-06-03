@@ -384,14 +384,36 @@ if (filterBtns.length > 0 && projectCards.length > 0) {
 const sections = document.querySelectorAll('section');
 const navItems = document.querySelectorAll('.nav-links a');
 
+// Variables para caché
+let cachedSections = [];
+
+// Función para actualizar la caché de secciones
+function updateSectionCache() {
+    cachedSections = Array.from(sections).map(section => ({
+        id: section.getAttribute('id'),
+        top: section.offsetTop,
+        height: section.clientHeight
+    }));
+}
+
+// Inicializar caché al cargar y al redimensionar
+window.addEventListener('DOMContentLoaded', updateSectionCache);
+window.addEventListener('resize', updateSectionCache);
+// Asegurar caché inicial en caso de que DOMContentLoaded ya haya ocurrido
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    updateSectionCache();
+}
+
+// Variables para optimización de scroll
+let isScrolling = false;
+
 function updateActiveNavLink() {
     let current = '';
     
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
-            current = section.getAttribute('id');
+    // Usar la caché en lugar de leer el DOM (evita layout thrashing)
+    cachedSections.forEach(section => {
+        if (pageYOffset >= (section.top - section.height / 3)) {
+            current = section.id;
         }
     });
 
@@ -403,7 +425,17 @@ function updateActiveNavLink() {
     });
 }
 
-window.addEventListener('scroll', updateActiveNavLink);
+function onScrollActiveNav() {
+    if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+            updateActiveNavLink();
+            isScrolling = false;
+        });
+        isScrolling = true;
+    }
+}
+
+window.addEventListener('scroll', onScrollActiveNav);
 
 
 function isMobileDevice() {
@@ -789,6 +821,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionCache, onScrollActiveNav };
 }
