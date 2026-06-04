@@ -8,9 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-vtXRMe3mGCquAFCsP4tcVlzqKtMnK/7GaPvul+qzdzGvXW7XSArCruOxnDQifw4t" crossorigin="anonymous">
 </head>
 <body>
+    <button id="debug-video-btn" style="position: fixed; top: 10px; left: 10px; z-index: 999999; padding: 20px; background: red; color: white; font-size: 20px; border: 2px solid white; cursor: pointer; font-weight: bold;">PROBAR VIDEO DE FONDO</button>
     <!-- Landing Cinematic -->
     <section id="inicio" class="hero-cinematic">
-        <video class="hero-video" autoplay loop muted playsinline>
+        <video id="hero-bg-video" class="hero-video" autoplay loop muted playsinline>
+            <source src="videofondo.mp4" type="video/mp4">
             <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             Tu navegador no soporta el tag de video.
         </video>

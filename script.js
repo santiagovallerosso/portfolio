@@ -70,19 +70,11 @@ function setupContactForm(formElement) {
     const message = messageInput?.value.trim() || '';
 
     // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
-      return;
-    }
-
-    // Mostrar mensaje de éxito en la UI
     const submitBtn = formElement.querySelector('button[type="submit"]');
     if (submitBtn) {
         const originalText = submitBtn.textContent;
@@ -384,14 +376,36 @@ if (filterBtns.length > 0 && projectCards.length > 0) {
 const sections = document.querySelectorAll('section');
 const navItems = document.querySelectorAll('.nav-links a');
 
+// Variables para caché
+let cachedSections = [];
+
+// Función para actualizar la caché de secciones
+function updateSectionCache() {
+    cachedSections = Array.from(sections).map(section => ({
+        id: section.getAttribute('id'),
+        top: section.offsetTop,
+        height: section.clientHeight
+    }));
+}
+
+// Inicializar caché al cargar y al redimensionar
+window.addEventListener('DOMContentLoaded', updateSectionCache);
+window.addEventListener('resize', updateSectionCache);
+// Asegurar caché inicial en caso de que DOMContentLoaded ya haya ocurrido
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    updateSectionCache();
+}
+
+// Variables para optimización de scroll
+let isScrolling = false;
+
 function updateActiveNavLink() {
     let current = '';
     
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
-            current = section.getAttribute('id');
+    // Usar la caché en lugar de leer el DOM (evita layout thrashing)
+    cachedSections.forEach(section => {
+        if (pageYOffset >= (section.top - section.height / 3)) {
+            current = section.id;
         }
     });
 
@@ -403,7 +417,17 @@ function updateActiveNavLink() {
     });
 }
 
-window.addEventListener('scroll', updateActiveNavLink);
+function onScrollActiveNav() {
+    if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+            updateActiveNavLink();
+            isScrolling = false;
+        });
+        isScrolling = true;
+    }
+}
+
+window.addEventListener('scroll', onScrollActiveNav);
 
 
 function isMobileDevice() {
@@ -411,6 +435,62 @@ function isMobileDevice() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    const debugBtn = document.getElementById('debug-video-btn');
+    if (debugBtn) {
+        debugBtn.addEventListener('click', () => {
+            const video = document.getElementById('hero-bg-video');
+            if (!video) {
+                alert('ERROR: No se encontró la etiqueta <video> en el HTML.');
+                return;
+            }
+
+            // Forzar estilos al máximo
+            video.style.position = 'fixed';
+            video.style.top = '0';
+            video.style.left = '0';
+            video.style.width = '100vw';
+            video.style.height = '100vh';
+            video.style.zIndex = '99999';
+            video.style.opacity = '1';
+            video.style.display = 'block';
+            video.style.visibility = 'visible';
+            video.style.background = 'blue'; // fondo azul para saber si el cuadro existe
+
+            let sourceMsg = "No hay currentSrc";
+            if(video.currentSrc) sourceMsg = "Cargando: " + video.currentSrc;
+
+            let errMsg = "Sin errores";
+            if(video.error) errMsg = "Código de error: " + video.error.code;
+
+            alert("ESTADO DEL VIDEO:\n\n" +
+                  "- " + sourceMsg + "\n" +
+                  "- Error: " + errMsg + "\n" +
+                  "- ReadyState (debe ser 4): " + video.readyState + "\n" +
+                  "- NetworkState: " + video.networkState + "\n\n" +
+                  "El cuadro del video se puso a pantalla completa y con fondo azul. Si ves fondo azul pero no video, el archivo de video tiene mal formato (codec no soportado). Si no ves ni el cuadro azul, hay un problema en el HTML.");
+
+            video.play().catch(e => alert("Error al intentar dar play: " + e.message));
+        });
+    }
+
+
+    // Forzar autoplay de video de fondo si el navegador lo bloquea
+    const bgVideo = document.getElementById('hero-bg-video');
+    if (bgVideo) {
+        bgVideo.muted = true; // Asegurarse de que esté silenciado para saltar el bloqueo de navegadores
+        bgVideo.defaultMuted = true;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // Autoplay bloqueado por políticas del navegador, intentar de nuevo al interactuar
+                document.body.addEventListener('click', () => {
+                    bgVideo.play();
+                }, { once: true });
+            });
+        }
+    }
+
     // Animación de entrada suave para la página
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.8s ease-in-out';
@@ -789,6 +869,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionCache, onScrollActiveNav };
 }
