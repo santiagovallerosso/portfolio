@@ -446,12 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Forzar autoplay de video de fondo si el navegador lo bloquea
     const bgVideo = document.getElementById('hero-bg-video');
     if (bgVideo) {
-        bgVideo.muted = true; // Asegurarse de que esté silenciado para saltar el bloqueo de navegadores
+        bgVideo.muted = true;
         bgVideo.defaultMuted = true;
         const playPromise = bgVideo.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                // Autoplay bloqueado por políticas del navegador, intentar de nuevo al interactuar
                 document.body.addEventListener('click', () => {
                     bgVideo.play();
                 }, { once: true });
