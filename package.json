@@ -4,7 +4,7 @@
   "description": "Un template moderno, responsivo y completamente funcional para tu portfolio personal. ¡Perfecto para mostrar tus proyectos y habilidades!",
   "main": "script.js",
   "scripts": {
-    "test": "vitest run"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -24,9 +24,5 @@
   },
   "dependencies": {
     "playwright": "^1.60.0"
-    "jest": "^30.4.2",
-    "jest-environment-jsdom": "^30.2.0",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
   }
 }
