@@ -411,22 +411,6 @@ function isMobileDevice() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
-    // Forzar autoplay de video de fondo si el navegador lo bloquea
-    const bgVideo = document.getElementById('hero-bg-video');
-    if (bgVideo) {
-        bgVideo.muted = true;
-        bgVideo.defaultMuted = true;
-        const playPromise = bgVideo.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                document.body.addEventListener('click', () => {
-                    bgVideo.play();
-                }, { once: true });
-            });
-        }
-    }
-
     // Animación de entrada suave para la página
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.8s ease-in-out';
