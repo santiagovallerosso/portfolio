@@ -70,19 +70,11 @@ function setupContactForm(formElement) {
     const message = messageInput?.value.trim() || '';
 
     // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
-      return;
-    }
-
-    // Mostrar mensaje de éxito en la UI
     const submitBtn = formElement.querySelector('button[type="submit"]');
     if (submitBtn) {
         const originalText = submitBtn.textContent;
@@ -183,6 +175,139 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
+function initStickyNavbar() {
+    // Caching de elementos del DOM para evitar consultas constantes
+    const sections = document.querySelectorAll("section");
+    const navLinksAnchors = document.querySelectorAll(".nav-links a");
+
+    // Agrupamos los enlaces por ID para soportar múltiples menús apuntando a la misma sección
+    const linksById = {};
+    navLinksAnchors.forEach(link => {
+        const href = link.getAttribute("href");
+        if (href) {
+            const id = href.slice(1);
+            if (!linksById[id]) {
+                linksById[id] = [];
+            }
+            linksById[id].push(link);
+        }
+    });
+
+    let currentActiveId = "";
+
+    // Actualizamos las clases en el DOM solo si ha cambiado el id activo
+    const updateActiveLink = (newActiveId) => {
+        if (newActiveId !== currentActiveId) {
+            if (currentActiveId && linksById[currentActiveId]) {
+                linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+            }
+            if (newActiveId && linksById[newActiveId]) {
+                linksById[newActiveId].forEach(link => link.classList.add("active"));
+            }
+            currentActiveId = newActiveId;
+        }
+    };
+
+    // Usamos IntersectionObserver para evitar el layout thrashing en eventos de scroll
+    const observerOptions = {
+        root: null,
+        rootMargin: "-200px 0px -40% 0px",
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute("id");
+                if (id) {
+                    updateActiveLink(id);
+                }
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+}
+
+// Inicializar de inmediato para rastrear los enlaces de navegación
+initStickyNavbar();
+// Caching de elementos del DOM para evitar consultas constantes durante el scroll
+const sections = document.querySelectorAll("section");
+const navLinksAnchors = document.querySelectorAll(".nav-links a");
+
+// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
+const linksById = {};
+navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    const id = href ? href.slice(1) : "";
+    if (href) {
+        const id = href.slice(1);
+        if (!linksById[id]) {
+            linksById[id] = [];
+        }
+        linksById[id].push(link);
+    }
+    const href = link.getAttribute("href"); if (!href) return; const id = href.slice(1);
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+    }
+    linksById[id].push(link);
+navLinksAnchors.forEach((link) => {
+  const href = link.getAttribute("href");
+  if (!href) return;
+  const id = href.slice(1);
+  if (!linksById[id]) {
+    linksById[id] = [];
+  }
+  linksById[id].push(link);
+});
+
+// Guardamos el ID actual para no modificar el DOM innecesariamente
+let currentActiveId = "";
+
+function updateActiveNavLink(scrollY, sections, linksById, reset = false) {
+    if (reset) {
+        currentActiveId = "";
+        return;
+    }
+// Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
+const observerOptions = {
+    root: null,
+    rootMargin: '-200px 0px -50% 0px', // Aproximación a la lógica top - 200 y evitando activación doble
+    threshold: 0
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const newActiveId = entry.target.getAttribute("id");
+
+            if (newActiveId !== currentActiveId) {
+                // Removemos la clase active de los enlaces anteriores
+                if (currentActiveId && linksById[currentActiveId]) {
+                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+                }
+
+                // Añadimos la clase active a los enlaces nuevos
+                if (newActiveId && linksById[newActiveId]) {
+                    linksById[newActiveId].forEach(link => link.classList.add("active"));
+                }
+
+                currentActiveId = newActiveId;
+            }
+        }
+    });
+}, observerOptions);
+
+// Observar cada sección
+sections.forEach(section => {
+    observer.observe(section);
 // Intersection Observer para animar elementos cuando son visibles
 const observerOptions = {
   root: null,
@@ -258,14 +383,36 @@ if (filterBtns.length > 0 && projectCards.length > 0) {
 const sections = document.querySelectorAll('section');
 const navItems = document.querySelectorAll('.nav-links a');
 
+// Variables para caché
+let cachedSections = [];
+
+// Función para actualizar la caché de secciones
+function updateSectionCache() {
+    cachedSections = Array.from(sections).map(section => ({
+        id: section.getAttribute('id'),
+        top: section.offsetTop,
+        height: section.clientHeight
+    }));
+}
+
+// Inicializar caché al cargar y al redimensionar
+window.addEventListener('DOMContentLoaded', updateSectionCache);
+window.addEventListener('resize', updateSectionCache);
+// Asegurar caché inicial en caso de que DOMContentLoaded ya haya ocurrido
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    updateSectionCache();
+}
+
+// Variables para optimización de scroll
+let isScrolling = false;
+
 function updateActiveNavLink() {
     let current = '';
     
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
-            current = section.getAttribute('id');
+    // Usar la caché en lugar de leer el DOM (evita layout thrashing)
+    cachedSections.forEach(section => {
+        if (pageYOffset >= (section.top - section.height / 3)) {
+            current = section.id;
         }
     });
 
@@ -277,7 +424,17 @@ function updateActiveNavLink() {
     });
 }
 
-window.addEventListener('scroll', updateActiveNavLink);
+function onScrollActiveNav() {
+    if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+            updateActiveNavLink();
+            isScrolling = false;
+        });
+        isScrolling = true;
+    }
+}
+
+window.addEventListener('scroll', onScrollActiveNav);
 
 
 function isMobileDevice() {
@@ -285,6 +442,23 @@ function isMobileDevice() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Forzar autoplay de video de fondo si el navegador lo bloquea
+    const bgVideo = document.getElementById('hero-bg-video');
+    if (bgVideo) {
+        bgVideo.muted = true; // Asegurarse de que esté silenciado para saltar el bloqueo de navegadores
+        bgVideo.defaultMuted = true;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // Autoplay bloqueado por políticas del navegador, intentar de nuevo al interactuar
+                document.body.addEventListener('click', () => {
+                    bgVideo.play();
+                }, { once: true });
+            });
+        }
+    }
+
     // Animación de entrada suave para la página
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.8s ease-in-out';
@@ -300,6 +474,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ========== STICKY NAVBAR ==========
+function initStickyNavbar() {
+    const stickyNav = document.getElementById('sticky-nav');
+    const heroSection = document.getElementById('inicio');
+
+    if (!stickyNav || !heroSection) return () => {};
+
+    // Start hidden
+    stickyNav.classList.add('hidden');
+
+    const handleScroll = () => {
+        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
+            stickyNav.classList.remove('hidden');
 
 // Navbar interactivo - Esconder al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
 let lastScrollTop = 0;
@@ -322,6 +510,18 @@ if (stickyNav) {
             // Scroll up - show
             stickyNav.style.transform = 'translateY(0)';
         }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Return cleanup function
+    return () => {
+        window.removeEventListener('scroll', handleScroll);
+    };
+}
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    initStickyNavbar();
     } else {
         stickyNav.classList.add('hidden');
     }
@@ -346,6 +546,50 @@ if (stickyNav) {
 
 }
 
+// ========== UNIFIED VIDEO MODAL LOGIC ==========
+function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
+    const modal = document.getElementById(modalId);
+    const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
+    const triggers = document.querySelectorAll(triggerSelector);
+
+    if (!modal || !closeBtn || triggers.length === 0) return;
+
+    // Cache players
+    const players = config.players.map(p => document.getElementById(p.id));
+
+    triggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            let hasVideo = false;
+            config.players.forEach((playerConfig, index) => {
+                const videoId = trigger.getAttribute(playerConfig.dataAttribute);
+                if (videoId && players[index]) {
+                    hasVideo = true;
+                    const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
+                    players[index].src = `https://www.youtube.com/embed/${videoId}${autoplayParam}`;
+                }
+            });
+
+            if (hasVideo) {
+                modal.classList.add('show');
+            }
+        });
+    });
+
+    const closeModal = () => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            players.forEach(player => {
+                if (player) player.src = '';
+            });
+        }, 300);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+        if (!e.target.closest('.modal-content')) {
+            closeModal();
+        }
 // ========== VIDEO MODAL ==========
 const modal = document.getElementById("video-modal");
 const closeBtn = document.querySelector(".close-modal");
@@ -382,6 +626,29 @@ if (modal && closeBtn && youtubePlayer) {
   });
 }
 
+// Initialize Modals
+setupVideoModal(
+    'video-modal',
+    '.close-modal',
+    '.portfolio-card',
+    {
+        players: [
+            { id: 'youtube-player', dataAttribute: 'data-youtube-id', autoplay: true }
+        ]
+    }
+);
+
+setupVideoModal(
+    'brand-modal',
+    '.close-brand-modal',
+    '.brand-card',
+    {
+        players: [
+            { id: 'brand-player-1', dataAttribute: 'data-video-1', autoplay: false },
+            { id: 'brand-player-2', dataAttribute: 'data-video-2', autoplay: false }
+        ]
+    }
+);
 // ========== BACK TO TOP BUTTON ==========
 const backToTopBtn = document.getElementById("back-to-top");
 
@@ -572,5 +839,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionCache, onScrollActiveNav };
 }
