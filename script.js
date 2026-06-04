@@ -443,45 +443,6 @@ function isMobileDevice() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const debugBtn = document.getElementById('debug-video-btn');
-    if (debugBtn) {
-        debugBtn.addEventListener('click', () => {
-            const video = document.getElementById('hero-bg-video');
-            if (!video) {
-                alert('ERROR: No se encontró la etiqueta <video> en el HTML.');
-                return;
-            }
-
-            // Forzar estilos al máximo
-            video.style.position = 'fixed';
-            video.style.top = '0';
-            video.style.left = '0';
-            video.style.width = '100vw';
-            video.style.height = '100vh';
-            video.style.zIndex = '99999';
-            video.style.opacity = '1';
-            video.style.display = 'block';
-            video.style.visibility = 'visible';
-            video.style.background = 'blue'; // fondo azul para saber si el cuadro existe
-
-            let sourceMsg = "No hay currentSrc";
-            if(video.currentSrc) sourceMsg = "Cargando: " + video.currentSrc;
-
-            let errMsg = "Sin errores";
-            if(video.error) errMsg = "Código de error: " + video.error.code;
-
-            alert("ESTADO DEL VIDEO:\n\n" +
-                  "- " + sourceMsg + "\n" +
-                  "- Error: " + errMsg + "\n" +
-                  "- ReadyState (debe ser 4): " + video.readyState + "\n" +
-                  "- NetworkState: " + video.networkState + "\n\n" +
-                  "El cuadro del video se puso a pantalla completa y con fondo azul. Si ves fondo azul pero no video, el archivo de video tiene mal formato (codec no soportado). Si no ves ni el cuadro azul, hay un problema en el HTML.");
-
-            video.play().catch(e => alert("Error al intentar dar play: " + e.message));
-        });
-    }
-
-
     // Forzar autoplay de video de fondo si el navegador lo bloquea
     const bgVideo = document.getElementById('hero-bg-video');
     if (bgVideo) {
