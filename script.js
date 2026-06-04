@@ -241,24 +241,6 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
-navLinksAnchors.forEach(link => {
-    const href = link.getAttribute("href");
-    const id = href ? href.slice(1) : "";
-    if (href) {
-        const id = href.slice(1);
-        if (!linksById[id]) {
-            linksById[id] = [];
-        }
-        linksById[id].push(link);
-    }
-    const href = link.getAttribute("href"); if (!href) return; const id = href.slice(1);
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const id = href.slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
-    }
-    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
@@ -428,74 +410,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
-    const stickyNav = document.getElementById('sticky-nav');
-    const heroSection = document.getElementById('inicio');
+    let lastScrollTop = 0;
+    const stickyNav = document.querySelector('.sticky-nav');
 
-    if (!stickyNav || !heroSection) return () => {};
+    if (stickyNav) {
+        // Start hidden
+        stickyNav.classList.add('hidden');
 
-    // Start hidden
-    stickyNav.classList.add('hidden');
+        const handleScroll = () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    const handleScroll = () => {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
-            stickyNav.classList.remove('hidden');
+            // Only show sticky nav if scrolled past hero section
+            const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+            const heroBottom = heroSection ? heroSection.offsetHeight : 0;
 
-// Navbar interactivo - Esconder al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
-let lastScrollTop = 0;
-const stickyNav = document.querySelector('.sticky-nav');
+            if (scrollTop > heroBottom) {
+                stickyNav.classList.remove('hidden');
+                if (scrollTop > lastScrollTop) {
+                    // Scroll down - hide
+                    stickyNav.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scroll up - show
+                    stickyNav.style.transform = 'translateY(0)';
+                }
+            } else {
+                stickyNav.classList.add('hidden');
+            }
+            lastScrollTop = scrollTop;
+        };
 
-if (stickyNav) {
-  window.addEventListener('scroll', () => {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        window.addEventListener('scroll', handleScroll);
 
-    // Only show sticky nav if scrolled past hero section
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+        // Check initial scroll position
+        const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+        const heroBottom = heroSection ? heroSection.offsetHeight : 0;
 
-    if (scrollTop > heroBottom) {
-        stickyNav.classList.remove('hidden');
-        if (scrollTop > lastScrollTop) {
-            // Scroll down - hide
-            stickyNav.style.transform = 'translateY(-100%)';
+        if (window.pageYOffset > heroBottom) {
+            stickyNav.classList.remove("hidden");
         } else {
-            // Scroll up - show
-            stickyNav.style.transform = 'translateY(0)';
+            stickyNav.classList.add("hidden");
         }
-    };
 
-    window.addEventListener('scroll', handleScroll);
-
-    // Return cleanup function
-    return () => {
-        window.removeEventListener('scroll', handleScroll);
-    };
+        // Return cleanup function
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }
+    return () => {};
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     initStickyNavbar();
-    } else {
-        stickyNav.classList.add('hidden');
-    }
-
-    lastScrollTop = scrollTop;
-  });
-
-  // Check initial scroll position
-  window.addEventListener('DOMContentLoaded', () => {
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-    if (window.pageYOffset > heroBottom) {
-        stickyNav.classList.remove("hidden");
-    } else {
-        stickyNav.classList.add("hidden");
-    }
-  });
-    // Start hidden
-    stickyNav.classList.add('hidden');
-
-
 }
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
@@ -542,41 +507,9 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
         if (!e.target.closest('.modal-content')) {
             closeModal();
         }
-// ========== VIDEO MODAL ==========
-const modal = document.getElementById("video-modal");
-const closeBtn = document.querySelector(".close-modal");
-const youtubePlayer = document.getElementById("youtube-player");
-const portfolioCards = document.querySelectorAll(".portfolio-card");
-
-if (modal && closeBtn && youtubePlayer) {
-  portfolioCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const videoId = card.getAttribute("data-youtube-id");
-      if (videoId) {
-        // Set the src with autoplay
-        youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        modal.classList.add("show");
-      }
     });
-  });
-
-  const closeModal = () => {
-    modal.classList.remove("show");
-    // Stop video playback by clearing src
-    setTimeout(() => {
-      youtubePlayer.src = "";
-    }, 300);
-  };
-
-  closeBtn.addEventListener("click", closeModal);
-
-  // Close when clicking outside the video
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
 }
+
 
 // Initialize Modals
 setupVideoModal(
@@ -622,49 +555,7 @@ if (backToTopBtn) {
   });
 }
 
-// ========== BRAND VIDEO MODAL ==========
-const brandModal = document.getElementById("brand-modal");
-const closeBrandBtn = document.querySelector(".close-brand-modal");
-const brandPlayer1 = document.getElementById("brand-player-1");
-const brandPlayer2 = document.getElementById("brand-player-2");
-const brandCards = document.querySelectorAll(".brand-card");
 
-if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
-  brandCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const video1Id = card.getAttribute("data-video-1");
-      const video2Id = card.getAttribute("data-video-2");
-
-      if (video1Id && video2Id) {
-        // Set the src WITHOUT autoplay so the user chooses which to play
-        brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
-        brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
-        brandModal.classList.add("show");
-      }
-    });
-  });
-
-  const closeBrandModal = () => {
-    brandModal.classList.remove("show");
-    // Stop video playback by clearing src
-    setTimeout(() => {
-      brandPlayer1.src = "";
-      brandPlayer2.src = "";
-    }, 300);
-  };
-
-  closeBrandBtn.addEventListener("click", closeBrandModal);
-
-  // Close when clicking outside the videos
-  brandModal.addEventListener("click", (e) => {
-    if (
-      e.target === brandModal ||
-      e.target === document.querySelector(".brand-modal-content")
-    ) {
-      closeBrandModal();
-    }
-  });
-}
 
 // Language Translations
 const translations = {
@@ -789,6 +680,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
 }
