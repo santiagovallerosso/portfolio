@@ -18,7 +18,8 @@ if (hamburger && navLinks) {
 }
 
 // ========== SMOOTH SCROLL ==========
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     const href = this.getAttribute("href");
     if (href === "#") return;
@@ -31,6 +32,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       });
     }
   });
+});
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
@@ -52,8 +54,6 @@ function validateContactForm(name, email, message) {
 
   return { isValid: true };
 }
-
-const contactForm = document.querySelector(".contact-form");
 
 function setupContactForm(formElement) {
   if (!formElement) return;
@@ -105,16 +105,23 @@ function setupContactForm(formElement) {
   });
 }
 
-setupContactForm(contactForm);
+document.addEventListener("DOMContentLoaded", () => {
+  const contactForm = document.querySelector(".contact-form");
+  setupContactForm(contactForm);
+});
 
 // ========== EFECTO PARALLAX SIMPLE ==========
-const hero = document.querySelector(".hero");
-const heroCinematic = document.querySelector(".hero-cinematic");
+let hero = null;
+let heroCinematic = null;
 let cinematicVideo = null;
 
-if (heroCinematic) {
-  cinematicVideo = heroCinematic.querySelector(".hero-video");
-}
+document.addEventListener("DOMContentLoaded", () => {
+  hero = document.querySelector(".hero");
+  heroCinematic = document.querySelector(".hero-cinematic");
+  if (heroCinematic) {
+    cinematicVideo = heroCinematic.querySelector(".hero-video");
+  }
+});
 
 function handleParallaxScroll() {
     const scrollPosition = window.pageYOffset;
@@ -551,9 +558,11 @@ function changeLanguage(lang) {
 }
 
 // Initialize language switcher
-document.querySelectorAll(".lang-btn").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    changeLanguage(e.target.dataset.lang);
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      changeLanguage(e.target.dataset.lang);
+    });
   });
 });
 
