@@ -18,7 +18,8 @@ if (hamburger && navLinks) {
 }
 
 // ========== SMOOTH SCROLL ==========
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     const href = this.getAttribute("href");
     if (href === "#") return;
@@ -31,6 +32,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       });
     }
   });
+});
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
@@ -53,8 +55,6 @@ function validateContactForm(name, email, message) {
   return { isValid: true };
 }
 
-const contactForm = document.querySelector(".contact-form");
-
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -65,9 +65,9 @@ function setupContactForm(formElement) {
     const emailInput = formElement.querySelector('input[type="email"]');
     const messageInput = formElement.querySelector("textarea");
 
-    const name = nameInput?.value.trim() || '';
-    const email = emailInput?.value.trim() || '';
-    const message = messageInput?.value.trim() || '';
+    const name = (nameInput ? nameInput.value.trim() : '') || '';
+    const email = (emailInput ? emailInput.value.trim() : '') || '';
+    const message = (messageInput ? messageInput.value.trim() : '') || '';
 
     // Validación básica
     if (!name || !email || !message) {
@@ -105,16 +105,23 @@ function setupContactForm(formElement) {
   });
 }
 
-setupContactForm(contactForm);
+document.addEventListener("DOMContentLoaded", () => {
+  const contactForm = document.querySelector(".contact-form");
+  setupContactForm(contactForm);
+});
 
 // ========== EFECTO PARALLAX SIMPLE ==========
-const hero = document.querySelector(".hero");
-const heroCinematic = document.querySelector(".hero-cinematic");
+let hero = null;
+let heroCinematic = null;
 let cinematicVideo = null;
 
-if (heroCinematic) {
-  cinematicVideo = heroCinematic.querySelector(".hero-video");
-}
+document.addEventListener("DOMContentLoaded", () => {
+  hero = document.querySelector(".hero");
+  heroCinematic = document.querySelector(".hero-cinematic");
+  if (heroCinematic) {
+    cinematicVideo = heroCinematic.querySelector(".hero-video");
+  }
+});
 
 function handleParallaxScroll() {
     const scrollPosition = window.pageYOffset;
@@ -393,6 +400,22 @@ function isMobileDevice() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Forzar autoplay de video de fondo si el navegador lo bloquea
+    const bgVideo = document.getElementById('hero-bg-video');
+    if (bgVideo) {
+        bgVideo.muted = true;
+        bgVideo.defaultMuted = true;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                document.body.addEventListener('click', () => {
+                    bgVideo.play();
+                }, { once: true });
+            });
+        }
+    }
+
     // Animación de entrada suave para la página
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.8s ease-in-out';
@@ -507,6 +530,45 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
         if (!e.target.closest('.modal-content')) {
             closeModal();
         }
+    } else {
+        stickyNav.classList.add('hidden');
+    }
+
+    lastScrollTop = scrollTop;
+  });
+
+  // Check initial scroll position
+  window.addEventListener('DOMContentLoaded', () => {
+    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+    if (window.pageYOffset > heroBottom) {
+        stickyNav.classList.remove("hidden");
+    } else {
+        stickyNav.classList.add("hidden");
+    }
+  });
+    // Start hidden
+    stickyNav.classList.add('hidden');
+
+
+}
+
+// ========== VIDEO MODAL ==========
+const modal = document.getElementById("video-modal");
+const closeBtn = document.querySelector(".close-modal");
+const youtubePlayer = document.getElementById("youtube-player");
+const portfolioCards = document.querySelectorAll(".portfolio-card");
+
+if (modal && closeBtn && youtubePlayer) {
+  portfolioCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const videoId = card.getAttribute("data-youtube-id");
+      if (videoId) {
+        // Set the src with autoplay
+        youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        modal.classList.add("show");
+      }
     });
 }
 
@@ -555,6 +617,35 @@ if (backToTopBtn) {
   });
 }
 
+// ========== BRAND VIDEO MODAL ==========
+const brandModal = document.getElementById("brand-modal");
+const closeBrandBtn = document.querySelector(".close-brand-modal");
+const brandPlayer1 = document.getElementById("brand-player-1");
+const brandPlayer2 = document.getElementById("brand-player-2");
+const brandCards = document.querySelectorAll(".brand-card");
+
+if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
+  brandCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const video1Id = card.getAttribute("data-video-1");
+      const video2Id = card.getAttribute("data-video-2");
+
+      if (video1Id) {
+        brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
+        brandPlayer1.style.display = 'block';
+
+        if (video2Id) {
+            brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+            brandPlayer2.style.display = 'block';
+        } else {
+            brandPlayer2.src = '';
+            brandPlayer2.style.display = 'none';
+        }
+
+        brandModal.classList.add("show");
+      }
+    });
+  });
 
 
 // Language Translations
@@ -579,6 +670,7 @@ const translations = {
     cat_documentary: "Documental",
     cat_music_video: "Videoclip",
     cat_campaign: "Campaña",
+    gallery_subtitle: "Una selección de proyectos en los que trabajé como Director, Diseñador de Sonido y Editor."
   },
   en: {
     hero_subtitle: "Filmmaker, Video Editor and Sound Designer",
@@ -600,6 +692,7 @@ const translations = {
     cat_documentary: "Documentary",
     cat_music_video: "Music Video",
     cat_campaign: "Campaign",
+    gallery_subtitle: "A curated selection of projects where I served as a Director, Sound Designer and Editor."
   },
   pt: {
     hero_subtitle: "Cineasta, Editor de Vídeo e Designer de Som",
@@ -621,6 +714,7 @@ const translations = {
     cat_documentary: "Documentário",
     cat_music_video: "Videoclipe",
     cat_campaign: "Campanha",
+    gallery_subtitle: "Uma seleção de projetos onde atuei como Diretor, Designer de Som e Editor."
   },
 };
 
@@ -668,17 +762,19 @@ function changeLanguage(lang) {
 }
 
 // Initialize language switcher
-document.querySelectorAll(".lang-btn").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    changeLanguage(e.target.dataset.lang);
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      changeLanguage(e.target.dataset.lang);
+    });
   });
 });
 
 // Call changeLanguage('es') on load as user wants Spanish
-document.addEventListener("DOMContentLoaded", () => {
-  changeLanguage("es");
-});
+// Execute immediately since the script is deferred and DOM is ready
+changeLanguage("es");
 
 if (typeof module !== 'undefined') {
     module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
 }
