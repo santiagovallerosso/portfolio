@@ -432,10 +432,18 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
       const video1Id = card.getAttribute("data-video-1");
       const video2Id = card.getAttribute("data-video-2");
 
-      if (video1Id && video2Id) {
-        // Set the src WITHOUT autoplay so the user chooses which to play
+      if (video1Id) {
         brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
-        brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+        brandPlayer1.style.display = 'block';
+
+        if (video2Id) {
+            brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+            brandPlayer2.style.display = 'block';
+        } else {
+            brandPlayer2.src = '';
+            brandPlayer2.style.display = 'none';
+        }
+
         brandModal.classList.add("show");
       }
     });
