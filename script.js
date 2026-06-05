@@ -18,7 +18,8 @@ if (hamburger && navLinks) {
 }
 
 // ========== SMOOTH SCROLL ==========
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     const href = this.getAttribute("href");
     if (href === "#") return;
@@ -31,6 +32,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       });
     }
   });
+});
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
@@ -53,8 +55,6 @@ function validateContactForm(name, email, message) {
   return { isValid: true };
 }
 
-const contactForm = document.querySelector(".contact-form");
-
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -70,19 +70,11 @@ function setupContactForm(formElement) {
     const message = messageInput?.value.trim() || '';
 
     // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
-      return;
-    }
-
-    // Mostrar mensaje de éxito en la UI
     const submitBtn = formElement.querySelector('button[type="submit"]');
     if (submitBtn) {
         const originalText = submitBtn.textContent;
@@ -105,16 +97,23 @@ function setupContactForm(formElement) {
   });
 }
 
-setupContactForm(contactForm);
+document.addEventListener("DOMContentLoaded", () => {
+  const contactForm = document.querySelector(".contact-form");
+  setupContactForm(contactForm);
+});
 
 // ========== EFECTO PARALLAX SIMPLE ==========
-const hero = document.querySelector(".hero");
-const heroCinematic = document.querySelector(".hero-cinematic");
+let hero = null;
+let heroCinematic = null;
 let cinematicVideo = null;
 
-if (heroCinematic) {
-  cinematicVideo = heroCinematic.querySelector(".hero-video");
-}
+document.addEventListener("DOMContentLoaded", () => {
+  hero = document.querySelector(".hero");
+  heroCinematic = document.querySelector(".hero-cinematic");
+  if (heroCinematic) {
+    cinematicVideo = heroCinematic.querySelector(".hero-video");
+  }
+});
 
 function handleParallaxScroll() {
     const scrollPosition = window.pageYOffset;
@@ -384,14 +383,36 @@ if (filterBtns.length > 0 && projectCards.length > 0) {
 const sections = document.querySelectorAll('section');
 const navItems = document.querySelectorAll('.nav-links a');
 
+// Variables para caché
+let cachedSections = [];
+
+// Función para actualizar la caché de secciones
+function updateSectionCache() {
+    cachedSections = Array.from(sections).map(section => ({
+        id: section.getAttribute('id'),
+        top: section.offsetTop,
+        height: section.clientHeight
+    }));
+}
+
+// Inicializar caché al cargar y al redimensionar
+window.addEventListener('DOMContentLoaded', updateSectionCache);
+window.addEventListener('resize', updateSectionCache);
+// Asegurar caché inicial en caso de que DOMContentLoaded ya haya ocurrido
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    updateSectionCache();
+}
+
+// Variables para optimización de scroll
+let isScrolling = false;
+
 function updateActiveNavLink() {
     let current = '';
     
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
-            current = section.getAttribute('id');
+    // Usar la caché en lugar de leer el DOM (evita layout thrashing)
+    cachedSections.forEach(section => {
+        if (pageYOffset >= (section.top - section.height / 3)) {
+            current = section.id;
         }
     });
 
@@ -403,7 +424,17 @@ function updateActiveNavLink() {
     });
 }
 
-window.addEventListener('scroll', updateActiveNavLink);
+function onScrollActiveNav() {
+    if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+            updateActiveNavLink();
+            isScrolling = false;
+        });
+        isScrolling = true;
+    }
+}
+
+window.addEventListener('scroll', onScrollActiveNav);
 
 
 function isMobileDevice() {
@@ -411,6 +442,23 @@ function isMobileDevice() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Forzar autoplay de video de fondo si el navegador lo bloquea
+    const bgVideo = document.getElementById('hero-bg-video');
+    if (bgVideo) {
+        bgVideo.muted = true; // Asegurarse de que esté silenciado para saltar el bloqueo de navegadores
+        bgVideo.defaultMuted = true;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // Autoplay bloqueado por políticas del navegador, intentar de nuevo al interactuar
+                document.body.addEventListener('click', () => {
+                    bgVideo.play();
+                }, { once: true });
+            });
+        }
+    }
+
     // Animación de entrada suave para la página
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.8s ease-in-out';
@@ -777,9 +825,11 @@ function changeLanguage(lang) {
 }
 
 // Initialize language switcher
-document.querySelectorAll(".lang-btn").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    changeLanguage(e.target.dataset.lang);
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      changeLanguage(e.target.dataset.lang);
+    });
   });
 });
 
@@ -789,6 +839,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (typeof module !== 'undefined') {
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionCache, onScrollActiveNav };
 }
