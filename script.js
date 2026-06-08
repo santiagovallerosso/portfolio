@@ -1,3 +1,59 @@
+
+let sectionOffsets = [];
+let scrollNavItems = [];
+let scrollSections = [];
+let scrollHero = null;
+let scrollHeroCinematic = null;
+let scrollCinematicVideo = null;
+let mainStickyNav = null;
+
+function initScrollCoordinator() {
+    scrollSections = document.querySelectorAll('section');
+    scrollNavItems = document.querySelectorAll('.nav-links a');
+    scrollHero = document.querySelector('.hero');
+    scrollHeroCinematic = document.querySelector('.hero-cinematic');
+    scrollCinematicVideo = document.querySelector('.hero-video');
+    mainStickyNav = document.getElementById('sticky-nav');
+    
+    if (scrollSections && scrollSections.length > 0) {
+        sectionOffsets = Array.from(scrollSections).map(section => ({
+            id: section.getAttribute('id'),
+            offsetTop: section.offsetTop,
+            offsetHeight: section.clientHeight
+        }));
+    }
+    window.addEventListener('scroll', handleScroll);
+}
+
+function handleScroll() {
+    const scrollPosition = window.pageYOffset;
+    const scrollY = window.scrollY;
+/**
+ * @file script.js
+ * @description Production-grade DOM scroll & section tracker with cached offsets.
+ */
+
+// Memory Cache for section coordinates to avoid expensive getBoundingClientRect layout thrashing
+let cachedOffsets = null;
+
+/**
+ * Calculates and caches the vertical offsets for section elements.
+ * @param {string[]} sectionIds - Array of section IDs (e.g. ['home', 'about', 'services'])
+ * @returns {Record<string, number>} Object mapping section ID to its vertical coordinate
+ */
+function updateSectionOffsets(sectionIds) {
+  if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
+    cachedOffsets = {};
+    return cachedOffsets;
+  }
+
+  const offsets = {};
+  sectionIds.forEach((id) => {
+    // Standard mock selector for testing / modular usage
+    const element = document.getElementById(id);
+    if (element) {
+      // Offset calculation with standard window scroll offset inclusion
+      offsets[id] = element.getBoundingClientRect().top + window.scrollY;
 // ========== MENÚ HAMBURGUESA ==========
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
@@ -18,7 +74,8 @@ if (hamburger && navLinks) {
 }
 
 // ========== SMOOTH SCROLL ==========
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     const href = this.getAttribute("href");
     if (href === "#") return;
@@ -31,6 +88,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       });
     }
   });
+});
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
@@ -53,8 +111,6 @@ function validateContactForm(name, email, message) {
   return { isValid: true };
 }
 
-const contactForm = document.querySelector(".contact-form");
-
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -65,9 +121,9 @@ function setupContactForm(formElement) {
     const emailInput = formElement.querySelector('input[type="email"]');
     const messageInput = formElement.querySelector("textarea");
 
-    const name = nameInput?.value.trim() || '';
-    const email = emailInput?.value.trim() || '';
-    const message = messageInput?.value.trim() || '';
+    const name = (nameInput ? nameInput.value.trim() : '') || '';
+    const email = (emailInput ? emailInput.value.trim() : '') || '';
+    const message = (messageInput ? messageInput.value.trim() : '') || '';
 
     // Validación básica
     if (!name || !email || !message) {
@@ -99,34 +155,63 @@ function setupContactForm(formElement) {
             formElement.reset();
         }, 3000);
     } else {
-        window.alert("¡Mensaje enviado! Gracias por contactarme.");
-        formElement.reset();
+      offsets[id] = 0;
     }
   });
+
+  cachedOffsets = offsets;
+  return offsets;
+}
 }
 
-setupContactForm(contactForm);
+document.addEventListener("DOMContentLoaded", () => {
+  const contactForm = document.querySelector(".contact-form");
+  setupContactForm(contactForm);
+});
 
 // ========== EFECTO PARALLAX SIMPLE ==========
-const hero = document.querySelector(".hero");
-const heroCinematic = document.querySelector(".hero-cinematic");
+let hero = null;
+let heroCinematic = null;
 let cinematicVideo = null;
 
-if (heroCinematic) {
-  cinematicVideo = heroCinematic.querySelector(".hero-video");
+document.addEventListener("DOMContentLoaded", () => {
+  hero = document.querySelector(".hero");
+  heroCinematic = document.querySelector(".hero-cinematic");
+  if (heroCinematic) {
+    cinematicVideo = heroCinematic.querySelector(".hero-video");
+  }
+});
+
+/**
+ * Retrieves the current cached offsets, or recalculates them if the cache is empty.
+ * @param {string[]} sectionIds
+ * @returns {Record<string, number>}
+ */
+function getSectionOffsets(sectionIds) {
+  if (!cachedOffsets) {
+    return updateSectionOffsets(sectionIds);
+  }
+  return cachedOffsets;
 }
 
-function handleParallaxScroll() {
-    const scrollPosition = window.pageYOffset;
-    
-    if (hero) {
-        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    } else if (heroCinematic && cinematicVideo) {
-        // Video parallax or keep it static
-        cinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+/**
+ * Determines the currently active segment ID based on the scroll position.
+ * @param {number} scrollY
+ * @param {Record<string, number>} offsets
+ * @returns {string|null} Active section ID or null
+ */
+function determineActiveSection(scrollY, offsets) {
+  if (!offsets || Object.keys(offsets).length === 0) return null;
+
+  let activeSection = null;
+  // Dynamic threshold of 100px before section enters viewport
+  const threshold = 100;
+
+  for (const [id, offset] of Object.entries(offsets)) {
+    if (scrollY >= offset - threshold) {
+      activeSection = id;
     }
-}
-
+  }
 window.addEventListener('scroll', handleParallaxScroll);
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
@@ -170,62 +255,22 @@ style.textContent = `
         opacity: 0;
     }
 
-    .section-title {
-        animation: slideInLeft 0.6s ease forwards;
+    if (scrollHero) {
+        scrollHero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+    } else if (scrollHeroCinematic && scrollCinematicVideo) {
+        scrollCinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
     }
-`;
-document.head.appendChild(style);
 
-// ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
-function initStickyNavbar() {
-    // Caching de elementos del DOM para evitar consultas constantes
-    const sections = document.querySelectorAll("section");
-    const navLinksAnchors = document.querySelectorAll(".nav-links a");
-
-    // Agrupamos los enlaces por ID para soportar múltiples menús apuntando a la misma sección
-    const linksById = {};
-    navLinksAnchors.forEach(link => {
-        const href = link.getAttribute("href");
-        if (href) {
-            const id = href.slice(1);
-            if (!linksById[id]) {
-                linksById[id] = [];
-            }
-            linksById[id].push(link);
-        }
-    });
-
-    let currentActiveId = "";
-
-    // Actualizamos las clases en el DOM solo si ha cambiado el id activo
-    const updateActiveLink = (newActiveId) => {
-        if (newActiveId !== currentActiveId) {
-            if (currentActiveId && linksById[currentActiveId]) {
-                linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-            }
-            if (newActiveId && linksById[newActiveId]) {
-                linksById[newActiveId].forEach(link => link.classList.add("active"));
-            }
-            currentActiveId = newActiveId;
-        }
-    };
-
-    // Usamos IntersectionObserver para evitar el layout thrashing en eventos de scroll
-    const observerOptions = {
-        root: null,
-        rootMargin: "-200px 0px -40% 0px",
-        threshold: 0
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const id = entry.target.getAttribute("id");
-                if (id) {
-                    updateActiveLink(id);
+    let newActiveId = "";
+    if (sectionOffsets && sectionOffsets.length > 0) {
+        sectionOffsets.forEach(section => {
+            if (section) {
+                if (scrollY >= section.offsetTop - 200) {
+                    newActiveId = section.id;
                 }
             }
         });
+    }
     }, observerOptions);
 
     sections.forEach(section => {
@@ -249,15 +294,26 @@ navLinksAnchors.forEach(link => {
         linksById[id] = [];
     }
     linksById[id].push(link);
+navLinksAnchors.forEach((link) => {
+  const href = link.getAttribute("href");
+  if (!href) return;
+  const id = href.slice(1);
+  if (!linksById[id]) {
+    linksById[id] = [];
+  }
+  linksById[id].push(link);
 });
 
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-function updateActiveNavLink(scrollY, sections, linksById, reset = false) {
-    if (reset) {
-        currentActiveId = "";
-        return;
+    if (newActiveId && scrollNavItems && scrollNavItems.length > 0) {
+        scrollNavItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('href') === `#${newActiveId}`) {
+                item.classList.add('active');
+            }
+        });
     }
 }
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
@@ -283,8 +339,12 @@ const observer = new IntersectionObserver((entries) => {
                     linksById[newActiveId].forEach(link => link.classList.add("active"));
                 }
 
-                currentActiveId = newActiveId;
-            }
+    if (mainStickyNav && scrollHero) {
+        const heroBottom = scrollHero.offsetHeight;
+        if (scrollY > heroBottom - 100) {
+            mainStickyNav.classList.remove('hidden');
+        } else {
+            mainStickyNav.classList.add('hidden');
         }
     });
 }, observerOptions);
@@ -306,61 +366,10 @@ const animObserver = new IntersectionObserver((entries, animObserver) => {
       entry.target.style.animationPlayState = "running";
       animObserver.unobserve(entry.target);
     }
-  });
-}, observerOptions);
-
-document.querySelectorAll(".project-card, .section-title").forEach((el) => {
-  el.style.animationPlayState = "paused";
-  observer.observe(el);
-});
-
-// Cursor personalizado
-const cursor = document.querySelector('.custom-cursor');
-const links = document.querySelectorAll('a, button');
-
-if (cursor) {
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-    });
-
-    document.addEventListener('mousedown', () => cursor.classList.add('click'));
-    document.addEventListener('mouseup', () => cursor.classList.remove('click'));
-
-    links.forEach(link => {
-        link.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-        link.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-    });
 }
 
-// Filtro de categorías
-const filterBtns = document.querySelectorAll('.filter-btn');
-const projectCards = document.querySelectorAll('.project-card');
-
-if (filterBtns.length > 0 && projectCards.length > 0) {
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            filterBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-
-            const filterValue = btn.getAttribute('data-filter');
-
-            projectCards.forEach(card => {
-                const category = card.getAttribute('data-category');
-
-                if (filterValue === 'all' || filterValue === category) {
-                    card.style.display = 'block';
-                    // Re-trigger animation
-                    card.style.animation = 'none';
-                    card.offsetHeight; // trigger reflow
-                    card.style.animation = 'fadeInUp 0.6s ease forwards';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+if (typeof module !== 'undefined') {
+    module.exports = { initScrollCoordinator, handleScroll };
     });
 }
 
@@ -392,6 +401,7 @@ if (typeof ResizeObserver !== 'undefined') {
     observer.observe(document.body);
 } else {
     window.addEventListener('resize', updateSectionOffsets);
+  return activeSection;
 }
 const navItems = document.querySelectorAll('.nav-links a');
 
@@ -400,9 +410,42 @@ const navItems = document.querySelectorAll('.nav-links a');
 
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+/**
+ * Invalidates the cached offsets (used during resize events).
+ */
+function invalidateOffsetCache() {
+  cachedOffsets = null;
 }
 
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        updateSectionOffsets,
+        getSectionOffsets,
+        determineActiveSection,
+        invalidateOffsetCache,
+        // Helper to let Jest clear the module-scoped variables:
+        resetCache: () => {
+            cachedOffsets = null;
+        }
+    };
+}
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Forzar autoplay de video de fondo si el navegador lo bloquea
+    const bgVideo = document.getElementById('hero-bg-video');
+    if (bgVideo) {
+        bgVideo.muted = true;
+        bgVideo.defaultMuted = true;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                document.body.addEventListener('click', () => {
+                    bgVideo.play();
+                }, { once: true });
+            });
+        }
+    }
+
     // Animación de entrada suave para la página
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.8s ease-in-out';
@@ -419,32 +462,56 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ========== STICKY NAVBAR ==========
+function initStickyNavbar() {
+    let lastScrollTop = 0;
+    const stickyNav = document.querySelector('.sticky-nav');
 
-// Navbar interactivo - Esconder al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
-let lastScrollTop = 0;
-const stickyNav = document.querySelector('.sticky-nav');
+    if (stickyNav) {
+        // Start hidden
+        stickyNav.classList.add('hidden');
 
-if (stickyNav) {
-  window.addEventListener('scroll', () => {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const handleScroll = () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    // Only show sticky nav if scrolled past hero section
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+            // Only show sticky nav if scrolled past hero section
+            const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+            const heroBottom = heroSection ? heroSection.offsetHeight : 0;
 
-    if (scrollTop > heroBottom) {
-        stickyNav.classList.remove('hidden');
-        if (scrollTop > lastScrollTop) {
-            // Scroll down - hide
-            stickyNav.style.transform = 'translateY(-100%)';
+            if (scrollTop > heroBottom) {
+                stickyNav.classList.remove('hidden');
+                if (scrollTop > lastScrollTop) {
+                    // Scroll down - hide
+                    stickyNav.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scroll up - show
+                    stickyNav.style.transform = 'translateY(0)';
+                }
+            } else {
+                stickyNav.classList.add('hidden');
+            }
+            lastScrollTop = scrollTop;
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        // Check initial scroll position
+        const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+        const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+        if (window.pageYOffset > heroBottom) {
+            stickyNav.classList.remove("hidden");
         } else {
-            // Scroll up - show
-            stickyNav.style.transform = 'translateY(0)';
+            stickyNav.classList.add("hidden");
         }
-    };
 
     lastScrollTop = scrollTop;
   });
+        // Return cleanup function
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }
+    return () => {};
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
@@ -497,6 +564,30 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
         }
     });
 }
+    } else {
+        stickyNav.classList.add('hidden');
+    }
+
+    lastScrollTop = scrollTop;
+  });
+
+  // Check initial scroll position
+  window.addEventListener('DOMContentLoaded', () => {
+    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+    if (window.pageYOffset > heroBottom) {
+        stickyNav.classList.remove("hidden");
+    } else {
+        stickyNav.classList.add("hidden");
+    }
+  });
+    // Start hidden
+    stickyNav.classList.add('hidden');
+
+
+}
+
 // ========== VIDEO MODAL ==========
 const modal = document.getElementById("video-modal");
 const closeBtn = document.querySelector(".close-modal");
@@ -513,25 +604,8 @@ if (modal && closeBtn && youtubePlayer) {
         modal.classList.add("show");
       }
     });
-  });
-
-  const closeModal = () => {
-    modal.classList.remove("show");
-    // Stop video playback by clearing src
-    setTimeout(() => {
-      youtubePlayer.src = "";
-    }, 300);
-  };
-
-  closeBtn.addEventListener("click", closeModal);
-
-  // Close when clicking outside the video
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
 }
+
 
 // Initialize Modals
 setupVideoModal(
@@ -590,36 +664,23 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
       const video1Id = card.getAttribute("data-video-1");
       const video2Id = card.getAttribute("data-video-2");
 
-      if (video1Id && video2Id) {
-        // Set the src WITHOUT autoplay so the user chooses which to play
+      if (video1Id) {
         brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
-        brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+        brandPlayer1.style.display = 'block';
+
+        if (video2Id) {
+            brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+            brandPlayer2.style.display = 'block';
+        } else {
+            brandPlayer2.src = '';
+            brandPlayer2.style.display = 'none';
+        }
+
         brandModal.classList.add("show");
       }
     });
   });
 
-  const closeBrandModal = () => {
-    brandModal.classList.remove("show");
-    // Stop video playback by clearing src
-    setTimeout(() => {
-      brandPlayer1.src = "";
-      brandPlayer2.src = "";
-    }, 300);
-  };
-
-  closeBrandBtn.addEventListener("click", closeBrandModal);
-
-  // Close when clicking outside the videos
-  brandModal.addEventListener("click", (e) => {
-    if (
-      e.target === brandModal ||
-      e.target === document.querySelector(".brand-modal-content")
-    ) {
-      closeBrandModal();
-    }
-  });
-}
 
 // Language Translations
 const translations = {
@@ -643,6 +704,7 @@ const translations = {
     cat_documentary: "Documental",
     cat_music_video: "Videoclip",
     cat_campaign: "Campaña",
+    gallery_subtitle: "Una selección de proyectos en los que trabajé como Director, Diseñador de Sonido y Editor."
   },
   en: {
     hero_subtitle: "Filmmaker, Video Editor and Sound Designer",
@@ -664,6 +726,7 @@ const translations = {
     cat_documentary: "Documentary",
     cat_music_video: "Music Video",
     cat_campaign: "Campaign",
+    gallery_subtitle: "A curated selection of projects where I served as a Director, Sound Designer and Editor."
   },
   pt: {
     hero_subtitle: "Cineasta, Editor de Vídeo e Designer de Som",
@@ -685,6 +748,7 @@ const translations = {
     cat_documentary: "Documentário",
     cat_music_video: "Videoclipe",
     cat_campaign: "Campanha",
+    gallery_subtitle: "Uma seleção de projetos onde atuei como Diretor, Designer de Som e Editor."
   },
 };
 
@@ -732,18 +796,21 @@ function changeLanguage(lang) {
 }
 
 // Initialize language switcher
-document.querySelectorAll(".lang-btn").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    changeLanguage(e.target.dataset.lang);
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      changeLanguage(e.target.dataset.lang);
+    });
   });
 });
 
 // Call changeLanguage('es') on load as user wants Spanish
-document.addEventListener("DOMContentLoaded", () => {
-  changeLanguage("es");
-});
+// Execute immediately since the script is deferred and DOM is ready
+changeLanguage("es");
 
 if (typeof module !== 'undefined') {
     module.exports = { initStickyNavbar };
     module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
 }
