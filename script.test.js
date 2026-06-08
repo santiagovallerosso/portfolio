@@ -225,6 +225,24 @@ const { updateActiveNavLink } = require('./script.js');
 require("./script.js");
 
 describe("Portfolio Script Tests", () => {
+  test("dummy", () => {
+    expect(true).toBe(true);
+  });
+
+  test("Clicking a nav link closes the menu", () => {
+    const hamburger = documentMock.elements.hamburger;
+    const navLinks = documentMock.elements.navLinks;
+    const link = documentMock.elements.navLinksAs[0];
+
+    // Open first
+    hamburger.classList.add("active");
+    navLinks.classList.add("active");
+
+    link.click();
+
+    expect(hamburger.classList.contains("active")).toBe(false);
+    expect(navLinks.classList.contains("active")).toBe(false);
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     documentMock.elements.hamburger.classList.classes.clear();
