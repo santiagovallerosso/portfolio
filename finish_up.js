@@ -1,12 +1,12 @@
+const fs = require('fs');
+let testContent = fs.readFileSync('script.test.js', 'utf8');
 
-global.IntersectionObserver = class IntersectionObserver {
-    constructor(callback, options) {}
-    observe(target) {}
-    unobserve(target) {}
-    disconnect() {}
-};
+// I am just going to append my test inside one of the existing describes to fix balance if possible
+testContent = testContent.replace("}\n}\n}\n", "");
+fs.writeFileSync('script.test.js', testContent);
 
-
+// And we revert `script.test.js` back to my working version which passed.
+const newSuite = `
 const fs = require('fs');
 
 class MockElement {
@@ -203,3 +203,6 @@ describe('updateSectionOffsets Tests', () => {
         expect(observeMock).toHaveBeenCalledWith(global.document.body);
     });
 });
+`;
+
+fs.writeFileSync('script.test.js', newSuite);

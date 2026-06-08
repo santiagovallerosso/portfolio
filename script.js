@@ -243,30 +243,12 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 const linksById = {};
 navLinksAnchors.forEach(link => {
     const href = link.getAttribute("href");
-    const id = href ? href.slice(1) : "";
-    if (href) {
-        const id = href.slice(1);
-        if (!linksById[id]) {
-            linksById[id] = [];
-        }
-        linksById[id].push(link);
-    }
-    const href = link.getAttribute("href"); if (!href) return; const id = href.slice(1);
-    const href = link.getAttribute("href");
     if (!href) return;
     const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
     }
     linksById[id].push(link);
-navLinksAnchors.forEach((link) => {
-  const href = link.getAttribute("href");
-  if (!href) return;
-  const id = href.slice(1);
-  if (!linksById[id]) {
-    linksById[id] = [];
-  }
-  linksById[id].push(link);
 });
 
 // Guardamos el ID actual para no modificar el DOM innecesariamente
@@ -277,6 +259,7 @@ function updateActiveNavLink(scrollY, sections, linksById, reset = false) {
         currentActiveId = "";
         return;
     }
+}
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
 const observerOptions = {
     root: null,
@@ -309,18 +292,19 @@ const observer = new IntersectionObserver((entries) => {
 // Observar cada sección
 sections.forEach(section => {
     observer.observe(section);
+});
 // Intersection Observer para animar elementos cuando son visibles
-const observerOptions = {
+const observerOptionsAnim = {
   root: null,
   rootMargin: "0px",
   threshold: 0.1,
 };
 
-const observer = new IntersectionObserver((entries, observer) => {
+const animObserver = new IntersectionObserver((entries, animObserver) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
       entry.target.style.animationPlayState = "running";
-      observer.unobserve(entry.target);
+      animObserver.unobserve(entry.target);
     }
   });
 }, observerOptions);
@@ -381,29 +365,37 @@ if (filterBtns.length > 0 && projectCards.length > 0) {
 }
 
 // Navegación Activa en Scroll
-const sections = document.querySelectorAll('section');
-const navItems = document.querySelectorAll('.nav-links a');
+const domSections = document.querySelectorAll('section');
 
-function updateActiveNavLink() {
-    let current = '';
-    
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
-            current = section.getAttribute('id');
-        }
-    });
+// Caché de posiciones de secciones
+let sectionOffsets = [];
 
-    navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === `#${current}`) {
-            item.classList.add('active');
-        }
-    });
+function updateSectionOffsets() {
+    sectionOffsets = Array.from(domSections || sections).map(section => ({
+        id: section.getAttribute("id"),
+        top: section.offsetTop
+    }));
 }
 
-window.addEventListener('scroll', updateActiveNavLink);
+// Inicializar la caché
+updateSectionOffsets();
+
+// Observar cambios de tamaño en el documento (ResizeObserver) para actualizar la caché
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(() => {
+        if (window.requestAnimationFrame) {
+            window.requestAnimationFrame(updateSectionOffsets);
+        } else {
+            updateSectionOffsets();
+        }
+    });
+    observer.observe(document.body);
+} else {
+    window.addEventListener('resize', updateSectionOffsets);
+}
+const navItems = document.querySelectorAll('.nav-links a');
+
+
 
 
 function isMobileDevice() {
@@ -427,19 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ========== STICKY NAVBAR ==========
-function initStickyNavbar() {
-    const stickyNav = document.getElementById('sticky-nav');
-    const heroSection = document.getElementById('inicio');
-
-    if (!stickyNav || !heroSection) return () => {};
-
-    // Start hidden
-    stickyNav.classList.add('hidden');
-
-    const handleScroll = () => {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-        if (window.scrollY > heroBottom - 100) { // Adjust threshold as needed
-            stickyNav.classList.remove('hidden');
 
 // Navbar interactivo - Esconder al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
 let lastScrollTop = 0;
@@ -464,38 +443,12 @@ if (stickyNav) {
         }
     };
 
-    window.addEventListener('scroll', handleScroll);
-
-    // Return cleanup function
-    return () => {
-        window.removeEventListener('scroll', handleScroll);
-    };
+    lastScrollTop = scrollTop;
+  });
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     initStickyNavbar();
-    } else {
-        stickyNav.classList.add('hidden');
-    }
-
-    lastScrollTop = scrollTop;
-  });
-
-  // Check initial scroll position
-  window.addEventListener('DOMContentLoaded', () => {
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-    if (window.pageYOffset > heroBottom) {
-        stickyNav.classList.remove("hidden");
-    } else {
-        stickyNav.classList.add("hidden");
-    }
-  });
-    // Start hidden
-    stickyNav.classList.add('hidden');
-
-
 }
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
@@ -542,6 +495,8 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
         if (!e.target.closest('.modal-content')) {
             closeModal();
         }
+    });
+}
 // ========== VIDEO MODAL ==========
 const modal = document.getElementById("video-modal");
 const closeBtn = document.querySelector(".close-modal");
@@ -790,5 +745,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 if (typeof module !== 'undefined') {
     module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
 }
