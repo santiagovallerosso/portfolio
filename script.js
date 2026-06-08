@@ -1,3 +1,33 @@
+
+let sectionOffsets = [];
+let scrollNavItems = [];
+let scrollSections = [];
+let scrollHero = null;
+let scrollHeroCinematic = null;
+let scrollCinematicVideo = null;
+let mainStickyNav = null;
+
+function initScrollCoordinator() {
+    scrollSections = document.querySelectorAll('section');
+    scrollNavItems = document.querySelectorAll('.nav-links a');
+    scrollHero = document.querySelector('.hero');
+    scrollHeroCinematic = document.querySelector('.hero-cinematic');
+    scrollCinematicVideo = document.querySelector('.hero-video');
+    mainStickyNav = document.getElementById('sticky-nav');
+    
+    if (scrollSections && scrollSections.length > 0) {
+        sectionOffsets = Array.from(scrollSections).map(section => ({
+            id: section.getAttribute('id'),
+            offsetTop: section.offsetTop,
+            offsetHeight: section.clientHeight
+        }));
+    }
+    window.addEventListener('scroll', handleScroll);
+}
+
+function handleScroll() {
+    const scrollPosition = window.pageYOffset;
+    const scrollY = window.scrollY;
 /**
  * @file script.js
  * @description Production-grade DOM scroll & section tracker with cached offsets.
@@ -225,62 +255,22 @@ style.textContent = `
         opacity: 0;
     }
 
-    .section-title {
-        animation: slideInLeft 0.6s ease forwards;
+    if (scrollHero) {
+        scrollHero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+    } else if (scrollHeroCinematic && scrollCinematicVideo) {
+        scrollCinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
     }
-`;
-document.head.appendChild(style);
 
-// ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
-function initStickyNavbar() {
-    // Caching de elementos del DOM para evitar consultas constantes
-    const sections = document.querySelectorAll("section");
-    const navLinksAnchors = document.querySelectorAll(".nav-links a");
-
-    // Agrupamos los enlaces por ID para soportar múltiples menús apuntando a la misma sección
-    const linksById = {};
-    navLinksAnchors.forEach(link => {
-        const href = link.getAttribute("href");
-        if (href) {
-            const id = href.slice(1);
-            if (!linksById[id]) {
-                linksById[id] = [];
-            }
-            linksById[id].push(link);
-        }
-    });
-
-    let currentActiveId = "";
-
-    // Actualizamos las clases en el DOM solo si ha cambiado el id activo
-    const updateActiveLink = (newActiveId) => {
-        if (newActiveId !== currentActiveId) {
-            if (currentActiveId && linksById[currentActiveId]) {
-                linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-            }
-            if (newActiveId && linksById[newActiveId]) {
-                linksById[newActiveId].forEach(link => link.classList.add("active"));
-            }
-            currentActiveId = newActiveId;
-        }
-    };
-
-    // Usamos IntersectionObserver para evitar el layout thrashing en eventos de scroll
-    const observerOptions = {
-        root: null,
-        rootMargin: "-200px 0px -40% 0px",
-        threshold: 0
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const id = entry.target.getAttribute("id");
-                if (id) {
-                    updateActiveLink(id);
+    let newActiveId = "";
+    if (sectionOffsets && sectionOffsets.length > 0) {
+        sectionOffsets.forEach(section => {
+            if (section) {
+                if (scrollY >= section.offsetTop - 200) {
+                    newActiveId = section.id;
                 }
             }
         });
+    }
     }, observerOptions);
 
     sections.forEach(section => {
@@ -309,111 +299,27 @@ navLinksAnchors.forEach((link) => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-function updateActiveNavLink(scrollY, sections, linksById, reset = false) {
-    if (reset) {
-        currentActiveId = "";
-        return;
-    }
-// Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
-const observerOptions = {
-    root: null,
-    rootMargin: '-200px 0px -50% 0px', // Aproximación a la lógica top - 200 y evitando activación doble
-    threshold: 0
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const newActiveId = entry.target.getAttribute("id");
-
-            if (newActiveId !== currentActiveId) {
-                // Removemos la clase active de los enlaces anteriores
-                if (currentActiveId && linksById[currentActiveId]) {
-                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-                }
-
-                // Añadimos la clase active a los enlaces nuevos
-                if (newActiveId && linksById[newActiveId]) {
-                    linksById[newActiveId].forEach(link => link.classList.add("active"));
-                }
-
-                currentActiveId = newActiveId;
+    if (newActiveId && scrollNavItems && scrollNavItems.length > 0) {
+        scrollNavItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('href') === `#${newActiveId}`) {
+                item.classList.add('active');
             }
-        }
-    });
-}, observerOptions);
-
-// Observar cada sección
-sections.forEach(section => {
-    observer.observe(section);
-// Intersection Observer para animar elementos cuando son visibles
-const observerOptions = {
-  root: null,
-  rootMargin: "0px",
-  threshold: 0.1,
-};
-
-const observer = new IntersectionObserver((entries, observer) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.style.animationPlayState = "running";
-      observer.unobserve(entry.target);
+        });
     }
-  });
-}, observerOptions);
 
-document.querySelectorAll(".project-card, .section-title").forEach((el) => {
-  el.style.animationPlayState = "paused";
-  observer.observe(el);
-});
-
-// Cursor personalizado
-const cursor = document.querySelector('.custom-cursor');
-const links = document.querySelectorAll('a, button');
-
-if (cursor) {
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-    });
-
-    document.addEventListener('mousedown', () => cursor.classList.add('click'));
-    document.addEventListener('mouseup', () => cursor.classList.remove('click'));
-
-    links.forEach(link => {
-        link.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-        link.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-    });
+    if (mainStickyNav && scrollHero) {
+        const heroBottom = scrollHero.offsetHeight;
+        if (scrollY > heroBottom - 100) {
+            mainStickyNav.classList.remove('hidden');
+        } else {
+            mainStickyNav.classList.add('hidden');
+        }
+    }
 }
 
-// Filtro de categorías
-const filterBtns = document.querySelectorAll('.filter-btn');
-const projectCards = document.querySelectorAll('.project-card');
-
-if (filterBtns.length > 0 && projectCards.length > 0) {
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            filterBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-
-            const filterValue = btn.getAttribute('data-filter');
-
-            projectCards.forEach(card => {
-                const category = card.getAttribute('data-category');
-
-                if (filterValue === 'all' || filterValue === category) {
-                    card.style.display = 'block';
-                    // Re-trigger animation
-                    card.style.animation = 'none';
-                    card.offsetHeight; // trigger reflow
-                    card.style.animation = 'fadeInUp 0.6s ease forwards';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+if (typeof module !== 'undefined') {
+    module.exports = { initScrollCoordinator, handleScroll };
     });
 }
 

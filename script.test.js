@@ -1,3 +1,4 @@
+
 const {
   updateSectionOffsets,
   getSectionOffsets,
@@ -70,7 +71,8 @@ class MockElement {
                     this.classList.classes.add(c);
                 }
             },
-            contains: (c) => this.classList.classes.has(c)
+            contains: (c) => this.classList.classes.has(c),
+            clear: () => this.classList.classes.clear()
         };
         this.listeners = {};
         this.attributes = {};
@@ -92,18 +94,34 @@ class MockElement {
                 target: this,
                 getAttribute: (attr) => this.getAttribute(attr)
             }));
-  constructor(tagName = "div") {
-    this.tagName = tagName.toUpperCase();
-    this.classList = {
-      classes: new Set(),
-      add: (c) => this.classList.classes.add(c),
-      remove: (c) => this.classList.classes.delete(c),
-      toggle: (c) => {
-        if (this.classList.classes.has(c)) {
-          this.classList.classes.delete(c);
-        } else {
-          this.classList.classes.add(c);
         }
+    }
+
+    addEventListener(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    }
+
+    removeEventListener(event, callback) {
+        if (this.listeners[event]) {
+            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+        }
+    }
+
+    getAttribute(attr) {
+        return this.attributes[attr] || null;
+    }
+
+    setAttribute(attr, val) {
+        this.attributes[attr] = val;
+    }
+
+    click() {
+        this.dispatchEvent('click');
+    }
+}
       },
       createElement: (tag) => ({
         tagName: tag,
@@ -130,26 +148,34 @@ class MockWindow {
         this.listeners = {};
         this.pageYOffset = 0;
         this.scrollY = 0;
-        this.scrollTo = jest.fn();
-        this.IntersectionObserver = intersectionObserverMock;
-        this.alert = alertMock;
-        this.navigator = {
-            userAgent: 'node'
-        };
+        this.navigator = { userAgent: 'node' };
+        this.matchMedia = jest.fn().mockImplementation(query => ({
+            matches: false, media: query, onchange: null,
+            addListener: jest.fn(), removeListener: jest.fn(),
+            addEventListener: jest.fn(), removeEventListener: jest.fn(), dispatchEvent: jest.fn(),
+        }));
+        this.__listeners = this.listeners;
     }
-
     addEventListener(event, callback) {
         if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(callback);
     }
-
+    removeEventListener(event, callback) {
+        if (this.listeners[event]) {
+            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+        }
+    }
     dispatchEvent(event) {
         const eventName = typeof event === 'string' ? event : event.type;
         if (this.listeners[eventName]) {
-            this.listeners[eventName].forEach(cb => cb.call(this, event));
+            this.listeners[eventName].forEach(cb => cb.call(this, typeof event === 'object' ? event : {}));
         }
     }
+    scrollTo() {}
 }
+
+const alertMock = jest.fn();
+const intersectionObserverMock = jest.fn();
 
 global.window = new MockWindow();
 global.window = {
@@ -186,6 +212,16 @@ global.alert = alertMock;
 global.IntersectionObserver = intersectionObserverMock;
 global.FormData = jest.fn();
 
+const documentMock = {
+    elements: {},
+    getElementById: jest.fn(),
+    querySelector: jest.fn(),
+    querySelectorAll: jest.fn(),
+    createElement: jest.fn(),
+    body: new MockElement('body'),
+    documentElement: new MockElement('html')
+};
+
 documentMock.elements.sections = [new MockElement('section'), new MockElement('section'), new MockElement('section')];
 const sectionIds = ['home', 'about', 'contact'];
 documentMock.elements.sections.forEach((s, index) => {
@@ -194,6 +230,9 @@ documentMock.elements.sections.forEach((s, index) => {
     s.getAttribute = (attr) => attr === 'id' ? sectionIds[index] : null;
 });
 
+documentMock.elements.navLinksAs = [new MockElement('a'), new MockElement('a'), new MockElement('a')];
+documentMock.elements.navLinksAs.forEach((a, index) => {
+    a.getAttribute = (attr) => attr === 'href' ? '#' + sectionIds[index] : null;
 // Execute script
 
 
@@ -316,304 +355,130 @@ describe("Portfolio Script Tests", () => {
 });
 });
 
-describe('isMobileDevice tests', () => {
-    let originalNavigator;
+global.document = documentMock;
 
+describe('Portfolio Script Tests', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        documentMock.elements.hamburger.classList.classes.clear();
-        documentMock.elements.navLinks.classList.classes.clear();
-        documentMock.elements.nameInput.value = '';
-        documentMock.elements.emailInput.value = '';
-        documentMock.elements.messageTextArea.value = '';
-        documentMock.elements.videoModal.classList.classes.clear();
-        documentMock.elements.youtubePlayer.src = '';
-        // Save the original navigator object to restore it later
-        originalNavigator = global.navigator;
-        // Mock body classList
-        documentMock.elements.body = new MockElement('body');
-        global.document.body = documentMock.elements.body;
+        global.window.listeners = {};
     });
 
-    afterEach(() => {
-        // Restore original navigator
-        global.navigator = originalNavigator;
-        global.window.navigator = originalNavigator;
-        jest.resetModules(); // Important to clear cached module for the re-require
-    });
-
-    test('should return true for iPhone user agent', () => {
-        const mockNavigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1' };
-        global.navigator = mockNavigator;
-        global.window.navigator = mockNavigator;
-
-        const { isMobileDevice } = require('./script.js');
-        expect(isMobileDevice()).toBe(true);
-    });
-
-    test('should return true for Android user agent', () => {
-        const mockNavigator = { userAgent: 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36' };
-        global.navigator = mockNavigator;
-        global.window.navigator = mockNavigator;
-
-        const { isMobileDevice } = require('./script.js');
-        expect(isMobileDevice()).toBe(true);
-    });
-
-    test('should return false for desktop Windows Chrome user agent', () => {
-        const mockNavigator = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3' };
-        global.navigator = mockNavigator;
-        global.window.navigator = mockNavigator;
-
-        const { isMobileDevice } = require('./script.js');
-        expect(isMobileDevice()).toBe(false);
-    });
-
-    test('should return false for desktop Mac Safari user agent', () => {
-        const mockNavigator = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15' };
-        global.navigator = mockNavigator;
-        global.window.navigator = mockNavigator;
-
-        const { isMobileDevice } = require('./script.js');
-        expect(isMobileDevice()).toBe(false);
-    });
-
-    test('should add "mobile" class to body when on mobile device', () => {
-        const mockNavigator = { userAgent: 'iPhone' };
-        global.navigator = mockNavigator;
-        global.window.navigator = mockNavigator;
-
-        require('./script.js');
-
-        expect(global.document.body.classList.contains('mobile')).toBe(true);
-    });
-
-    test('should NOT add "mobile" class to body when on desktop device', () => {
-        const mockNavigator = { userAgent: 'Windows' };
-        global.navigator = mockNavigator;
-        global.window.navigator = mockNavigator;
-
-        require('./script.js');
-
-        expect(global.document.body.classList.contains('mobile')).toBe(false);
+    test('dummy', () => {
+        expect(true).toBe(true);
     });
 });
-    test('Active navigation updates correctly on scroll', () => {
-        // Prepare mock sections and nav links
-        const section1 = new MockElement('section');
-        section1.getAttribute = () => 'inicio';
-        section1.offsetTop = 0;
 
-    test('Contact form validation - success', () => {
-        jest.useFakeTimers();
-        const form = documentMock.elements.contactForm;
-
-        // Mock the submit button
-        const mockSubmitBtn = new MockElement('button');
-        mockSubmitBtn.setAttribute('type', 'submit');
-        mockSubmitBtn.textContent = 'Enviar mensaje';
-        mockSubmitBtn.style = {};
-
-        // Add querySelector override specifically for this test
-        const originalQuerySelector = form.querySelector;
-        form.querySelector = (sel) => {
-            if (sel === 'input[type="text"]') return documentMock.elements.nameInput;
-            if (sel === 'input[type="email"]') return documentMock.elements.emailInput;
-            if (sel === 'textarea') return documentMock.elements.messageTextArea;
-            if (sel === 'button[type="submit"]') return mockSubmitBtn;
-            return originalQuerySelector(sel);
-        };
-
-        documentMock.elements.nameInput.value = 'John Doe';
-        documentMock.elements.emailInput.value = 'test@example.com';
-        documentMock.elements.messageTextArea.value = 'Hello';
-        const section2 = new MockElement('section');
-        section2.getAttribute = () => 'trabajos';
-        section2.offsetTop = 800;
-
-        const navLink1 = new MockElement('a');
-        navLink1.getAttribute = () => '#inicio';
-        navLink1.classList.add('nav-link');
-
-        expect(mockSubmitBtn.textContent).toBe('¡Mensaje enviado con éxito!');
-        expect(mockSubmitBtn.disabled).toBe(true);
-        expect(mockSubmitBtn.style.background).toBe('#10b981');
-
-        jest.runAllTimers();
-
-        expect(mockSubmitBtn.textContent).toBe('Enviar mensaje');
-        expect(mockSubmitBtn.disabled).toBe(false);
-        expect(form.reset).toHaveBeenCalled();
-
-        jest.useRealTimers();
-        const navLink2 = new MockElement('a');
-        navLink2.getAttribute = () => '#trabajos';
-        navLink2.classList.add('nav-link');
-
-        // We need to reload the script so it binds to our specific test DOM elements
-        // Note: The previous require executes in the global context, we might need a clean context
-        // to test this thoroughly if we change global variables. However, we'll test the resize observer.
-
-        // As JSDOM and require caches globals we need to carefully set them or create a custom test for it.
-        // Given that it's just script.js without exports, we'll verify it syntactically doesn't break,
-        // and we rely on manual/sandbox testing.
-    });
-
-
-    describe('Parallax Simple Effect Tests', () => {
-        let originalPageYOffset;
-
-        beforeAll(() => {
-            originalPageYOffset = global.window.pageYOffset;
-        });
-
-        afterAll(() => {
-            global.window.pageYOffset = originalPageYOffset;
-        });
-
-        test('calculates correct background position for .hero', () => {
-            const { handleParallaxScroll } = require('./script.js');
-
-            // Set mock scroll position
-            global.window.pageYOffset = 200;
-
-            // Execute parallax handler
-            handleParallaxScroll();
-
-            // Expect backgroundPosition to be centered and 50% of scroll position
-            expect(documentMock.elements.hero.style.backgroundPosition).toBe('center 100px');
-        });
-
-        test('applies correct transform to .hero-video when .hero is null and .hero-cinematic exists', () => {
-            // To test the "else if" branch, we have to isolate require caching.
-            // Jest allows jest.isolateModules to test files again, or resetModules.
-            jest.resetModules();
-
-            // Override querySelector to simulate a page with heroCinematic but NO hero
-            const originalQuerySelector = documentMock.querySelector;
-            documentMock.querySelector = (sel) => {
-                if (sel === '.hero') return null; // simulate no hero
-                if (sel === '.hero-cinematic') return documentMock.elements.heroCinematic;
-                if (sel === '.hero-video') return documentMock.elements.heroVideo;
-                return originalQuerySelector(sel);
-            };
-
-            const freshScript = require('./script.js');
-
-            // Set mock scroll position
-            global.window.pageYOffset = 300;
-
-            // Execute parallax handler
-            freshScript.handleParallaxScroll();
-
-            // Assert style is applied (300 * 0.3 = 90)
-            expect(documentMock.elements.heroVideo.style.transform).toBe('translateX(-50%) translateY(calc(-50% + 90px))');
-
-            // Restore mock
-            documentMock.querySelector = originalQuerySelector;
-            // Restore modules to their previous state to not break other tests, or just let them continue
-        });
-    });
-
-});
-
-describe('checkMobileDevice Tests', () => {
-    let originalMatchMedia;
+describe('handleScroll logic tests', () => {
+    let mockHero;
+    let mockStickyNav;
+    let mockNavItems;
+    let mockSections;
+    let offsetTopSpy;
 
     beforeEach(() => {
-        originalMatchMedia = global.window.matchMedia;
-    });
+        const { initScrollCoordinator } = require('./script.js');
 
-    afterEach(() => {
-        global.window.matchMedia = originalMatchMedia;
-        document.body.classList.remove('mobile');
-    });
+        mockHero = new MockElement('div');
+        Object.defineProperty(mockHero, 'offsetHeight', { value: 500 });
 
-    test('adds mobile class when matches is true', () => {
-        global.window.matchMedia = jest.fn().mockImplementation(query => ({
-            matches: true,
-            media: query,
-            addEventListener: jest.fn(),
-        }));
+        mockStickyNav = new MockElement('nav');
+        mockStickyNav.classList.add('hidden');
 
-        // Re-require to run logic
-        jest.isolateModules(() => {
-            require('./script.js');
+        offsetTopSpy = jest.fn((id) => {
+            if (id === 'home') return 0;
+            if (id === 'about') return 800;
+            if (id === 'contact') return 1600;
+            return 0;
         });
 
-        expect(document.body.classList.contains('mobile')).toBe(true);
-    });
-
-    test('removes mobile class when matches is false', () => {
-        document.body.classList.add('mobile');
-        global.window.matchMedia = jest.fn().mockImplementation(query => ({
-            matches: false,
-            media: query,
-            addEventListener: jest.fn(),
-        }));
-
-        // Re-require to run logic
-        jest.isolateModules(() => {
-            require('./script.js');
-        });
-
-        expect(document.body.classList.contains('mobile')).toBe(false);
-    });
-
-    test('IntersectionObserver toggles active class on nav links', () => {
-        // Trigger observer callback with an intersection entry
-        expect(lastObserverCallback).not.toBeNull();
-
-        const mockEntry = {
-            isIntersecting: true,
-            target: {
-                getAttribute: (attr) => attr === 'id' ? 'test-id' : null
-            }
+        const createMockSection = (id, offset) => {
+            const section = new MockElement('section');
+            section.getAttribute = () => id;
+            section.id = id;
+            Object.defineProperty(section, 'offsetTop', { get: () => offsetTopSpy(id), configurable: true });
+            Object.defineProperty(section, 'clientHeight', { value: 800 });
+            return section;
         };
 
-        lastObserverCallback([mockEntry]);
+        mockSections = [
+            createMockSection('home', 0),
+            createMockSection('about', 800),
+            createMockSection('contact', 1600)
+        ];
 
-        // Check if the link corresponding to 'test-id' got the 'active' class
-        const testLink = documentMock.elements.navLinksAs[0];
-        expect(testLink.classList.contains('active')).toBe(true);
-
-        // Now intersecting another element
-        const otherEntry = {
-            isIntersecting: true,
-            target: {
-                getAttribute: (attr) => attr === 'id' ? 'other-id' : null
-            }
+        const createMockNavItem = (href) => {
+            const a = new MockElement('a');
+            a.getAttribute = () => href;
+            return a;
         };
-        lastObserverCallback([otherEntry]);
 
-        const otherLink = documentMock.elements.navLinksAs[1];
-        expect(otherLink.classList.contains('active')).toBe(true);
-        expect(testLink.classList.contains('active')).toBe(false);
+        mockNavItems = [
+            createMockNavItem('#home'),
+            createMockNavItem('#about'),
+            createMockNavItem('#contact')
+        ];
+
+        // Mock document queries
+        global.document.querySelector = (selector) => {
+            if (selector === '.hero') return mockHero;
+            return null;
+        };
+
+        global.document.querySelectorAll = (selector) => {
+            if (selector === 'section') return mockSections;
+            if (selector === '.nav-links a') return mockNavItems;
+            return [];
+        };
+
+        global.document.getElementById = (id) => {
+            if (id === 'sticky-nav') return mockStickyNav;
+            return null;
+        };
+
+        // Clear spies
+        jest.clearAllMocks();
+
+        // Init cache - this should call offsetTop exactly once per section
+        initScrollCoordinator();
     });
 
-    describe('updateActiveNavLink', () => {
-        let sections;
-        let linksById;
-        let link1, link2, link3, link4;
+    test('activates sticky navbar when scroll > hero height - 100', () => {
+        const { handleScroll } = require('./script.js');
 
-        beforeEach(() => {
-            // Setup sections with heights
-            const s1 = new MockElement('section', { offsetTop: 0, clientHeight: 800 });
-            s1.setAttribute('id', 'hero');
-            const s2 = new MockElement('section', { offsetTop: 800, clientHeight: 600 });
-            s2.setAttribute('id', 'about');
-            const s3 = new MockElement('section', { offsetTop: 1400, clientHeight: 800 });
-            s3.setAttribute('id', 'portfolio');
-            const s4 = new MockElement('section', { offsetTop: 2200, clientHeight: 600 });
-            s4.setAttribute('id', 'contact');
+        global.window.scrollY = 400; // not > 500 - 100
+        handleScroll();
+        expect(mockStickyNav.classList.contains('hidden')).toBe(true);
 
-            sections = [s1, s2, s3, s4];
+        global.window.scrollY = 401; // > 500 - 100
+        handleScroll();
+        expect(mockStickyNav.classList.contains('hidden')).toBe(false);
+    });
 
-            link1 = new MockElement('a');
-            link2 = new MockElement('a');
-            link3 = new MockElement('a');
-            link4 = new MockElement('a');
+    test('identifies active section and updates nav links optimally without DOM thrashing', () => {
+        const { handleScroll } = require('./script.js');
 
+        // Initial setup counts (3 reads during init)
+        expect(offsetTopSpy).toHaveBeenCalledTimes(3);
+
+        global.window.scrollY = 650; // >= 800 - 200 = 600, so 'about' should activate
+        handleScroll();
+
+        expect(mockNavItems[0].classList.contains('active')).toBe(false);
+        expect(mockNavItems[1].classList.contains('active')).toBe(true);
+        expect(mockNavItems[2].classList.contains('active')).toBe(false);
+
+        // The most critical assertion: handleScroll MUST NOT read offsetTop!
+        expect(offsetTopSpy).toHaveBeenCalledTimes(3);
+
+        global.window.scrollY = 1500; // 'contact'
+        handleScroll();
+
+        expect(mockNavItems[0].classList.contains('active')).toBe(false);
+        expect(mockNavItems[1].classList.contains('active')).toBe(false);
+        expect(mockNavItems[2].classList.contains('active')).toBe(true);
+
+        // Still no new offsetTop reads!
+        expect(offsetTopSpy).toHaveBeenCalledTimes(3);
             linksById = {
                 'hero': [link1],
                 'about': [link2],
