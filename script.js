@@ -304,6 +304,14 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
+navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+    }
+    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
@@ -325,6 +333,29 @@ let currentActiveId = "";
             }
         });
     }
+}
+// Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
+const observerOptions = {
+    root: null,
+    rootMargin: '-200px 0px -50% 0px', // Aproximación a la lógica top - 200 y evitando activación doble
+    threshold: 0
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const newActiveId = entry.target.getAttribute("id");
+
+            if (newActiveId !== currentActiveId) {
+                // Removemos la clase active de los enlaces anteriores
+                if (currentActiveId && linksById[currentActiveId]) {
+                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+                }
+
+                // Añadimos la clase active a los enlaces nuevos
+                if (newActiveId && linksById[newActiveId]) {
+                    linksById[newActiveId].forEach(link => link.classList.add("active"));
+                }
 
     if (mainStickyNav && scrollHero) {
         const heroBottom = scrollHero.offsetHeight;
@@ -333,6 +364,25 @@ let currentActiveId = "";
         } else {
             mainStickyNav.classList.add('hidden');
         }
+    });
+}, observerOptions);
+
+// Observar cada sección
+sections.forEach(section => {
+    observer.observe(section);
+});
+// Intersection Observer para animar elementos cuando son visibles
+const observerOptionsAnim = {
+  root: null,
+  rootMargin: "0px",
+  threshold: 0.1,
+};
+
+const animObserver = new IntersectionObserver((entries, animObserver) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = "running";
+      animObserver.unobserve(entry.target);
     }
 });
 
@@ -341,23 +391,42 @@ if (typeof module !== 'undefined') {
 }
 
 // Navegación Activa en Scroll
-const sections = document.querySelectorAll('section');
-const navItems = document.querySelectorAll('.nav-links a');
+const domSections = document.querySelectorAll('section');
 
-function updateActiveNavLink() {
-    let current = '';
-    
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
-            current = section.getAttribute('id');
-        }
-    });
+// Caché de posiciones de secciones
+let sectionOffsets = [];
 
-  return activeSection;
+function updateSectionOffsets() {
+    sectionOffsets = Array.from(domSections || sections).map(section => ({
+        id: section.getAttribute("id"),
+        top: section.offsetTop
+    }));
 }
 
+// Inicializar la caché
+updateSectionOffsets();
+
+// Observar cambios de tamaño en el documento (ResizeObserver) para actualizar la caché
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(() => {
+        if (window.requestAnimationFrame) {
+            window.requestAnimationFrame(updateSectionOffsets);
+        } else {
+            updateSectionOffsets();
+        }
+    });
+    observer.observe(document.body);
+} else {
+    window.addEventListener('resize', updateSectionOffsets);
+  return activeSection;
+}
+const navItems = document.querySelectorAll('.nav-links a');
+
+
+
+
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 /**
  * Invalidates the cached offsets (used during resize events).
  */
@@ -452,6 +521,8 @@ function initStickyNavbar() {
             stickyNav.classList.add("hidden");
         }
 
+    lastScrollTop = scrollTop;
+  });
         // Return cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
@@ -509,8 +580,13 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
             closeModal();
         }
     });
+<<<<<<< jules-1918621933211355245-e61d3c35
 
     if (false) {} else {
+=======
+}
+    } else {
+>>>>>>> main
         stickyNav.classList.add('hidden');
     }
 
@@ -756,8 +832,15 @@ document.addEventListener("DOMContentLoaded", () => {
 changeLanguage("es");
 
 if (typeof module !== 'undefined') {
+<<<<<<< jules-1918621933211355245-e61d3c35
 
 
+=======
+    module.exports = { initStickyNavbar };
+    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
+    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+>>>>>>> main
 }
 
 }
