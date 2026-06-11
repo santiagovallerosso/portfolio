@@ -1,3 +1,22 @@
+function validateContactForm(name, email, message) {
+  const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
+  const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
+  const cleanMessage = typeof message === 'string' ? message.trim() : (message ? String(message).trim() : "");
+
+  // Validación básica
+  if (!cleanName || !cleanEmail || !cleanMessage) {
+    return { isValid: false, error: "Por favor completa todos los campos" };
+  }
+
+  // Validación de email
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  if (!emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
+  return { isValid: true };
+}
+
 
 let sectionOffsets = [];
 let scrollNavItems = [];
@@ -253,12 +272,12 @@ style.textContent = `
     .project-card {
         animation: fadeInUp 0.6s ease forwards;
         opacity: 0;
-    }
+    }`;
 
     if (scrollHero) {
-        scrollHero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+        scrollHero.style.backgroundPosition = 'center ' + (scrollPosition * 0.5) + 'px';
     } else if (scrollHeroCinematic && scrollCinematicVideo) {
-        scrollCinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        scrollCinematicVideo.style.transform = 'translateX(-50%) translateY(calc(-50% + ' + (scrollPosition * 0.3) + 'px))';
     }
 
     let newActiveId = "";
@@ -271,7 +290,6 @@ style.textContent = `
             }
         });
     }
-    }, observerOptions);
 
     sections.forEach(section => {
         observer.observe(section);
@@ -310,7 +328,7 @@ let currentActiveId = "";
     if (newActiveId && scrollNavItems && scrollNavItems.length > 0) {
         scrollNavItems.forEach(item => {
             item.classList.remove('active');
-            if (item.getAttribute('href') === `#${newActiveId}`) {
+            if (item.getAttribute('href') === '#' + newActiveId) {
                 item.classList.add('active');
             }
         });
@@ -366,11 +384,10 @@ const animObserver = new IntersectionObserver((entries, animObserver) => {
       entry.target.style.animationPlayState = "running";
       animObserver.unobserve(entry.target);
     }
-}
+});
 
 if (typeof module !== 'undefined') {
     module.exports = { initScrollCoordinator, handleScroll };
-    });
 }
 
 // Navegación Activa en Scroll
@@ -563,13 +580,18 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
             closeModal();
         }
     });
+<<<<<<< jules-1918621933211355245-e61d3c35
+
+    if (false) {} else {
+=======
 }
     } else {
+>>>>>>> main
         stickyNav.classList.add('hidden');
     }
 
     lastScrollTop = scrollTop;
-  });
+
 
   // Check initial scroll position
   window.addEventListener('DOMContentLoaded', () => {
@@ -600,10 +622,11 @@ if (modal && closeBtn && youtubePlayer) {
       const videoId = card.getAttribute("data-youtube-id");
       if (videoId) {
         // Set the src with autoplay
-        youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
         modal.classList.add("show");
       }
     });
+  });
 }
 
 
@@ -809,8 +832,23 @@ document.addEventListener("DOMContentLoaded", () => {
 changeLanguage("es");
 
 if (typeof module !== 'undefined') {
+<<<<<<< jules-1918621933211355245-e61d3c35
+
+
+=======
     module.exports = { initStickyNavbar };
     module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
     module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
     module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+>>>>>>> main
 }
+
+}
+}
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = { validateContactForm };
+}
+
+if (typeof module !== 'undefined') { module.exports = { validateContactForm }; }
