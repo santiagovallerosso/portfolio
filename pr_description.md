@@ -1,12 +1,13 @@
-🎯 **What:** The testing gap addressed
-The previous test suite for `validateContactForm` lacked proper assertions for non-string boundary conditions, malformed email edge-cases, and extreme values while additionally having the tests embedded in an evaluation hack that could crash and cause regressions to pass silently.
+# 🧪 [testing improvement] Improve validation and test coverage for validateContactForm
 
-📊 **Coverage:** What scenarios are now tested
-- Happy paths with full valid fields.
-- String constraints and whitespace validations (empty, spaces, newlines).
-- Type handling including gracefully failing on `null`, `undefined`, arrays, and numbers without crashing.
-- Extreme lengths and single characters.
-- Specialized email boundaries validating `user@domain`, `@domain.com`, `user@.com`, and injections of special characters.
+## 🎯 What
+This PR addresses several underlying stability issues by completely resolving structural git merge conflict artifacts (like `<<<<<<<`, `=======`, `>>>>>>>` markers) within `script.js` and `script.test.js`. In addition to ensuring syntactic integrity, it implements robust bounds validation checking inside the `validateContactForm` function.
 
-✨ **Result:** The improvement in test coverage
-The test suite now compiles cleanly, executing all 14 assertions perfectly. Test suite failures due to unclosed statements in `script.test.js` have been scrubbed out. The target validation mechanism accurately fails without unhandled TypeErrors.
+## 📊 Coverage
+- Adds test cases for null, undefined, and non-string types.
+- Adds test cases ensuring pure whitespace inputs safely fail.
+- Adds security boundary tests for extremely long inputs (e.g. `a.repeat(300)`) preventing ReDoS.
+- Ensures all previously existing valid and invalid email tests run smoothly without interference from broken AST files.
+
+## ✨ Result
+`script.js` is now completely syntax-error-free with its exports properly defined for Jest. `script.test.js` passes cleanly at 100% capacity with 14 assertions validating happy paths, boundary safety checks, and input sanitization correctness.
