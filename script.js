@@ -73,6 +73,11 @@ function updateSectionOffsets(sectionIds) {
     if (element) {
       // Offset calculation with standard window scroll offset inclusion
       offsets[id] = element.getBoundingClientRect().top + window.scrollY;
+    }
+  });
+  cachedOffsets = offsets;
+  return offsets;
+}
 // ========== MENÚ HAMBURGUESA ==========
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
@@ -325,15 +330,7 @@ navLinksAnchors.forEach((link) => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-    if (newActiveId && scrollNavItems && scrollNavItems.length > 0) {
-        scrollNavItems.forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('href') === '#' + newActiveId) {
-                item.classList.add('active');
-            }
-        });
-    }
-}
+
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
 const observerOptions = {
     root: null,
@@ -356,13 +353,8 @@ const observer = new IntersectionObserver((entries) => {
                 if (newActiveId && linksById[newActiveId]) {
                     linksById[newActiveId].forEach(link => link.classList.add("active"));
                 }
-
-    if (mainStickyNav && scrollHero) {
-        const heroBottom = scrollHero.offsetHeight;
-        if (scrollY > heroBottom - 100) {
-            mainStickyNav.classList.remove('hidden');
-        } else {
-            mainStickyNav.classList.add('hidden');
+            }
+            currentActiveId = newActiveId;
         }
     });
 }, observerOptions);
@@ -384,6 +376,7 @@ const animObserver = new IntersectionObserver((entries, animObserver) => {
       entry.target.style.animationPlayState = "running";
       animObserver.unobserve(entry.target);
     }
+  });
 });
 
 if (typeof module !== 'undefined') {
@@ -418,7 +411,6 @@ if (typeof ResizeObserver !== 'undefined') {
     observer.observe(document.body);
 } else {
     window.addEventListener('resize', updateSectionOffsets);
-  return activeSection;
 }
 const navItems = document.querySelectorAll('.nav-links a');
 
@@ -427,6 +419,7 @@ const navItems = document.querySelectorAll('.nav-links a');
 
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
 /**
  * Invalidates the cached offsets (used during resize events).
  */
@@ -478,6 +471,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+});
+
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
     let lastScrollTop = 0;
@@ -522,7 +517,6 @@ function initStickyNavbar() {
         }
 
     lastScrollTop = scrollTop;
-  });
         // Return cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
@@ -531,9 +525,7 @@ function initStickyNavbar() {
     return () => {};
 }
 
-if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    initStickyNavbar();
-}
+
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
@@ -580,34 +572,6 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
             closeModal();
         }
     });
-<<<<<<< jules-1918621933211355245-e61d3c35
-
-    if (false) {} else {
-=======
-}
-    } else {
->>>>>>> main
-        stickyNav.classList.add('hidden');
-    }
-
-    lastScrollTop = scrollTop;
-
-
-  // Check initial scroll position
-  window.addEventListener('DOMContentLoaded', () => {
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-    if (window.pageYOffset > heroBottom) {
-        stickyNav.classList.remove("hidden");
-    } else {
-        stickyNav.classList.add("hidden");
-    }
-  });
-    // Start hidden
-    stickyNav.classList.add('hidden');
-
-
 }
 
 // ========== VIDEO MODAL ==========
@@ -827,28 +791,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
 // Call changeLanguage('es') on load as user wants Spanish
 // Execute immediately since the script is deferred and DOM is ready
-changeLanguage("es");
-
-if (typeof module !== 'undefined') {
-<<<<<<< jules-1918621933211355245-e61d3c35
-
-
-=======
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
-    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
->>>>>>> main
-}
-
-}
-}
+if (typeof changeLanguage === 'function') {
+    changeLanguage("es");
 }
 
 if (typeof module !== 'undefined') {
-    module.exports = { validateContactForm };
+    module.exports = {
+        initStickyNavbar,
+        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
+        handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
+        isMobileDevice,
+        validateContactForm,
+        updateSectionOffsets: typeof updateSectionOffsets !== 'undefined' ? updateSectionOffsets : undefined,
+        getSectionOffsets: () => typeof sectionOffsets !== 'undefined' ? sectionOffsets : [],
+        setSectionOffsets: (val) => { if(typeof sectionOffsets !== 'undefined') sectionOffsets = val; }
+    };
 }
 
-if (typeof module !== 'undefined') { module.exports = { validateContactForm }; }
+}
+
+
+
+ ;
