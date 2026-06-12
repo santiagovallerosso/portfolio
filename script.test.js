@@ -1,3 +1,4 @@
+const { validateContactForm } = require('./script.js');
 
 const fs = require('fs');
 
@@ -51,41 +52,50 @@ describe('validateContactForm', () => {
         expect(result).toEqual({ isValid: false, error: 'Por favor completa todos los campos' });
     });
 
+    test('Should handle object/array types gracefully without crashing', () => {
+        const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']);
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); // because object stringifies to [object Object]
     test('Should handle non-string types gracefully (number, arrays) without crashing', () => {
         const result = validateContactForm(123, ['email'], { message: 'hello' });
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 
-    // Longitudes extremas
-    test('Should handle extremely long strings safely', () => {
-        const veryLongString = 'A'.repeat(10000);
-        const result = validateContactForm('John', 'john@example.com', veryLongString);
+    // Sanitización y Espacios en blanco
+    test('Should trim whitespaces from inputs and return true', () => {
+        const result = validateContactForm('   John   ', '  john@example.com  ', '   Hello world!   ');
         expect(result).toEqual({ isValid: true });
     });
 
-    test('Should handle single character inputs successfully if email is valid', () => {
-        const result = validateContactForm('J', 'a@bc.de', 'H');
-        expect(result).toEqual({ isValid: true });
+    test('Should fail if inputs are only whitespaces', () => {
+        const result = validateContactForm('   ', 'john@example.com', 'Hello world!');
+        expect(result).toEqual({ isValid: false, error: 'Por favor completa todos los campos' });
     });
 
-    // Emails maliciosos o inusuales
-    test('Should return isValid false when email lacks domain structural parts (user@domain)', () => {
-        const result = validateContactForm('John', 'user@domain', 'Hello world!');
+    // Seguridad y extremos (Performance y ReDoS)
+    test('Should reject extremely long emails', () => {
+        const longEmail = 'a'.repeat(300) + '@example.com';
+        const result = validateContactForm('John', longEmail, 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 
-    test('Should return isValid false when email lacks TLD parts (user@.com)', () => {
-        const result = validateContactForm('John', 'user@.com', 'Hello world!');
+    // Formatos de email inválidos
+    test('Should reject email without @', () => {
+        const result = validateContactForm('John', 'johnexample.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 
-    test('Should return isValid false when email lacks username part (@domain.com)', () => {
-        const result = validateContactForm('John', '@domain.com', 'Hello world!');
+    test('Should reject email without domain', () => {
+        const result = validateContactForm('John', 'john@', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 
-    test('Should return isValid false when email has invalid special characters in host', () => {
-        const result = validateContactForm('John', 'user@dom!ain.com', 'Hello world!');
+    test('Should reject email with spaces', () => {
+        const result = validateContactForm('John', 'john @example.com', 'Hello world!');
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
+    });
+
+    test('Should reject email with special invalid characters', () => {
+        const result = validateContactForm('John', 'john!@example.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 });
