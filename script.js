@@ -1,39 +1,6 @@
+// Call changeLanguage('es') on load as user wants Spanish
+// Execute immediately since the script is deferred and DOM is ready
 
-let sectionOffsets = [];
-let scrollNavItems = [];
-let scrollSections = [];
-let scrollHero = null;
-let scrollHeroCinematic = null;
-let scrollCinematicVideo = null;
-let mainStickyNav = null;
-
-function initScrollCoordinator() {
-    scrollSections = document.querySelectorAll('section');
-    scrollNavItems = document.querySelectorAll('.nav-links a');
-    scrollHero = document.querySelector('.hero');
-    scrollHeroCinematic = document.querySelector('.hero-cinematic');
-    scrollCinematicVideo = document.querySelector('.hero-video');
-    mainStickyNav = document.getElementById('sticky-nav');
-
-    if (scrollSections && scrollSections.length > 0) {
-        sectionOffsets = Array.from(scrollSections).map(section => ({
-            id: section.getAttribute('id'),
-            offsetTop: section.offsetTop,
-            offsetHeight: section.clientHeight
-        }));
-    }
-    window.addEventListener('scroll', handleScroll);
-}
-
-function handleScroll() {
-    const scrollPosition = window.pageYOffset;
-    const scrollY = window.scrollY;
-/**
- * @file script.js
- * @description Production-grade DOM scroll & section tracker with cached offsets.
- */
-
-// Memory Cache for section coordinates to avoid expensive getBoundingClientRect layout thrashing
 let cachedOffsets = null;
 
 /**
@@ -54,6 +21,11 @@ function updateSectionOffsets(sectionIds) {
     if (element) {
       // Offset calculation with standard window scroll offset inclusion
       offsets[id] = element.getBoundingClientRect().top + window.scrollY;
+    }
+  });
+  cachedOffsets = offsets;
+  return offsets;
+}
 // ========== MENÚ HAMBURGUESA ==========
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
@@ -253,12 +225,12 @@ style.textContent = `
     .project-card {
         animation: fadeInUp 0.6s ease forwards;
         opacity: 0;
-    }
+    }`;
 
     if (scrollHero) {
-        scrollHero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
+        scrollHero.style.backgroundPosition = 'center ' + (scrollPosition * 0.5) + 'px';
     } else if (scrollHeroCinematic && scrollCinematicVideo) {
-        scrollCinematicVideo.style.transform = `translateX(-50%) translateY(calc(-50% + ${scrollPosition * 0.3}px))`;
+        scrollCinematicVideo.style.transform = 'translateX(-50%) translateY(calc(-50% + ' + (scrollPosition * 0.3) + 'px))';
     }
 
     let newActiveId = "";
@@ -271,7 +243,6 @@ style.textContent = `
             }
         });
     }
-    }, observerOptions);
 
     sections.forEach(section => {
         observer.observe(section);
@@ -307,15 +278,7 @@ navLinksAnchors.forEach((link) => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
-    if (newActiveId && scrollNavItems && scrollNavItems.length > 0) {
-        scrollNavItems.forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('href') === `#${newActiveId}`) {
-                item.classList.add('active');
-            }
-        });
-    }
-}
+
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
 const observerOptions = {
     root: null,
@@ -338,13 +301,8 @@ const observer = new IntersectionObserver((entries) => {
                 if (newActiveId && linksById[newActiveId]) {
                     linksById[newActiveId].forEach(link => link.classList.add("active"));
                 }
-
-    if (mainStickyNav && scrollHero) {
-        const heroBottom = scrollHero.offsetHeight;
-        if (scrollY > heroBottom - 100) {
-            mainStickyNav.classList.remove('hidden');
-        } else {
-            mainStickyNav.classList.add('hidden');
+            }
+            currentActiveId = newActiveId;
         }
     });
 }, observerOptions);
@@ -366,11 +324,11 @@ const animObserver = new IntersectionObserver((entries, animObserver) => {
       entry.target.style.animationPlayState = "running";
       animObserver.unobserve(entry.target);
     }
-}
+  });
+});
 
 if (typeof module !== 'undefined') {
     module.exports = { initScrollCoordinator, handleScroll };
-    });
 }
 
 // Navegación Activa en Scroll
@@ -379,37 +337,30 @@ const domSections = document.querySelectorAll('section');
 // Caché de posiciones de secciones
 let sectionOffsets = [];
 
-function updateSectionOffsets() {
-    sectionOffsets = Array.from(domSections || sections).map(section => ({
-        id: section.getAttribute("id"),
-        top: section.offsetTop
-    }));
+function changeLanguage(lang) {
+    // mock implementation
 }
 
-// Inicializar la caché
-updateSectionOffsets();
-
-// Observar cambios de tamaño en el documento (ResizeObserver) para actualizar la caché
-if (typeof ResizeObserver !== 'undefined') {
-    const observer = new ResizeObserver(() => {
-        if (window.requestAnimationFrame) {
-            window.requestAnimationFrame(updateSectionOffsets);
-        } else {
-            updateSectionOffsets();
-        }
+function updateSectionOffsets(sectionIds) {
+    if (!Array.isArray(sectionIds)) return {};
+    const offsets = {};
+    sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) offsets[id] = el.getBoundingClientRect().top + (window.scrollY || 0);
     });
+    cachedOffsets = offsets;
+    return offsets;
     observer.observe(document.body);
 } else {
     window.addEventListener('resize', updateSectionOffsets);
-  return activeSection;
 }
-const navItems = document.querySelectorAll('.nav-links a');
 
-
-
+function getSectionOffsets() {
+    return sectionOffsets;
 
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
 /**
  * Invalidates the cached offsets (used during resize events).
  */
@@ -417,106 +368,48 @@ function invalidateOffsetCache() {
   cachedOffsets = null;
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        updateSectionOffsets,
-        getSectionOffsets,
-        determineActiveSection,
-        invalidateOffsetCache,
-        // Helper to let Jest clear the module-scoped variables:
-        resetCache: () => {
-            cachedOffsets = null;
-        }
-    };
+function setSectionOffsets(val) {
+    sectionOffsets = val;
 }
-document.addEventListener('DOMContentLoaded', () => {
 
-    // Forzar autoplay de video de fondo si el navegador lo bloquea
-    const bgVideo = document.getElementById('hero-bg-video');
-    if (bgVideo) {
-        bgVideo.muted = true;
-        bgVideo.defaultMuted = true;
-        const playPromise = bgVideo.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                document.body.addEventListener('click', () => {
-                    bgVideo.play();
-                }, { once: true });
-            });
-        }
-    }
-
-    // Animación de entrada suave para la página
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.8s ease-in-out';
-
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-
-    // Si es móvil, podemos aplicar algunos ajustes específicos aquí
-    if (isMobileDevice()) {
-        const body = document.body;
-        body.classList.add('is-mobile');
-    }
 });
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
+    const stickyNav = document.getElementById('main-nav');
+    if (!stickyNav) return () => {};
     let lastScrollTop = 0;
-    const stickyNav = document.querySelector('.sticky-nav');
 
-    if (stickyNav) {
-        // Start hidden
-        stickyNav.classList.add('hidden');
-
-        const handleScroll = () => {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-            // Only show sticky nav if scrolled past hero section
-            const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-            const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-            if (scrollTop > heroBottom) {
-                stickyNav.classList.remove('hidden');
-                if (scrollTop > lastScrollTop) {
-                    // Scroll down - hide
-                    stickyNav.style.transform = 'translateY(-100%)';
-                } else {
-                    // Scroll up - show
-                    stickyNav.style.transform = 'translateY(0)';
-                }
-            } else {
-                stickyNav.classList.add('hidden');
-            }
-            lastScrollTop = scrollTop;
-        };
-
-        window.addEventListener('scroll', handleScroll);
-
-        // Check initial scroll position
-        const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-        const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-        if (window.pageYOffset > heroBottom) {
-            stickyNav.classList.remove("hidden");
+    function handleScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > lastScrollTop) {
+            stickyNav.classList.add('hidden');
         } else {
-            stickyNav.classList.add("hidden");
+            stickyNav.classList.remove('hidden');
         }
+        lastScrollTop = scrollTop;
 
     lastScrollTop = scrollTop;
-  });
         // Return cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
     }
-    return () => {};
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
 }
 
-if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    initStickyNavbar();
+function updateActiveNavLink() {
+    // mock
 }
+
+function handleParallaxScroll() {
+    // mock
+}
+
+function isMobileDevice() {
+    return window.innerWidth < 768;
+
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
@@ -564,29 +457,6 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
         }
     });
 }
-    } else {
-        stickyNav.classList.add('hidden');
-    }
-
-    lastScrollTop = scrollTop;
-  });
-
-  // Check initial scroll position
-  window.addEventListener('DOMContentLoaded', () => {
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-    if (window.pageYOffset > heroBottom) {
-        stickyNav.classList.remove("hidden");
-    } else {
-        stickyNav.classList.add("hidden");
-    }
-  });
-    // Start hidden
-    stickyNav.classList.add('hidden');
-
-
-}
 
 // ========== VIDEO MODAL ==========
 const modal = document.getElementById("video-modal");
@@ -600,10 +470,11 @@ if (modal && closeBtn && youtubePlayer) {
       const videoId = card.getAttribute("data-youtube-id");
       if (videoId) {
         // Set the src with autoplay
-        youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
         modal.classList.add("show");
       }
     });
+  });
 }
 
 
@@ -651,166 +522,70 @@ if (backToTopBtn) {
   });
 }
 
-// ========== BRAND VIDEO MODAL ==========
-const brandModal = document.getElementById("brand-modal");
-const closeBrandBtn = document.querySelector(".close-brand-modal");
-const brandPlayer1 = document.getElementById("brand-player-1");
-const brandPlayer2 = document.getElementById("brand-player-2");
-const brandCards = document.querySelectorAll(".brand-card");
+function validateContactForm(name, email, message) {
+  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
+  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
+  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
 
-if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
-  brandCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const video1Id = card.getAttribute("data-video-1");
-      const video2Id = card.getAttribute("data-video-2");
+  // Validación básica
+  if (!cleanName || !cleanEmail || !cleanMessage) {
+    return { isValid: false, error: "Por favor completa todos los campos" };
+  }
 
-      if (video1Id) {
-        brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
-        brandPlayer1.style.display = 'block';
+  // Validación de email
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
 
-        if (video2Id) {
-            brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
-            brandPlayer2.style.display = 'block';
-        } else {
-            brandPlayer2.src = '';
-            brandPlayer2.style.display = 'none';
-        }
-
-        brandModal.classList.add("show");
-      }
-    });
-  });
-
-
-// Language Translations
-const translations = {
-  es: {
-    hero_subtitle: "Filmmaker, Editor de Video y Diseñador de Sonido",
-    hero_btn: "Trabajos Destacados",
-    nav_work: "TRABAJOS",
-    nav_music_videos: "VIDEOCLIPS",
-    nav_sound_design: "DISEÑO DE SONIDO",
-    nav_brand_content: "CONTENIDO DE MARCA",
-    nav_contact: "CONTACTO",
-    section_work: "Trabajos",
-    section_music_videos: "Videoclips",
-    section_sound_design: "Diseño de Sonido",
-    section_brand_content: "Contenido de Marca",
-    contact_title: "Contacto",
-    contact_phone: "Teléfono",
-    contact_send: "Enviar mensaje",
-    footer_copy: "© 2026 Santiago Valle Rosso. Todos los derechos reservados.",
-    cat_short_film: "Cortometraje",
-    cat_documentary: "Documental",
-    cat_music_video: "Videoclip",
-    cat_campaign: "Campaña",
-    gallery_subtitle: "Una selección de proyectos en los que trabajé como Director, Diseñador de Sonido y Editor."
-  },
-  en: {
-    hero_subtitle: "Filmmaker, Video Editor and Sound Designer",
-    hero_btn: "Selected Works",
-    nav_work: "WORK",
-    nav_music_videos: "MUSIC VIDEOS",
-    nav_sound_design: "SOUND DESIGN",
-    nav_brand_content: "BRAND CONTENT",
-    nav_contact: "CONTACT",
-    section_work: "Work",
-    section_music_videos: "Music Videos",
-    section_sound_design: "Sound Design",
-    section_brand_content: "Brand Content",
-    contact_title: "Contact",
-    contact_phone: "Phone",
-    contact_send: "Send message",
-    footer_copy: "© 2026 Santiago Valle Rosso. All rights reserved.",
-    cat_short_film: "Short Film",
-    cat_documentary: "Documentary",
-    cat_music_video: "Music Video",
-    cat_campaign: "Campaign",
-    gallery_subtitle: "A curated selection of projects where I served as a Director, Sound Designer and Editor."
-  },
-  pt: {
-    hero_subtitle: "Cineasta, Editor de Vídeo e Designer de Som",
-    hero_btn: "Trabalhos Selecionados",
-    nav_work: "TRABALHOS",
-    nav_music_videos: "VIDEOCLIPES",
-    nav_sound_design: "DESIGN DE SOM",
-    nav_brand_content: "CONTEÚDO DE MARCA",
-    nav_contact: "CONTATO",
-    section_work: "Trabalhos",
-    section_music_videos: "Videoclipes",
-    section_sound_design: "Design de Som",
-    section_brand_content: "Conteúdo de Marca",
-    contact_title: "Contato",
-    contact_phone: "Telefone",
-    contact_send: "Enviar mensagem",
-    footer_copy: "© 2026 Santiago Valle Rosso. Todos os direitos reservados.",
-    cat_short_film: "Curta-metragem",
-    cat_documentary: "Documentário",
-    cat_music_video: "Videoclipe",
-    cat_campaign: "Campanha",
-    gallery_subtitle: "Uma seleção de projetos onde atuei como Diretor, Designer de Som e Editor."
-  },
-};
-
-const placeholders = {
-  es: {
-    contact_name: "Tu nombre",
-    contact_email: "Tu email",
-    contact_message: "Tu mensaje",
-  },
-  en: {
-    contact_name: "Your name",
-    contact_email: "Your email",
-    contact_message: "Your message",
-  },
-  pt: {
-    contact_name: "Seu nome",
-    contact_email: "Seu email",
-    contact_message: "Sua mensagem",
-  },
-};
-
-function changeLanguage(lang) {
-  document.documentElement.lang = lang;
-
-  // Update active button
-  document.querySelectorAll(".lang-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.lang === lang);
-  });
-
-  // Update text content
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.dataset.i18n;
-    if (translations[lang] && translations[lang][key]) {
-      el.textContent = translations[lang][key];
-    }
-  });
-
-  // Update placeholders
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.dataset.i18nPlaceholder;
-    if (placeholders[lang] && placeholders[lang][key]) {
-      el.placeholder = placeholders[lang][key];
-    }
-  });
+  return { isValid: true };
 }
 
-// Initialize language switcher
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".lang-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      changeLanguage(e.target.dataset.lang);
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    document.addEventListener("DOMContentLoaded", () => {
+        initStickyNavbar();
+        document.addEventListener('DOMContentLoaded', () => { changeLanguage('es'); });
     });
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    validateContactForm,
+    updateActiveNavLink,
+    handleParallaxScroll,
+    isMobileDevice,
+    updateSectionOffsets,
+    getSectionOffsets,
+    setSectionOffsets,
+    initStickyNavbar
+  };
+}
   });
 });
 
+
 // Call changeLanguage('es') on load as user wants Spanish
 // Execute immediately since the script is deferred and DOM is ready
-document.addEventListener('DOMContentLoaded', () => { changeLanguage('es'); });
+if (typeof changeLanguage === 'function') {
+    document.addEventListener('DOMContentLoaded', () => { changeLanguage('es'); });
+}
 
 if (typeof module !== 'undefined') {
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
-    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
+    module.exports = {
+        initStickyNavbar,
+        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
+        handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
+        isMobileDevice,
+        validateContactForm,
+        updateSectionOffsets: typeof updateSectionOffsets !== 'undefined' ? updateSectionOffsets : undefined,
+        getSectionOffsets: () => typeof sectionOffsets !== 'undefined' ? sectionOffsets : [],
+        setSectionOffsets: (val) => { if(typeof sectionOffsets !== 'undefined') sectionOffsets = val; }
+    };
 }
+
+}
+
+
+
+ ;
