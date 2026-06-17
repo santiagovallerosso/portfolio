@@ -709,6 +709,9 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
 
     closeBtn.addEventListener('click', closeModal);
 
+// ========== DETECTAR DISPOSITIVO MÓVIL ==========
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     modal.addEventListener('click', (e) => {
         if (!e.target.closest('.modal-content')) {
             closeModal();
