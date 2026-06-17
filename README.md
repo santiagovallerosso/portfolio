@@ -126,7 +126,7 @@ El formulario de contacto está preconfigurado con validación básica. Para env
 1. Ve a [formspree.io](https://formspree.io)
 2. Regístrate y crea un nuevo formulario
 3. Copia tu ID del formulario
-4. En `script.js`, descomenta y reemplaza:
+4. En `script.js`, dentro del manejador del formulario, agrega el siguiente código:
 
 ```javascript
 const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
@@ -140,7 +140,7 @@ const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
 
 1. Ve a [emailjs.com](https://www.emailjs.com)
 2. Regístrate y obtén tu clave pública
-3. En `script.js`, descomenta y configura:
+3. En `script.js`, dentro del manejador del formulario, agrega y configura el siguiente código:
 
 ```javascript
 emailjs.init('YOUR_PUBLIC_KEY');

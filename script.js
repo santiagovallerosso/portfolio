@@ -130,6 +130,12 @@ function validateContactForm(name, email, message) {
 
 
 
+        // Aquí puedes integrar tu servicio de email
+
+        // Por ahora, solo mostrar mensaje de éxito
+        alert('¡Mensaje enviado! Gracias por contactarme.');
+        contactForm.reset();
+    });
   return { isValid: true };
 }
 
