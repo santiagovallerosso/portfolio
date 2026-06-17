@@ -241,6 +241,14 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
+navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+    }
+    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
@@ -360,6 +368,10 @@ function updateSectionOffsets(sectionIds) {
     });
     cachedOffsets = offsets;
     return offsets;
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
 }
 
 function getSectionOffsets() {
