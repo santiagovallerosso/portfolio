@@ -64,6 +64,25 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
+function validateContactForm(name, email, message) {
+  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
+  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
+  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
+
+  // Validación básica
+  if (!cleanName || !cleanEmail || !cleanMessage) {
+    return { isValid: false, error: "Por favor completa todos los campos" };
+  }
+
+  // Validación de email
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
+  return { isValid: true };
+}
 
 function setupContactForm(formElement) {
   if (!formElement) return;
@@ -206,9 +225,15 @@ style.textContent = `
     }
 
     let newActiveId = "";
+    // Performance improvement: Avoid offsetTop layout thrashing during scroll
     if (sectionOffsets && sectionOffsets.length > 0) {
         sectionOffsets.forEach(section => {
-            if (section) {
+            if (section && section.cachedOffsetTop !== undefined) {
+                if (scrollY >= section.cachedOffsetTop - 200) {
+                    newActiveId = section.id;
+                }
+            } else if (section) {
+                // Fallback if not cached
                 if (scrollY >= section.offsetTop - 200) {
                     newActiveId = section.id;
                 }
@@ -308,6 +333,20 @@ const domSections = document.querySelectorAll('section');
 
 // Caché de posiciones de secciones
 let sectionOffsets = [];
+
+// Initialize section offsets cache to avoid layout thrashing during scroll
+function cacheSectionOffsets() {
+    sectionOffsets = Array.from(domSections).map(section => ({
+        id: section.id,
+        offsetTop: section.offsetTop, // Will be used as fallback if caching fails
+        cachedOffsetTop: section.offsetTop // Performance optimization
+    }));
+}
+
+if (typeof document !== 'undefined') {
+    document.addEventListener("DOMContentLoaded", cacheSectionOffsets);
+    window.addEventListener("resize", cacheSectionOffsets);
+}
 
 function changeLanguage(lang) {
     // mock implementation
