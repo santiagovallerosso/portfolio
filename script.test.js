@@ -181,6 +181,7 @@ describe('validateContactForm', () => {
         return [];
     }
 
+    test('Should handle object/array types gracefully without crashing', () => { const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']); expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); });
     reset() {
         this.classList.classes.clear();
         this.value = "";

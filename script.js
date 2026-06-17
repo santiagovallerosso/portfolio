@@ -535,11 +535,18 @@ setupVideoModal(
 
 const backToTopBtn = document.getElementById("back-to-top");
 if (backToTopBtn) {
+    let isScrolling = false;
   window.addEventListener("scroll", () => {
-    if (window.scrollY > 500) {
-      backToTopBtn.classList.add("visible");
-    } else {
-      backToTopBtn.classList.remove("visible");
+    if (!isScrolling) {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY > 500) {
+          backToTopBtn.classList.add("visible");
+        } else {
+          backToTopBtn.classList.remove("visible");
+        }
+        isScrolling = false;
+      });
+      isScrolling = true;
     }
   });
 
