@@ -663,9 +663,6 @@ function initStickyNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
 }
 
-function updateActiveNavLink() {
-    // mock
-}
 
 function handleParallaxScroll() {
     // mock
@@ -957,7 +954,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = {
     determineActiveSection,
     validateContactForm,
-    updateActiveNavLink,
     handleParallaxScroll,
     isMobileDevice,
     updateSectionOffsets,
@@ -979,7 +975,6 @@ if (typeof changeLanguage === 'function') {
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = {
         initStickyNavbar,
-        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
         handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
         isMobileDevice,
         validateContactForm,

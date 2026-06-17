@@ -1,8 +1,38 @@
 
 const fs = require('fs');
 
-let validateContactForm;
+class MockElement {
+    constructor(tagName = 'div', options = {}) {
+        this.tagName = tagName.toUpperCase();
+        this.classList = {
+            classes: new Set(),
+            add: (c) => this.classList.classes.add(c),
+            remove: (c) => this.classList.classes.delete(c),
+            toggle: (c) => {
+                if (this.classList.classes.has(c)) {
+                    this.classList.classes.delete(c);
+                } else {
+                    this.classList.classes.add(c);
+                }
+            },
+            contains: (c) => this.classList.classes.has(c)
+        };
+        this.listeners = {};
+        this.attributes = {};
+        this.style = {};
+        this.innerHTML = "";
+        this.textContent = '';
+        this.value = '';
+        this.dataset = {};
 
+        this.offsetTop = options.offsetTop || 0;
+        this.clientHeight = options.clientHeight || 0;
+        this.offsetHeight = options.offsetHeight || 0;
+    }
+
+    addEventListener(event, callback) {
+        if (!this.listeners[event]) this.listeners[event] = [];
+        this.listeners[event].push(callback);
 
 
 global.document = {
@@ -84,9 +114,6 @@ try {
     if (match) {
         eval(match[match.length - 1].replace('function validateContactForm', 'validateContactForm = function'));
     }
-} catch (e) {
-    console.error(e);
-}
 
 
 let determineActiveSection;
@@ -106,6 +133,26 @@ try {
                 getAttribute: (attr) => this.getAttribute(attr)
             }));
         }
+    }
+
+    click() {
+        this.dispatchEvent("click");
+    }
+
+    setAttribute(name, value) {
+        this.attributes[name] = value;
+    }
+
+    getAttribute(name) {
+        return this.attributes[name] || null;
+    }
+
+    removeAttribute(name) {
+        delete this.attributes[name];
+    }
+
+    querySelector(sel) {
+        return new MockElement();
     }
 
 describe('determineActiveSection', () => {
@@ -183,6 +230,15 @@ describe('validateContactForm', () => {
     querySelectorAll(sel) {
         return [];
     }
+
+    reset() {
+        this.classList.classes.clear();
+        this.value = "";
+    }
+
+    scrollIntoView() {}
+    appendChild() {}
+}
 
     test('Should handle object/array types gracefully without crashing', () => { const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']); expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); });
     reset() {
@@ -294,6 +350,13 @@ describe('updateSectionOffsets Tests', () => {
         expect(offsets[0].top).toBe(100);
         expect(offsets[1].id).toBe('section2');
         expect(offsets[1].top).toBe(500);
+
+        const offsets = getSectionOffsets();
+        expect(offsets).toHaveLength(2);
+        expect(offsets[0].id).toBe('section1');
+        expect(offsets[0].top).toBe(100);
+        expect(offsets[1].id).toBe('section2');
+        expect(offsets[1].top).toBe(500);
     test('Should reject extremely long emails', () => {
         const longEmail = 'a'.repeat(300) + '@example.com';
         const result = validateContactForm('John', longEmail, 'Hello world!');
@@ -308,6 +371,13 @@ describe('updateSectionOffsets Tests', () => {
     it('debería adjuntar evento de resize al window si ResizeObserver no está disponible', () => {
         const originalResizeObserver = global.ResizeObserver;
         global.ResizeObserver = undefined;
+
+        const addEventListenerSpy = jest.spyOn(global.window, 'addEventListener');
+
+        jest.isolateModules(() => {
+            require('./script.js');
+        });
+
 
         const addEventListenerSpy = jest.spyOn(global.window, 'addEventListener');
 
