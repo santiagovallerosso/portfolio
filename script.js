@@ -1,3 +1,4 @@
+
 function validateContactForm(name, email, message) {
   const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
   const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
@@ -17,63 +18,6 @@ function validateContactForm(name, email, message) {
   return { isValid: true };
 }
 
-
-let sectionOffsets = [];
-let scrollNavItems = [];
-let scrollSections = [];
-let scrollHero = null;
-let scrollHeroCinematic = null;
-let scrollCinematicVideo = null;
-let mainStickyNav = null;
-
-function initScrollCoordinator() {
-    scrollSections = document.querySelectorAll('section');
-    scrollNavItems = document.querySelectorAll('.nav-links a');
-    scrollHero = document.querySelector('.hero');
-    scrollHeroCinematic = document.querySelector('.hero-cinematic');
-    scrollCinematicVideo = document.querySelector('.hero-video');
-    mainStickyNav = document.getElementById('sticky-nav');
-    
-    if (scrollSections && scrollSections.length > 0) {
-        sectionOffsets = Array.from(scrollSections).map(section => ({
-            id: section.getAttribute('id'),
-            offsetTop: section.offsetTop,
-            offsetHeight: section.clientHeight
-        }));
-    }
-    window.addEventListener('scroll', handleScroll);
-}
-
-function handleScroll() {
-    const scrollPosition = window.pageYOffset;
-    const scrollY = window.scrollY;
-/**
- * @file script.js
- * @description Production-grade DOM scroll & section tracker with cached offsets.
- */
-
-// Memory Cache for section coordinates to avoid expensive getBoundingClientRect layout thrashing
-let cachedOffsets = null;
-
-/**
- * Calculates and caches the vertical offsets for section elements.
- * @param {string[]} sectionIds - Array of section IDs (e.g. ['home', 'about', 'services'])
- * @returns {Record<string, number>} Object mapping section ID to its vertical coordinate
- */
-function updateSectionOffsets(sectionIds) {
-  if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
-    cachedOffsets = {};
-    return cachedOffsets;
-  }
-
-  const offsets = {};
-  sectionIds.forEach((id) => {
-    // Standard mock selector for testing / modular usage
-    const element = document.getElementById(id);
-    if (element) {
-      // Offset calculation with standard window scroll offset inclusion
-      offsets[id] = element.getBoundingClientRect().top + window.scrollY;
-// ========== MENÚ HAMBURGUESA ==========
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
 
@@ -95,41 +39,22 @@ if (hamburger && navLinks) {
 // ========== SMOOTH SCROLL ==========
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener("click", function (e) {
-    const href = this.getAttribute("href");
-    if (href === "#") return;
+    anchor.addEventListener("click", function (e) {
+      const href = this.getAttribute("href");
+      if (href === "#") return;
 
-    const target = document.querySelector(href);
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({
-        behavior: "smooth",
-      });
-    }
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+    });
   });
-});
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
-function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
-
-  // Validación básica
-  if (!cleanName || !cleanEmail || !cleanMessage) {
-    return { isValid: false, error: "Por favor completa todos los campos" };
-  }
-
-  // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { isValid: false, error: "Por favor ingresa un email válido" };
-  }
-
-  return { isValid: true };
-}
-
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -173,14 +98,8 @@ function setupContactForm(formElement) {
             submitBtn.disabled = false;
             formElement.reset();
         }, 3000);
-    } else {
-      offsets[id] = 0;
     }
   });
-
-  cachedOffsets = offsets;
-  return offsets;
-}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -201,293 +120,206 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/**
- * Retrieves the current cached offsets, or recalculates them if the cache is empty.
- * @param {string[]} sectionIds
- * @returns {Record<string, number>}
- */
-function getSectionOffsets(sectionIds) {
-  if (!cachedOffsets) {
-    return updateSectionOffsets(sectionIds);
-  }
-  return cachedOffsets;
-}
-
-/**
- * Determines the currently active segment ID based on the scroll position.
- * @param {number} scrollY
- * @param {Record<string, number>} offsets
- * @returns {string|null} Active section ID or null
- */
-function determineActiveSection(scrollY, offsets) {
-  if (!offsets || Object.keys(offsets).length === 0) return null;
-
-  let activeSection = null;
-  // Dynamic threshold of 100px before section enters viewport
-  const threshold = 100;
-
-  for (const [id, offset] of Object.entries(offsets)) {
-    if (scrollY >= offset - threshold) {
-      activeSection = id;
+function handleParallaxScroll() {
+    const scrollPosition = window.pageYOffset;
+    if (hero) {
+        hero.style.backgroundPosition = 'center ' + (scrollPosition * 0.5) + 'px';
+    } else if (heroCinematic && cinematicVideo) {
+        cinematicVideo.style.transform = 'translateX(-50%) translateY(calc(-50% + ' + (scrollPosition * 0.3) + 'px))';
     }
-  }
-window.addEventListener('scroll', handleParallaxScroll);
+}
+if (typeof window !== "undefined") {
+    window.addEventListener('scroll', handleParallaxScroll);
+}
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
-const style = document.createElement("style");
-style.textContent = `
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes slideInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .project-card {
-        animation: fadeInUp 0.6s ease forwards;
-        opacity: 0;
-    }`;
-
-    if (scrollHero) {
-        scrollHero.style.backgroundPosition = 'center ' + (scrollPosition * 0.5) + 'px';
-    } else if (scrollHeroCinematic && scrollCinematicVideo) {
-        scrollCinematicVideo.style.transform = 'translateX(-50%) translateY(calc(-50% + ' + (scrollPosition * 0.3) + 'px))';
-    }
-
-    let newActiveId = "";
-    if (sectionOffsets && sectionOffsets.length > 0) {
-        sectionOffsets.forEach(section => {
-            if (section) {
-                if (scrollY >= section.offsetTop - 200) {
-                    newActiveId = section.id;
-                }
+if (typeof document !== "undefined") {
+    const style = document.createElement("style");
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-        });
-    }
-
-    sections.forEach(section => {
-        observer.observe(section);
-    });
-}
-
-// Inicializar de inmediato para rastrear los enlaces de navegación
-initStickyNavbar();
-// Caching de elementos del DOM para evitar consultas constantes durante el scroll
-const sections = document.querySelectorAll("section");
-const navLinksAnchors = document.querySelectorAll(".nav-links a");
-
-// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
-const linksById = {};
-navLinksAnchors.forEach(link => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const id = href.slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
-    }
-    linksById[id].push(link);
-navLinksAnchors.forEach((link) => {
-  const href = link.getAttribute("href");
-  if (!href) return;
-  const id = href.slice(1);
-  if (!linksById[id]) {
-    linksById[id] = [];
-  }
-  linksById[id].push(link);
-});
-
-// Guardamos el ID actual para no modificar el DOM innecesariamente
-let currentActiveId = "";
-
-    if (newActiveId && scrollNavItems && scrollNavItems.length > 0) {
-        scrollNavItems.forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('href') === '#' + newActiveId) {
-                item.classList.add('active');
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-        });
-    }
-}
-// Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
-const observerOptions = {
-    root: null,
-    rootMargin: '-200px 0px -50% 0px', // Aproximación a la lógica top - 200 y evitando activación doble
-    threshold: 0
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const newActiveId = entry.target.getAttribute("id");
-
-            if (newActiveId !== currentActiveId) {
-                // Removemos la clase active de los enlaces anteriores
-                if (currentActiveId && linksById[currentActiveId]) {
-                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-                }
-
-                // Añadimos la clase active a los enlaces nuevos
-                if (newActiveId && linksById[newActiveId]) {
-                    linksById[newActiveId].forEach(link => link.classList.add("active"));
-                }
-
-    if (mainStickyNav && scrollHero) {
-        const heroBottom = scrollHero.offsetHeight;
-        if (scrollY > heroBottom - 100) {
-            mainStickyNav.classList.remove('hidden');
-        } else {
-            mainStickyNav.classList.add('hidden');
         }
-    });
-}, observerOptions);
 
-// Observar cada sección
-sections.forEach(section => {
-    observer.observe(section);
-});
-// Intersection Observer para animar elementos cuando son visibles
-const observerOptionsAnim = {
-  root: null,
-  rootMargin: "0px",
-  threshold: 0.1,
-};
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-const animObserver = new IntersectionObserver((entries, animObserver) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.style.animationPlayState = "running";
-      animObserver.unobserve(entry.target);
-    }
-});
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-if (typeof module !== 'undefined') {
-    module.exports = { initScrollCoordinator, handleScroll };
+        .project-card {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }`;
+    document.head.appendChild(style);
 }
 
-// Navegación Activa en Scroll
-const domSections = document.querySelectorAll('section');
+// ========== SCROLLSPY (from user instructions) ==========
+let sections = [];
+let navItems = [];
+if (typeof document !== "undefined") {
+    sections = document.querySelectorAll('section[id]');
+    navItems = document.querySelectorAll('.nav-links a');
+}
 
-// Caché de posiciones de secciones
+// Colección local para almacenar los offsets calculados de cada sección
 let sectionOffsets = [];
 
+/**
+ * Recalcula y actualiza las posiciones top y la altura de cada sección.
+ * Se debe ejecutar al cargar la página y al redimensionar la ventana (resize).
+ */
 function updateSectionOffsets() {
-    sectionOffsets = Array.from(domSections || sections).map(section => ({
-        id: section.getAttribute("id"),
-        top: section.offsetTop
-    }));
+  let domSections = sections;
+  if (typeof document !== "undefined") {
+    domSections = document.querySelectorAll("section");
+  }
+  sectionOffsets = Array.from(domSections).map(section => {
+    return {
+      id: section.getAttribute("id"),
+      top: section.offsetTop,
+      height: section.offsetHeight
+    };
+  });
 }
 
-// Inicializar la caché
-updateSectionOffsets();
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+function setSectionOffsets(val) {
+    sectionOffsets = val;
+}
 
-// Observar cambios de tamaño en el documento (ResizeObserver) para actualizar la caché
-if (typeof ResizeObserver !== 'undefined') {
-    const observer = new ResizeObserver(() => {
-        if (window.requestAnimationFrame) {
-            window.requestAnimationFrame(updateSectionOffsets);
-        } else {
-            updateSectionOffsets();
-        }
-    });
-    observer.observe(document.body);
-} else {
-    window.addEventListener('resize', updateSectionOffsets);
+/**
+ * Determina cuál es la sección visible actualmente en el viewport
+ * aplicando un umbral (threshold) para mejorar la usabilidad del scroll.
+ * @returns {string} ID de la sección activa
+ */
+function determineActiveSection() {
+  const scrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+  // Un margen de 150px suele ser ideal para activar el enlace antes de llegar al tope
+  const threshold = 150;
+
+  let activeSection = '';
+
+  for (const section of sectionOffsets) {
+    if (scrollPosition >= section.top - threshold && scrollPosition < section.top + section.height - threshold) {
+      activeSection = section.id;
+    }
+  }
+
   return activeSection;
 }
-const navItems = document.querySelectorAll('.nav-links a');
 
-
-
-
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 /**
- * Invalidates the cached offsets (used during resize events).
+ * Actualiza la clase activa en los enlaces de navegación basándose en el ID actual
  */
-function invalidateOffsetCache() {
-  cachedOffsets = null;
+function updateActiveNavLink() {
+  const activeSectionId = determineActiveSection();
+
+  navItems.forEach(item => {
+    // Removemos la clase de forma preventiva
+    item.classList.remove('active');
+
+    // Obtenemos el href (ej: "#services") y verificamos si coincide con la sección activa
+    const href = item.getAttribute('href');
+    if (href === `#${activeSectionId}`) {
+      item.classList.add('active');
+    }
+  });
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        updateSectionOffsets,
-        getSectionOffsets,
-        determineActiveSection,
-        invalidateOffsetCache,
-        // Helper to let Jest clear the module-scoped variables:
-        resetCache: () => {
-            cachedOffsets = null;
-        }
-    };
+// 2. Registro de Event Listeners de forma segura
+if (typeof window !== "undefined") {
+  window.addEventListener("DOMContentLoaded", () => {
+    updateSectionOffsets();
+    updateActiveNavLink();
+  });
+
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(() => {
+      if (window.requestAnimationFrame) {
+        window.requestAnimationFrame(updateSectionOffsets);
+      } else {
+        updateSectionOffsets();
+      }
+    });
+    if (typeof document !== "undefined" && document.body) {
+        observer.observe(document.body);
+    }
+  } else {
+    window.addEventListener("resize", updateSectionOffsets);
+  }
+  window.addEventListener("scroll", updateActiveNavLink);
 }
-document.addEventListener('DOMContentLoaded', () => {
 
-    // Forzar autoplay de video de fondo si el navegador lo bloquea
-    const bgVideo = document.getElementById('hero-bg-video');
-    if (bgVideo) {
-        bgVideo.muted = true;
-        bgVideo.defaultMuted = true;
-        const playPromise = bgVideo.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                document.body.addEventListener('click', () => {
-                    bgVideo.play();
-                }, { once: true });
-            });
+// ========== AUTOPLAY HERO VIDEO ==========
+if (typeof document !== "undefined") {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Forzar autoplay de video de fondo si el navegador lo bloquea
+        const bgVideo = document.getElementById('hero-bg-video');
+        if (bgVideo) {
+            bgVideo.muted = true;
+            bgVideo.defaultMuted = true;
+            const playPromise = bgVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    document.body.addEventListener('click', () => {
+                        bgVideo.play();
+                    }, { once: true });
+                });
+            }
         }
-    }
 
-    // Animación de entrada suave para la página
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.8s ease-in-out';
+        // Animación de entrada suave para la página
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.8s ease-in-out';
 
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
+        setTimeout(() => {
+            document.body.style.opacity = '1';
+        }, 100);
 
-    // Si es móvil, podemos aplicar algunos ajustes específicos aquí
-    if (isMobileDevice()) {
-        const body = document.body;
-        body.classList.add('is-mobile');
-    }
-});
+        // Si es móvil, podemos aplicar algunos ajustes específicos aquí
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            const body = document.body;
+            body.classList.add('is-mobile');
+        }
+    });
+}
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
     let lastScrollTop = 0;
+    if (typeof document === "undefined") return;
     const stickyNav = document.querySelector('.sticky-nav');
 
     if (stickyNav) {
         // Start hidden
         stickyNav.classList.add('hidden');
 
-        const handleScroll = () => {
+        const handleScrollSticky = () => {
             let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
             // Only show sticky nav if scrolled past hero section
@@ -509,7 +341,7 @@ function initStickyNavbar() {
             lastScrollTop = scrollTop;
         };
 
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScrollSticky);
 
         // Check initial scroll position
         const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
@@ -520,15 +352,7 @@ function initStickyNavbar() {
         } else {
             stickyNav.classList.add("hidden");
         }
-
-    lastScrollTop = scrollTop;
-  });
-        // Return cleanup function
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
     }
-    return () => {};
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
@@ -537,6 +361,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
+    if (typeof document === "undefined") return;
     const modal = document.getElementById(modalId);
     const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
     const triggers = document.querySelectorAll(triggerSelector);
@@ -580,55 +405,7 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
             closeModal();
         }
     });
-<<<<<<< jules-1918621933211355245-e61d3c35
-
-    if (false) {} else {
-=======
 }
-    } else {
->>>>>>> main
-        stickyNav.classList.add('hidden');
-    }
-
-    lastScrollTop = scrollTop;
-
-
-  // Check initial scroll position
-  window.addEventListener('DOMContentLoaded', () => {
-    const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
-    const heroBottom = heroSection ? heroSection.offsetHeight : 0;
-
-    if (window.pageYOffset > heroBottom) {
-        stickyNav.classList.remove("hidden");
-    } else {
-        stickyNav.classList.add("hidden");
-    }
-  });
-    // Start hidden
-    stickyNav.classList.add('hidden');
-
-
-}
-
-// ========== VIDEO MODAL ==========
-const modal = document.getElementById("video-modal");
-const closeBtn = document.querySelector(".close-modal");
-const youtubePlayer = document.getElementById("youtube-player");
-const portfolioCards = document.querySelectorAll(".portfolio-card");
-
-if (modal && closeBtn && youtubePlayer) {
-  portfolioCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const videoId = card.getAttribute("data-youtube-id");
-      if (videoId) {
-        // Set the src with autoplay
-        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
-        modal.classList.add("show");
-      }
-    });
-  });
-}
-
 
 // Initialize Modals
 setupVideoModal(
@@ -653,57 +430,62 @@ setupVideoModal(
         ]
     }
 );
+
 // ========== BACK TO TOP BUTTON ==========
-const backToTopBtn = document.getElementById("back-to-top");
+if (typeof document !== "undefined") {
+    const backToTopBtn = document.getElementById("back-to-top");
 
-if (backToTopBtn) {
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 500) {
-      backToTopBtn.classList.add("visible");
-    } else {
-      backToTopBtn.classList.remove("visible");
+    if (backToTopBtn) {
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 500) {
+          backToTopBtn.classList.add("visible");
+        } else {
+          backToTopBtn.classList.remove("visible");
+        }
+      });
+
+      backToTopBtn.addEventListener("click", () => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      });
     }
-  });
-
-
-  backToTopBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  });
 }
 
-// ========== BRAND VIDEO MODAL ==========
-const brandModal = document.getElementById("brand-modal");
-const closeBrandBtn = document.querySelector(".close-brand-modal");
-const brandPlayer1 = document.getElementById("brand-player-1");
-const brandPlayer2 = document.getElementById("brand-player-2");
-const brandCards = document.querySelectorAll(".brand-card");
+// ========== BRAND VIDEO MODAL OVERRIDE ==========
+// (Keep for backwards compat or specific structure if any)
+if (typeof document !== "undefined") {
+    const brandModal = document.getElementById("brand-modal");
+    const closeBrandBtn = document.querySelector(".close-brand-modal");
+    const brandPlayer1 = document.getElementById("brand-player-1");
+    const brandPlayer2 = document.getElementById("brand-player-2");
+    const brandCards = document.querySelectorAll(".brand-card");
 
-if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
-  brandCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const video1Id = card.getAttribute("data-video-1");
-      const video2Id = card.getAttribute("data-video-2");
+    if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
+      brandCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const video1Id = card.getAttribute("data-video-1");
+          const video2Id = card.getAttribute("data-video-2");
 
-      if (video1Id) {
-        brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
-        brandPlayer1.style.display = 'block';
+          if (video1Id) {
+            brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
+            brandPlayer1.style.display = 'block';
 
-        if (video2Id) {
-            brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
-            brandPlayer2.style.display = 'block';
-        } else {
-            brandPlayer2.src = '';
-            brandPlayer2.style.display = 'none';
-        }
+            if (video2Id) {
+                brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+                brandPlayer2.style.display = 'block';
+            } else {
+                brandPlayer2.src = '';
+                brandPlayer2.style.display = 'none';
+            }
 
-        brandModal.classList.add("show");
-      }
-    });
-  });
-
+            brandModal.classList.add("show");
+          }
+        });
+      });
+    }
+}
 
 // Language Translations
 const translations = {
@@ -794,6 +576,9 @@ const placeholders = {
 };
 
 function changeLanguage(lang) {
+  if (typeof document === "undefined") return;
+  if (!document.documentElement) return;
+
   document.documentElement.lang = lang;
 
   // Update active button
@@ -819,36 +604,20 @@ function changeLanguage(lang) {
 }
 
 // Initialize language switcher
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".lang-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      changeLanguage(e.target.dataset.lang);
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          changeLanguage(e.target.dataset.lang);
+        });
+      });
     });
-  });
-});
 
-// Call changeLanguage('es') on load as user wants Spanish
-// Execute immediately since the script is deferred and DOM is ready
-changeLanguage("es");
-
-if (typeof module !== 'undefined') {
-<<<<<<< jules-1918621933211355245-e61d3c35
-
-
-=======
-    module.exports = { initStickyNavbar };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm, updateSectionOffsets, getSectionOffsets: () => sectionOffsets, setSectionOffsets: (val) => { sectionOffsets = val; } };
-    module.exports = { initStickyNavbar, updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
-    module.exports = { updateActiveNavLink, handleParallaxScroll, isMobileDevice, validateContactForm };
->>>>>>> main
+    // Call changeLanguage('es') on load as user wants Spanish
+    // Execute immediately since the script is deferred and DOM is ready
+    changeLanguage("es");
 }
 
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { validateContactForm, updateSectionOffsets, getSectionOffsets, setSectionOffsets };
 }
-}
-}
-
-if (typeof module !== 'undefined') {
-    module.exports = { validateContactForm };
-}
-
-if (typeof module !== 'undefined') { module.exports = { validateContactForm }; }
