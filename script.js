@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-});
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
 function validateContactForm(name, email, message) {
@@ -184,6 +183,15 @@ function determineActiveSection(scrollY, offsets) {
       activeSection = id;
     }
   }
+  return activeSection;
+}
+
+  return activeSection;
+}
+
+  return activeSection;
+}
+
 window.addEventListener('scroll', handleParallaxScroll);
 
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
@@ -551,11 +559,14 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = {
+    determineActiveSection,
     validateContactForm,
     updateActiveNavLink,
     handleParallaxScroll,
     isMobileDevice,
     updateSectionOffsets,
+    determineActiveSection,
+    determineActiveSection,
     getSectionOffsets,
     setSectionOffsets,
     initStickyNavbar
