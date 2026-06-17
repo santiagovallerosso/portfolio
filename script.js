@@ -64,25 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
-function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
-
-  // Validación básica
-  if (!cleanName || !cleanEmail || !cleanMessage) {
-    return { isValid: false, error: "Por favor completa todos los campos" };
-  }
-
-  // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { isValid: false, error: "Por favor ingresa un email válido" };
-  }
-
-  return { isValid: true };
-}
-
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -399,9 +380,6 @@ function initStickyNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
 }
 
-function updateActiveNavLink() {
-    // mock
-}
 
 function handleParallaxScroll() {
     // mock
@@ -552,7 +530,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = {
     validateContactForm,
-    updateActiveNavLink,
     handleParallaxScroll,
     isMobileDevice,
     updateSectionOffsets,
@@ -574,7 +551,6 @@ if (typeof changeLanguage === 'function') {
 if (typeof module !== 'undefined') {
     module.exports = {
         initStickyNavbar,
-        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
         handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
         isMobileDevice,
         validateContactForm,

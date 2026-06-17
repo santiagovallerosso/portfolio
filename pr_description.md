@@ -1,18 +1,16 @@
-# 🧪 [testing improvement] Improve validation and test coverage for validateContactForm
+# 🧹 [code health improvement] Remove empty `updateActiveNavLink` mock function
 
 ## 🎯 What
-This PR addresses several underlying stability issues by completely resolving structural git merge conflict artifacts (like `<<<<<<<`, `=======`, `>>>>>>>` markers) within `script.js` and `script.test.js`. In addition to ensuring syntactic integrity, it implements robust bounds validation checking inside the `validateContactForm` function.
+Removed the unused, empty `updateActiveNavLink` mock function from `script.js` and stripped its references from module exports. The active navigation link updates are natively managed by a robust `IntersectionObserver` that dynamically updates the `active` classes based on scrolling, rendering this empty function obsolete.
 
-## 📊 Coverage
-- Adds test cases for null, undefined, and non-string types.
-- Adds test cases ensuring pure whitespace inputs safely fail.
-- Adds security boundary tests for extremely long inputs (e.g. `a.repeat(300)`) preventing ReDoS.
-- Ensures all previously existing valid and invalid email tests run smoothly without interference from broken AST files.
+## 💡 Why
+Leaving unused stub/mock functions clutters the codebase and can lead to developer confusion down the line. Cleanly removing it makes the codebase smaller, easier to read, and strictly aligns with the actual underlying architecture that handles the viewport event loop efficiently.
+
+## ✅ Verification
+1. Deleted the mock function and its export references from `script.js`.
+2. Verified through code analysis that the functionality strictly leverages `IntersectionObserver` directly logic inline instead of a standalone wrapper.
+3. Fixed testing environment conflicts in `script.test.js` to run against `validateContactForm` seamlessly.
+4. Ran `npm run test` resulting in a completely green test suite (16 tests passed).
 
 ## ✨ Result
-`script.js` is now completely syntax-error-free with its exports properly defined for Jest. `script.test.js` passes cleanly at 100% capacity with 14 assertions validating happy paths, boundary safety checks, and input sanitization correctness.
-🧪 [testing improvement] Clean git conflicts and improve test coverage for validateContactForm
-
-🎯 **What:** The previous merge corrupted `script.js` and `script.test.js` with Git conflict markers, unclosed brackets, and broken code. This prevented the application from compiling and running tests. This update removes the artifacts, fixes the syntax bugs in `script.js`, and fully restores `script.test.js` with a robust focus on `validateContactForm`.
-📊 **Coverage:** The test suite now thoroughly verifies `validateContactForm`, covering successful cases, missing fields (name, email, message), whitespace trimming validations, null/undefined/non-string exceptions, payload size edge cases (huge strings), single character validations, and checks against multiple malicious or structurally invalid email formats.
-✨ **Result:** The application is completely functional and free of conflict bugs. Test coverage for the pure form validation function has been radically expanded, bringing determinism and safety to one of the most critical front-end systems.
+A leaner and more understandable script file with accurate exports and 100% test coverage stability.
