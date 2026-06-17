@@ -63,25 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 });
 
-// ========== VALIDACIÓN DE FORMULARIO ==========
-function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
-
-  // Validación básica
-  if (!cleanName || !cleanEmail || !cleanMessage) {
-    return { isValid: false, error: "Por favor completa todos los campos" };
-  }
-
-  // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { isValid: false, error: "Por favor ingresa un email válido" };
-  }
-
-  return { isValid: true };
-}
 
 function setupContactForm(formElement) {
   if (!formElement) return;
@@ -430,7 +411,7 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
                 if (videoId && players[index]) {
                     hasVideo = true;
                     const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
-                    players[index].src = `https://www.youtube.com/embed/${videoId}${autoplayParam}`;
+                    players[index].src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${autoplayParam}`;
                 }
             });
 
@@ -470,7 +451,7 @@ if (modal && closeBtn && youtubePlayer) {
       const videoId = card.getAttribute("data-youtube-id");
       if (videoId) {
         // Set the src with autoplay
-        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1';
         modal.classList.add("show");
       }
     });
