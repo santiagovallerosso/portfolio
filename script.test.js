@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 
 let validateContactForm;
@@ -39,7 +40,6 @@ describe('validateContactForm', () => {
         expect(result).toEqual({ isValid: false, error: 'Por favor completa todos los campos' });
     });
 
-    // Casos nulos, undefined y tipos no compatibles
     test('Should handle null values gracefully and return isValid false', () => {
         const result = validateContactForm(null, 'john@example.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor completa todos los campos' });
@@ -52,6 +52,8 @@ describe('validateContactForm', () => {
 
     test('Should handle object/array types gracefully without crashing', () => {
         const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']);
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
+    });
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); // because object stringifies to [object Object]
     });
 
@@ -60,7 +62,6 @@ describe('validateContactForm', () => {
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 
-    // Sanitización y Espacios en blanco
     test('Should trim whitespaces from inputs and return true', () => {
         const result = validateContactForm('   John   ', '  john@example.com  ', '   Hello world!   ');
         expect(result).toEqual({ isValid: true });
@@ -71,14 +72,12 @@ describe('validateContactForm', () => {
         expect(result).toEqual({ isValid: false, error: 'Por favor completa todos los campos' });
     });
 
-    // Seguridad y extremos (Performance y ReDoS)
     test('Should reject extremely long emails', () => {
         const longEmail = 'a'.repeat(300) + '@example.com';
         const result = validateContactForm('John', longEmail, 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 
-    // Formatos de email inválidos
     test('Should reject email without @', () => {
         const result = validateContactForm('John', 'johnexample.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
@@ -98,4 +97,3 @@ describe('validateContactForm', () => {
         const result = validateContactForm('John', 'john()@example.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
-});
