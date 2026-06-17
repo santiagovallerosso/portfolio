@@ -1,4 +1,50 @@
 
+const fs = require('fs');
+
+let validateContactForm;
+
+
+
+global.document = {
+    addEventListener: () => {},
+    querySelector: () => ({ addEventListener: () => {}, classList: { toggle: () => {}, remove: () => {} }, getAttribute: () => '', style: {} }),
+    querySelectorAll: () => [],
+    getElementById: () => null,
+    documentElement: { lang: '' },
+    body: { innerHTML: '', appendChild: () => {} }
+};
+
+global.window = {
+    innerWidth: 1024,
+    pageYOffset: 0,
+    scrollY: 0,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    scrollTo: () => {},
+    alert: () => {}
+};
+
+global.IntersectionObserver = class {
+    constructor(callback, options) {}
+    observe(target) {}
+    unobserve(target) {}
+    disconnect() {}
+};
+
+
+global.IntersectionObserver = class {
+    constructor(callback, options) {}
+    observe(target) {}
+    unobserve(target) {}
+    disconnect() {}
+};
+
+const { validateContactForm } = require('./script.js');
+
+
+const fs = require('fs');
+
+
 const { validateContactForm, updateSectionOffsets, getSectionOffsets, determineActiveSection, setSectionOffsets, invalidateOffsetCache } = require('./script.js');
 
 const fs = require('fs');
@@ -35,6 +81,61 @@ class MockElement {
     addEventListener(event, callback) {
         if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(callback);
+// We dynamically extract validateContactForm to avoid module issues since script.js had some nasty module exports conflicts
+try {
+    const code = fs.readFileSync('script.js', 'utf8');
+    const match = code.match(/function validateContactForm[\s\S]*?return \{ isValid: true \};\n\}/g);
+    if (match) {
+        eval(match[match.length - 1].replace('function validateContactForm', 'validateContactForm = function'));
+    }
+} catch (e) {
+    console.error(e);
+}
+
+
+let determineActiveSection;
+try {
+    const code = fs.readFileSync('script.js', 'utf8');
+    const match = code.match(/function determineActiveSection[\s\S]*?return activeSection;\n\}/);
+    if (match) {
+        eval(match[0].replace('function determineActiveSection', 'determineActiveSection = function'));
+    }
+
+    dispatchEvent(event) {
+        const eventName = typeof event === 'string' ? event : event.type;
+        if (this.listeners[eventName]) {
+            this.listeners[eventName].forEach(cb => cb.call(this, typeof event === 'object' ? event : {
+                preventDefault: () => {},
+                target: this,
+                getAttribute: (attr) => this.getAttribute(attr)
+            }));
+        }
+    }
+
+describe('determineActiveSection', () => {
+    test('Should return null if offsets is null', () => {
+        expect(determineActiveSection(500, null)).toBeNull();
+    });
+
+    test('Should return null if offsets is empty', () => {
+        expect(determineActiveSection(500, {})).toBeNull();
+    });
+
+    test('Should return the correct active section based on scrollY and threshold', () => {
+        const offsets = {
+            'home': 0,
+            'about': 500,
+            'projects': 1000
+        };
+
+        // Before 'about' enters threshold (500 - 100 = 400)
+        expect(determineActiveSection(300, offsets)).toBe('home');
+
+        // Right at the threshold of 'about'
+        expect(determineActiveSection(400, offsets)).toBe('about');
+
+        // Past 'about' but before 'projects' threshold (1000 - 100 = 900)
+        expect(determineActiveSection(600, offsets)).toBe('about');
 
 
 global.document = {
@@ -85,6 +186,40 @@ global.IntersectionObserver = class {
 
 const { validateContactForm } = require('./script.js');
 
+        // Right at the threshold of 'projects'
+        expect(determineActiveSection(900, offsets)).toBe('projects');
+    });
+
+    test('Should return null if scrollY is before any section threshold and sections have larger offsets', () => {
+         const offsets = {
+            'home': 200,
+            'about': 500
+         };
+         // Threshold is 100, so home is active at 100.
+         // Scroll at 50, before threshold of home.
+         // Note: the loop will just not set anything and remain activeSection=null, since no condition scrollY >= offset - threshold is met.
+         expect(determineActiveSection(50, offsets)).toBeNull();
+    });
+});
+
+
+describe('validateContactForm', () => {
+    test('Should return isValid true when all fields are correct', () => {
+        const result = validateContactForm('John', 'john@example.com', 'Hello world!');
+        expect(result).toEqual({ isValid: true });
+    });
+
+    click() {
+        this.dispatchEvent("click");
+    }
+
+    setAttribute(name, value) {
+        this.attributes[name] = value;
+    }
+
+    getAttribute(name) {
+        return this.attributes[name] || null;
+    }
 
 const fs = require('fs');
 
@@ -245,6 +380,7 @@ describe('validateContactForm', () => {
         return [];
     }
 
+    test('Should handle object/array types gracefully without crashing', () => { const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']); expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); });
     reset() {
         this.classList.classes.clear();
         this.value = "";
@@ -253,6 +389,18 @@ describe('validateContactForm', () => {
     scrollIntoView() {}
     appendChild() {}
 }
+    test('Should handle object/array types gracefully without crashing', () => {
+        const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']);
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
+    });
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); // because object stringifies to [object Object]
+    });
+
+    test('Should handle non-string types gracefully (number, arrays) without crashing', () => {
+        const result = validateContactForm(123, ['email'], { message: 'hello' });
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
+    });
+
 
     test('Should handle object/array types gracefully without crashing', () => { const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']); expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); });
     reset() {
@@ -392,6 +540,17 @@ describe('updateSectionOffsets Tests', () => {
             require('./script.js');
         });
 
+        expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+
+        global.ResizeObserver = originalResizeObserver;
+        addEventListenerSpy.mockRestore();
+    });
+
+    it('debería observar el body si ResizeObserver está disponible', () => {
+        const observeMock = jest.fn();
+        global.ResizeObserver = jest.fn().mockImplementation(() => ({
+            observe: observeMock
+        }));
 
         const addEventListenerSpy = jest.spyOn(global.window, 'addEventListener');
 

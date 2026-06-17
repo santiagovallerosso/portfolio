@@ -214,6 +214,7 @@ function animateCounter(element) {
   });
 
   cachedOffsets = offsets;
+  return offsets;
   cachedEntries = Object.entries(offsets);
   return offsets;
 }
@@ -409,6 +410,28 @@ initStickyNavbar();
 const sections = document.querySelectorAll("section");
 const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
+// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
+const linksById = {};
+navLinksAnchors.forEach(link => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    const id = href.slice(1);
+    if (!linksById[id]) {
+        linksById[id] = [];
+
+// ========== SCROLLSPY (from user instructions) ==========
+let sections = [];
+let navItems = [];
+if (typeof document !== "undefined") {
+    sections = document.querySelectorAll('section[id]');
+    navItems = document.querySelectorAll('.nav-links a');
+}
+// Inicializar de inmediato para rastrear los enlaces de navegación
+initStickyNavbar();
+// Caching de elementos del DOM para evitar consultas constantes durante el scroll
+const sections = document.querySelectorAll("section");
+const navLinksAnchors = document.querySelectorAll(".nav-links a");
+
 function validateContactForm(name, email, message) {
     if (name === null || email === null || message === null ||
         name === undefined || email === undefined || message === undefined) {
@@ -424,6 +447,12 @@ function validateContactForm(name, email, message) {
     if (!strName || !strEmail || !strMessage) {
         return { isValid: false, error: 'Por favor completa todos los campos' };
     }
+    linksById[id].push(link);
+});
+
+// Guardamos el ID actual para no modificar el DOM innecesariamente
+let currentActiveId = "";
+
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(strEmail)) {
@@ -500,6 +529,20 @@ function determineActiveSection() {
 }, observerOptions);
 
   let activeSection = '';
+
+  for (const section of sectionOffsets) {
+    if (scrollPosition >= section.top - threshold && scrollPosition < section.top + section.height - threshold) {
+      activeSection = section.id;
+    }
+  }
+
+  return activeSection;
+    if (newActiveId !== currentActiveId) {
+        currentActiveId = newActiveId;
+        updateActiveNavLink(newActiveId);
+    }
+}
+
 
   for (const section of sectionOffsets) {
     if (scrollPosition >= section.top - threshold && scrollPosition < section.top + section.height - threshold) {
@@ -667,6 +710,27 @@ function getSectionOffsets() {
     return cachedOffsets;
 }
 
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(updateSectionOffsets);
+    observer.observe(document.body);
+} else {
+    window.addEventListener('resize', updateSectionOffsets);
+}
+
+function getSectionOffsets() {
+    return cachedOffsets;
+}
+
 function isMobileDevice() {
     return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
@@ -721,6 +785,35 @@ function initStickyNavbar() {
         const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
         const heroBottom = heroSection ? heroSection.offsetHeight : 0;
 
+
+        const handleScrollSticky = () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Only show sticky nav if scrolled past hero section
+            const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+            const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+            if (scrollTop > heroBottom) {
+                stickyNav.classList.remove('hidden');
+                if (scrollTop > lastScrollTop) {
+                    // Scroll down - hide
+                    stickyNav.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scroll up - show
+                    stickyNav.style.transform = 'translateY(0)';
+                }
+            } else {
+                stickyNav.classList.add('hidden');
+            }
+            lastScrollTop = scrollTop;
+        };
+
+        window.addEventListener('scroll', handleScrollSticky);
+
+        // Check initial scroll position
+        const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+        const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
     function handleScroll() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         if (scrollTop > lastScrollTop) {
@@ -740,10 +833,38 @@ function initStickyNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
 }
 
+function updateActiveNavLink() {
+    // mock
+}
 
 function handleParallaxScroll() {
     // mock
 }
+
+// ========== UNIFIED VIDEO MODAL LOGIC ==========
+function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
+    if (typeof document === "undefined") return;
+    const modal = document.getElementById(modalId);
+    const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
+    const triggers = document.querySelectorAll(triggerSelector);
+
+    if (!modal || !closeBtn || triggers.length === 0) return;
+
+    const players = config.players.map(p => document.getElementById(p.id));
+
+    triggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            let hasVideo = false;
+            config.players.forEach((playerConfig, index) => {
+                const videoId = trigger.getAttribute(playerConfig.dataAttribute);
+                if (videoId && players[index]) {
+                    hasVideo = true;
+                    const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
+                    players[index].src = "https://www.youtube.com/embed/" + videoId + autoplayParam;
+                    players[index].src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${autoplayParam}`;
+                }
+            });
+
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
@@ -774,6 +895,18 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
             }
         });
     });
+
+    const closeModal = () => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            players.forEach(player => {
+                if (player) player.src = '';
+            });
+        }, 300);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
 
     const closeModal = () => {
         modal.classList.remove('show');
@@ -949,6 +1082,19 @@ if (typeof document !== "undefined") {
   return { isValid: true };
 }
 
+
+// Language Translations
+  // Validación de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
+  return { isValid: true };
+}
+
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     document.addEventListener("DOMContentLoaded", () => {
         initStickyNavbar();
@@ -1034,6 +1180,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = {
     determineActiveSection,
     validateContactForm,
+    updateActiveNavLink,
     handleParallaxScroll,
     isMobileDevice,
     updateSectionOffsets,
@@ -1055,6 +1202,7 @@ if (typeof changeLanguage === 'function') {
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = {
         initStickyNavbar,
+        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
         handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
         isMobileDevice,
         validateContactForm,
