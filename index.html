@@ -3,231 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Santiago Vallerosso - Desarrollador</title>
+    <title>Santiago Valle Rosso - Portfolio</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-vtXRMe3mGCquAFCsP4tcVlzqKtMnK/7GaPvul+qzdzGvXW7XSArCruOxnDQifw4t" crossorigin="anonymous">
 </head>
 <body>
-    <!-- Navegación -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">SV</div>
-            <ul class="nav-links">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#sobre-mi">Sobre mí</a></li>
-                <li><a href="#proyectos">Proyectos</a></li>
-                <li><a href="#habilidades">Habilidades</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-            </ul>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
+    <!-- Landing Cinematic -->
+    <section id="inicio" class="hero-cinematic">
+        <video id="hero-bg-video" class="hero-video" autoplay loop muted playsinline>
+            <source src="mivideo.mp4" type="video/mp4">
+            Tu navegador no soporta el tag de video.
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-cinematic-content">
+            <h1 class="hero-title-cinematic">Santiago Valle Rosso</h1>
+            <p class="hero-subtitle-cinematic" data-i18n="hero_subtitle">Filmmaker, Video Editor and Sound Designer</p>
+            <a href="#work" class="btn-cinematic" data-i18n="hero_btn">Selected Works</a>
+        </div>
+    </section>
+
+
+    <!-- Sticky Navbar -->
+    <nav class="sticky-nav" id="sticky-nav">
+        <div class="nav-left">
+            <div class="nav-links-block">
+                <div class="nav-line">
+                    <a href="#work" class="active" data-i18n="nav_work">WORK</a>
+                    <a href="#music-videos" data-i18n="nav_music_videos">MUSIC VIDEOS</a>
+                    <a href="#sound-design" data-i18n="nav_sound_design">SOUND DESIGN</a>
+                </div>
+                <div class="nav-line">
+                    <a href="#brand-content" data-i18n="nav_brand_content">BRAND CONTENT</a>
+                    <a href="#contacto" data-i18n="nav_contact">CONTACT</a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-center">
+            <a href="#inicio" class="nav-title">SANTIAGO VALLE ROSSO | Portfolio</a>
+        </div>
+        <div class="nav-right">
+            <div class="lang-switch">
+                <button class="lang-btn" data-lang="es">ES</button>
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="pt">PT</button>
             </div>
         </div>
     </nav>
 
-    <!-- Sección Hero -->
-    <section id="inicio" class="hero">
+    <!-- Section: Work -->
+    <section id="work" class="gallery-section dark-bg">
         <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">Hola, soy <span class="highlight">Santiago Vallerosso</span></h1>
-                <p class="hero-subtitle">Desarrollador Full Stack apasionado por crear soluciones digitales innovadoras</p>
-                <div class="hero-buttons">
-                    <a href="#proyectos" class="btn btn-primary">Ver mis proyectos</a>
-                    <a href="#contacto" class="btn btn-secondary">Contactarme</a>
+            <div class="gallery-hero">
+                <h2 class="gallery-title">Santiago Valle Rosso</h2>
+                <p class="gallery-subtitle" data-i18n="gallery_subtitle">Una selección de proyectos en los que trabajé como Director, Diseñador de Sonido y Editor.</p>
+                <div class="scroll-down-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                    </svg>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="placeholder-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Sección Sobre mí -->
-    <section id="sobre-mi" class="about">
-        <div class="container">
-            <h2 class="section-title">Sobre mí</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <p>Soy un desarrollador apasionado con experiencia en el desarrollo de aplicaciones web modernas. Me encanta aprender nuevas tecnologías y resolver problemas complejos mediante código limpio y eficiente.</p>
-                    <p>Mi enfoque se centra en crear experiencias de usuario excepcionales combinando diseño atractivo con funcionalidad robusta. Trabajo tanto en frontend como en backend, lo que me permite tener una visión integral de los proyectos.</p>
-                    <div class="about-stats">
-                        <div class="stat">
-                            <h3>5+</h3>
-                            <p>Años de experiencia</p>
-                        </div>
-                        <div class="stat">
-                            <h3>20+</h3>
-                            <p>Proyectos completados</p>
-                        </div>
-                        <div class="stat">
-                            <h3>100%</h3>
-                            <p>Satisfacción de clientes</p>
-                        </div>
+            <div class="portfolio-grid">
+                <div class="portfolio-card" data-youtube-id="v0zj7UqOhj4">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Showreel+1" alt="Showreel 1" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Showreel+1+Hover" alt="Showreel 1 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>LIVE PERFORMANCES</h3>
+                        <p class="card-year">2026</p>
                     </div>
                 </div>
-                <div class="about-image">
-                    <div class="placeholder-large">
-                        <i class="fas fa-code"></i>
+                <div class="portfolio-card" data-youtube-id="Nyfm6B91XCE">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Showreel+2" alt="Showreel 2" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Showreel+2+Hover" alt="Showreel 2 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>MUSIC VIDEOS</h3>
+                        <p class="card-year">2026</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Sección Proyectos -->
-    <section id="proyectos" class="projects">
+    <!-- Section: Music Videos -->
+    <section id="music-videos" class="gallery-section dark-bg">
         <div class="container">
-            <h2 class="section-title">Proyectos Destacados</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-image">
-                        <div class="placeholder-project">
-                            <i class="fas fa-globe"></i>
-                        </div>
+            <h2 class="section-title" data-i18n="section_music_videos">Music Videos</h2>
+            <div class="portfolio-grid">
+                <div class="portfolio-card" data-youtube-id="wAQK2ed6mLU">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Music Video+1" alt="Music Video 1" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Music Video+1+Hover" alt="Music Video 1 Hover" class="img-hover">
                     </div>
-                    <div class="project-info">
-                        <h3>Plataforma de E-commerce</h3>
-                        <p>Una tienda online completa con carrito de compras, pasarela de pago y panel administrativo.</p>
-                        <div class="project-tags">
-                            <span class="tag">React</span>
-                            <span class="tag">Node.js</span>
-                            <span class="tag">MongoDB</span>
-                        </div>
-                        <a href="#" class="project-link">Ver proyecto <i class="fas fa-arrow-right"></i></a>
+                    <div class="card-text-box">
+                        <h3>FICCION - Martin Dlugonoga</h3>
+                        <p class="card-year">2026</p>
                     </div>
                 </div>
-
-                <div class="project-card">
-                    <div class="project-image">
-                        <div class="placeholder-project">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
+                <div class="portfolio-card" data-youtube-id="9mum4-YPHcM">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Music Video+2" alt="Music Video 2" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Music Video+2+Hover" alt="Music Video 2 Hover" class="img-hover">
                     </div>
-                    <div class="project-info">
-                        <h3>App de Productividad</h3>
-                        <p>Aplicación móvil para gestionar tareas y proyectos con sincronización en tiempo real.</p>
-                        <div class="project-tags">
-                            <span class="tag">React Native</span>
-                            <span class="tag">Firebase</span>
-                            <span class="tag">Redux</span>
-                        </div>
-                        <a href="#" class="project-link">Ver proyecto <i class="fas fa-arrow-right"></i></a>
+                    <div class="card-text-box">
+                        <h3>GORRION - Silencio Gil</h3>
+                        <p class="card-year">2026</p>
                     </div>
                 </div>
-
-                <div class="project-card">
-                    <div class="project-image">
-                        <div class="placeholder-project">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
+                <div class="portfolio-card" data-youtube-id="9DVCFl856zQ">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Music Video+3" alt="Music Video 3" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Music Video+3+Hover" alt="Music Video 3 Hover" class="img-hover">
                     </div>
-                    <div class="project-info">
-                        <h3>Dashboard Analítico</h3>
-                        <p>Panel de control interactivo con visualización de datos en tiempo real y reportes avanzados.</p>
-                        <div class="project-tags">
-                            <span class="tag">Vue.js</span>
-                            <span class="tag">D3.js</span>
-                            <span class="tag">PostgreSQL</span>
-                        </div>
-                        <a href="#" class="project-link">Ver proyecto <i class="fas fa-arrow-right"></i></a>
+                    <div class="card-text-box">
+                        <h3>A la Distancia - Isaias Eres</h3>
+                        <p class="card-year">2026</p>
+                    </div>
+                </div>
+                <div class="portfolio-card" data-youtube-id="C05HRNrx1Xs">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Music Video+4" alt="Music Video 4" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Music Video+4+Hover" alt="Music Video 4 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>Tranvia - La Sexta Napolitana</h3>
+                        <p class="card-year">2026</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Sección Habilidades -->
-    <section id="habilidades" class="skills">
+    <!-- Section: Sound Design -->
+    <section id="sound-design" class="gallery-section dark-bg">
         <div class="container">
-            <h2 class="section-title">Habilidades</h2>
-            <div class="skills-grid">
-                <div class="skill-category">
-                    <h3>Frontend</h3>
-                    <ul class="skill-list">
-                        <li>HTML5 / CSS3</li>
-                        <li>JavaScript</li>
-                        <li>React</li>
-                        <li>Vue.js</li>
-                        <li>Responsive Design</li>
-                    </ul>
+            <h2 class="section-title" data-i18n="section_sound_design">Sound Design</h2>
+            <div class="portfolio-grid">
+                <div class="portfolio-card" data-youtube-id="U205B3W1ZWc">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Sound Design+1" alt="Sound Design 1" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Sound Design+1+Hover" alt="Sound Design 1 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>Una mirada ciega</h3>
+                        <p class="card-year">2026</p>
+                    </div>
                 </div>
-
-                <div class="skill-category">
-                    <h3>Backend</h3>
-                    <ul class="skill-list">
-                        <li>Node.js</li>
-                        <li>Express</li>
-                        <li>Python</li>
-                        <li>PostgreSQL</li>
-                        <li>MongoDB</li>
-                    </ul>
-                </div>
-
-                <div class="skill-category">
-                    <h3>Herramientas</h3>
-                    <ul class="skill-list">
-                        <li>Git / GitHub</li>
-                        <li>Docker</li>
-                        <li>AWS</li>
-                        <li>Webpack</li>
-                        <li>Jest</li>
-                    </ul>
-                </div>
-
-                <div class="skill-category">
-                    <h3>Soft Skills</h3>
-                    <ul class="skill-list">
-                        <li>Comunicación</li>
-                        <li>Trabajo en equipo</li>
-                        <li>Resolución de problemas</li>
-                        <li>Liderazgo</li>
-                        <li>Adaptabilidad</li>
-                    </ul>
+                <div class="portfolio-card" data-youtube-id="dQw4w9WgXcQ">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Sound Design+2" alt="Sound Design 2" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Sound Design+2+Hover" alt="Sound Design 2 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>SOUND DESIGN 2</h3>
+                        <p class="card-year">2026</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Sección Contacto -->
+    <!-- Section: Brand Content -->
+    <section id="brand-content" class="gallery-section dark-bg">
+        <div class="container">
+            <h2 class="section-title" data-i18n="section_brand_content">Brand Content</h2>
+            <div class="portfolio-grid">
+                <div class="portfolio-card brand-card" data-video-1="MmV1RMpPglQ" data-video-2="Ax30mZzV2Ow">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Brand Logo+1" alt="Brand Logo 1" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Brand Logo+1+Hover" alt="Brand Logo 1 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>BioCaps</h3>
+                        <p class="card-year">2026</p>
+                    </div>
+                </div>
+                <div class="portfolio-card brand-card" data-video-1="drtbAsmuYZk" data-video-2="Itx06qhxDXA">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Brand Logo+2" alt="Brand Logo 2" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Brand Logo+2+Hover" alt="Brand Logo 2 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>ValeCasting</h3>
+                        <p class="card-year">2026</p>
+                    </div>
+                </div>
+                <div class="portfolio-card brand-card" data-video-1="l9S1wzNMjF8" data-video-2="hAYESeCnNYY">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Brand Logo+3" alt="Brand Logo 3" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Brand Logo+3+Hover" alt="Brand Logo 3 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>Tailg</h3>
+                        <p class="card-year">2026</p>
+                    </div>
+                </div>
+                <div class="portfolio-card brand-card" data-video-1="lvkRHcw4vXk" data-video-2="">
+                    <div class="card-image-container">
+                        <img src="https://via.placeholder.com/600x400/333333/ffffff?text=Brand Logo+4" alt="Brand Logo 4" class="img-normal">
+                        <img src="https://via.placeholder.com/600x400/555555/ffffff?text=Brand Logo+4+Hover" alt="Brand Logo 4 Hover" class="img-hover">
+                    </div>
+                    <div class="card-text-box">
+                        <h3>Impro al 2020</h3>
+                        <p class="card-year">2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Contact Section -->
     <section id="contacto" class="contact">
         <div class="container">
-            <h2 class="section-title">Ponte en contacto</h2>
+            <h2 class="section-title" data-i18n="contact_title">Ponte en contacto</h2>
             <div class="contact-content">
-                <p class="contact-description">¿Tienes un proyecto en mente o simplemente quieres saludar? ¡No dudes en contactarme!</p>
                 
                 <div class="contact-methods">
-                    <a href="mailto:tu-email@example.com" class="contact-card">
+                    <a href="mailto:santiagovallerosso@gmail.com" class="contact-card">
                         <i class="fas fa-envelope"></i>
                         <h3>Email</h3>
-                        <p>tu-email@example.com</p>
+                        <p>santiagovallerosso@gmail.com</p>
                     </a>
-                    <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank" class="contact-card">
-                        <i class="fab fa-linkedin"></i>
-                        <h3>LinkedIn</h3>
-                        <p>Santiago Vallerosso</p>
-                    </a>
-                    <a href="https://github.com/santiagovallerosso" target="_blank" class="contact-card">
-                        <i class="fab fa-github"></i>
-                        <h3>GitHub</h3>
-                        <p>@santiagovallerosso</p>
+                    <a href="tel:+5491134693617" class="contact-card">
+                        <i class="fas fa-phone"></i>
+                        <h3 data-i18n="contact_phone">Teléfono</h3>
+                        <p>+54 9 11 34693617</p>
                     </a>
                 </div>
 
                 <form class="contact-form">
                     <div class="form-group">
-                        <input type="text" placeholder="Tu nombre" required>
+                        <input type="text" placeholder="Tu nombre" data-i18n-placeholder="contact_name" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="Tu email" required>
+                        <input type="email" placeholder="Tu email" data-i18n-placeholder="contact_email" required>
                     </div>
                     <div class="form-group">
-                        <textarea placeholder="Tu mensaje" rows="5" required></textarea>
+                        <textarea placeholder="Tu mensaje" data-i18n-placeholder="contact_message" rows="5" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="contact_send">Enviar mensaje</button>
                 </form>
             </div>
         </div>
@@ -236,15 +253,46 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Santiago Vallerosso. Todos los derechos reservados.</p>
-            <div class="social-links">
-                <a href="https://github.com/santiagovallerosso" target="_blank"><i class="fab fa-github"></i></a>
-                <a href="https://www.linkedin.com/in/santiagovallerosso" target="_blank"><i class="fab fa-linkedin"></i></a>
-                <a href="https://twitter.com/santiagovallerosso" target="_blank"><i class="fab fa-twitter"></i></a>
-            </div>
+            <p data-i18n="footer_copy">&copy; 2026 Santiago Valle Rosso. Todos los derechos reservados.</p>
+
         </div>
     </footer>
 
-    <script src="script.js"></script>
+
+    <!-- YouTube Modal -->
+    <div id="video-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="video-container">
+                <iframe id="youtube-player" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Brand Content Modal -->
+    <div id="brand-modal" class="modal">
+        <div class="modal-content brand-modal-content">
+            <span class="close-brand-modal">&times;</span>
+            <div class="brand-videos-container">
+                <div class="video-container">
+                    <iframe id="brand-player-1" src="" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="video-container">
+                    <iframe id="brand-player-2" src="" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Volver arriba">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+        </svg>
+    </button>
+
+    <script src="script.js" defer></script>
 </body>
 </html>
