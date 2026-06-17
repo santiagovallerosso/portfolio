@@ -1,20 +1,3 @@
-// ========== MENÚ HAMBURGUESA ==========
-const hamburger = document.querySelector('.hamburger');
-const navLinks = document.querySelector('.nav-links');
-
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navLinks.classList.toggle('active');
-});
-
-// Cerrar menú al hacer clic en un enlace
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        hamburger.classList.remove('active');
-        navLinks.classList.remove('active');
-    });
-});
-
 // ========== SMOOTH SCROLL ==========
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -132,16 +115,6 @@ document.querySelectorAll('.project-card, .skill-category, .stat').forEach(el =>
     observerAnimation.observe(el);
 });
 
-// ========== EFECTO PARALLAX SIMPLE ==========
-window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    const scrollPosition = window.pageYOffset;
-    
-    if (hero) {
-        hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-    }
-});
-
 // ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
 const style = document.createElement('style');
 style.textContent = `
@@ -187,27 +160,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-// ========== ACTIVAR ENLACE DE NAVEGACIÓN ACTUAL ==========
-window.addEventListener('scroll', () => {
-    let current = '';
-    
-    document.querySelectorAll('section').forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        
-        if (scrollY >= sectionTop - 200) {
-            current = section.getAttribute('id');
-        }
-    });
-
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href').slice(1) === current) {
-            link.classList.add('active');
-        }
-    });
-});
 
 // ========== DETECTAR DISPOSITIVO MÓVIL ==========
 function isMobileDevice() {
