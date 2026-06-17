@@ -1,3 +1,6 @@
+let validateContactForm;
+
+
 
 global.document = {
     addEventListener: () => {},
@@ -37,6 +40,7 @@ const { validateContactForm } = require('./script.js');
 
 
 const fs = require('fs');
+
 
 class MockElement {
     constructor(tagName = 'div', options = {}) {

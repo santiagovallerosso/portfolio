@@ -8,6 +8,15 @@
 
 let cachedOffsets = null;
 
+/**
+ * Calculates and caches the vertical offsets for section elements.
+ * @param {string[]} sectionIds - Array of section IDs (e.g. ['home', 'about', 'services'])
+ * @returns {Record<string, number>} Object mapping section ID to its vertical coordinate
+ */
+
+
+function getSectionOffsets() {
+    return sectionOffsets;
 function updateSectionOffsets(sectionIds) {
   if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
     cachedOffsets = {};
@@ -439,6 +448,7 @@ function handleParallaxScroll() {
     // mock
 }
 
+// ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
     const modal = document.getElementById(modalId);
     const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
