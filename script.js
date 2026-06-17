@@ -128,6 +128,28 @@ function setupContactForm(formElement) {
     const email = (emailInput ? emailInput.value.trim() : '') || '';
     const message = (messageInput ? messageInput.value.trim() : '') || '';
 
+// Observar la sección de estadísticas
+const aboutSection = document.querySelector('.about');
+if (aboutSection) {
+    observer.observe(aboutSection);
+}
+
+function animateCounter(element) {
+    const originalText = element.textContent;
+    const finalValue = parseInt(originalText);
+    const suffix = originalText.includes('+') ? '+' : originalText.includes('%') ? '%' : '';
+    let currentValue = 0;
+    const increment = finalValue / 50;
+
+    const interval = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= finalValue) {
+            element.textContent = finalValue + suffix;
+            clearInterval(interval);
+        } else {
+            element.textContent = Math.floor(currentValue) + suffix;
+        }
+    }, 30);
     if (!name || !email || !message) {
       window.alert("Por favor completa todos los campos");
       return;
