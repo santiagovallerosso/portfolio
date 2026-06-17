@@ -8,6 +8,12 @@
 Dado el diminuto tamaño de elementos reales (`navLinksAnchors`), no es medible empíricamente de forma consistente en el navegador a menos que hayan miles de enlaces de navegación.
 Se realizó un test/benchmark local mediante un script (con un polyfill y 10.000 iteraciones para exagerar el comportamiento) demostrando un ahorro teórico de aproximadamente el **36.32% del tiempo** empleado en la instanciación y parseo de dichos enlaces.
 El caso real en esta página es marginal, sin embargo la optimización del código, el ahorro de CPU y de legibilidad son innegables.
+Title: "🧹 [Code Health] Remove unused variable navItems in script.js"
+Description:
+* 🎯 **What:** Removed the unused `navItems` variable declaration in `script.js`.
+* 💡 **Why:** This variable was completely unused, making it dead code. Removing it improves codebase cleanliness and maintainability without altering functionality.
+* ✅ **Verification:** Re-ran `npm run test` ensuring that all validation and logical tests (like `validateContactForm`) still pass correctly. Handled git conflict resolution in the test file beforehand. No logical behaviour was modified.
+* ✨ **Result:** A cleaner `script.js` file with one less unused variable, preventing confusion for future developers reading the navigation scope.
 🧹 [Code Health] Consolidate `module.exports` and Clean Up Git Conflicts
 
 🎯 **What:**
