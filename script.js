@@ -65,9 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
 function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
+  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
+  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
+  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
 
   // Validación básica
   if (!cleanName || !cleanEmail || !cleanMessage) {
@@ -75,10 +75,12 @@ function validateContactForm(name, email, message) {
   }
 
   // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
   }
+
+
 
   return { isValid: true };
 }
@@ -104,7 +106,11 @@ function setupContactForm(formElement) {
     }
 
     // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
     if (!emailRegex.test(email)) {
       window.alert("Por favor ingresa un email válido");
       return;
@@ -265,14 +271,6 @@ navLinksAnchors.forEach(link => {
         linksById[id] = [];
     }
     linksById[id].push(link);
-navLinksAnchors.forEach((link) => {
-  const href = link.getAttribute("href");
-  if (!href) return;
-  const id = href.slice(1);
-  if (!linksById[id]) {
-    linksById[id] = [];
-  }
-  linksById[id].push(link);
 });
 
 // Guardamos el ID actual para no modificar el DOM innecesariamente
