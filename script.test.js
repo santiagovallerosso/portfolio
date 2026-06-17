@@ -54,6 +54,7 @@ describe('validateContactForm', () => {
         const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']);
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); // because object stringifies to [object Object]
     });
+
     test('Should handle non-string types gracefully (number, arrays) without crashing', () => {
         const result = validateContactForm(123, ['email'], { message: 'hello' });
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
@@ -94,7 +95,7 @@ describe('validateContactForm', () => {
     });
 
     test('Should reject email with special invalid characters', () => {
-        const result = validateContactForm('John', 'john!@example.com', 'Hello world!');
+        const result = validateContactForm('John', 'john()@example.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
     });
 });
