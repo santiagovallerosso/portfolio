@@ -79,16 +79,9 @@ function setupContactForm(formElement) {
     const email = (emailInput ? emailInput.value.trim() : '') || '';
     const message = (messageInput ? messageInput.value.trim() : '') || '';
 
-    // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
-      return;
-    }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
 
@@ -108,8 +101,6 @@ function setupContactForm(formElement) {
             submitBtn.disabled = false;
             formElement.reset();
         }, 3000);
-    } else {
-      offsets[id] = 0;
     }
   });
 
@@ -333,6 +324,10 @@ function updateSectionOffsets(sectionIds) {
     return offsets;
 }
 
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
 if (typeof ResizeObserver !== 'undefined') {
     const observer = new ResizeObserver(updateSectionOffsets);
     observer.observe(document.body);
@@ -535,6 +530,21 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         changeLanguage("es");
     });
 }
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    validateContactForm,
+    updateActiveNavLink,
+    handleParallaxScroll,
+    isMobileDevice,
+    updateSectionOffsets,
+    getSectionOffsets,
+    setSectionOffsets,
+    initStickyNavbar
+  };
+}
+
+
 // Call changeLanguage('es') on load as user wants Spanish
 // Execute immediately since the script is deferred and DOM is ready
 if (typeof changeLanguage === 'function') {
