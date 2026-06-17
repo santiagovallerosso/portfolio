@@ -60,8 +60,8 @@ En `index.html`, reemplaza:
 <a href="mailto:tu-email@example.com">tu-email@example.com</a>
 
 <!-- Redes Sociales -->
-<a href="https://github.com/tuusuario" target="_blank">
-<a href="https://www.linkedin.com/in/tuusuario" target="_blank">
+<a href="https://github.com/tuusuario" target="_blank" rel="noopener noreferrer">
+<a href="https://www.linkedin.com/in/tuusuario" target="_blank" rel="noopener noreferrer">
 ```
 
 ### Cambiar Colores
