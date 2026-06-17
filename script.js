@@ -65,9 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
 function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
+  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
+  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
+  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
 
   // Validación básica
   if (!cleanName || !cleanEmail || !cleanMessage) {
@@ -75,8 +75,9 @@ function validateContactForm(name, email, message) {
   }
 
   // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
   }
 
@@ -126,14 +127,8 @@ function setupContactForm(formElement) {
             submitBtn.disabled = false;
             formElement.reset();
         }, 3000);
-    } else {
-      offsets[id] = 0;
     }
   });
-
-  cachedOffsets = offsets;
-  return offsets;
-}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -257,14 +252,6 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
-navLinksAnchors.forEach(link => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const id = href.slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
-    }
-    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
@@ -350,16 +337,14 @@ function updateSectionOffsets(sectionIds) {
     });
     cachedOffsets = offsets;
     return offsets;
-    observer.observe(document.body);
-} else {
-    window.addEventListener('resize', updateSectionOffsets);
 }
 
 function getSectionOffsets() {
     return sectionOffsets;
+}
 
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 /**
  * Invalidates the cached offsets (used during resize events).
@@ -371,8 +356,6 @@ function invalidateOffsetCache() {
 function setSectionOffsets(val) {
     sectionOffsets = val;
 }
-
-});
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
@@ -389,7 +372,6 @@ function initStickyNavbar() {
         }
         lastScrollTop = scrollTop;
 
-    lastScrollTop = scrollTop;
         // Return cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
@@ -406,10 +388,6 @@ function updateActiveNavLink() {
 function handleParallaxScroll() {
     // mock
 }
-
-function isMobileDevice() {
-    return window.innerWidth < 768;
-
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
@@ -549,22 +527,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     });
 }
 
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = {
-    validateContactForm,
-    updateActiveNavLink,
-    handleParallaxScroll,
-    isMobileDevice,
-    updateSectionOffsets,
-    getSectionOffsets,
-    setSectionOffsets,
-    initStickyNavbar
-  };
-}
-  });
-});
-
-
 // Call changeLanguage('es') on load as user wants Spanish
 // Execute immediately since the script is deferred and DOM is ready
 if (typeof changeLanguage === 'function') {
@@ -584,8 +546,3 @@ if (typeof module !== 'undefined') {
     };
 }
 
-}
-
-
-
- ;

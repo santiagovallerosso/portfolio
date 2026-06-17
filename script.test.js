@@ -1,5 +1,3 @@
-const { validateContactForm } = require('./script.js');
-
 const fs = require('fs');
 
 let validateContactForm;
@@ -54,7 +52,8 @@ describe('validateContactForm', () => {
 
     test('Should handle object/array types gracefully without crashing', () => {
         const result = validateContactForm(['John'], { email: 'john@example.com' }, ['Hello']);
-        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' }); // because object stringifies to [object Object]
+        expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
+    });
     test('Should handle non-string types gracefully (number, arrays) without crashing', () => {
         const result = validateContactForm(123, ['email'], { message: 'hello' });
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
