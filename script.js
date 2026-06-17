@@ -65,9 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
 function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
+  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
+  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
+  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
 
   // Validación básica
   if (!cleanName || !cleanEmail || !cleanMessage) {
@@ -75,8 +75,9 @@ function validateContactForm(name, email, message) {
   }
 
   // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
   }
 
@@ -505,11 +506,18 @@ setupVideoModal(
 const backToTopBtn = document.getElementById("back-to-top");
 
 if (backToTopBtn) {
+    let isScrolling = false;
   window.addEventListener("scroll", () => {
-    if (window.scrollY > 500) {
-      backToTopBtn.classList.add("visible");
-    } else {
-      backToTopBtn.classList.remove("visible");
+    if (!isScrolling) {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY > 500) {
+          backToTopBtn.classList.add("visible");
+        } else {
+          backToTopBtn.classList.remove("visible");
+        }
+        isScrolling = false;
+      });
+      isScrolling = true;
     }
   });
 
