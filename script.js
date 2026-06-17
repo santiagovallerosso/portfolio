@@ -111,6 +111,8 @@ function validateContactForm(name, email, message) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
   }
 
+
+
   return { isValid: true };
 }
 
@@ -154,6 +156,12 @@ function animateCounter(element) {
       window.alert("Por favor completa todos los campos");
       return;
     }
+
+    // Validación de email
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -354,14 +362,6 @@ navLinksAnchors.forEach(link => {
         linksById[id] = [];
     }
     linksById[id].push(link);
-navLinksAnchors.forEach((link) => {
-  const href = link.getAttribute("href");
-  if (!href) return;
-  const id = href.slice(1);
-  if (!linksById[id]) {
-    linksById[id] = [];
-  }
-  linksById[id].push(link);
 });
 
 // Guardamos el ID actual para no modificar el DOM innecesariamente
