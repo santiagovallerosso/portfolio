@@ -4,6 +4,7 @@
     --secondary-color: #d97706;
     --accent-color: #ef4444;
     --text-dark: #f8fafc;
+    --text-light: #94a3b8;
     --text-light: #b0b0b0;
     --bg-light: #0f172a;
     --border-color: #334155;
@@ -36,6 +37,48 @@ body {
     padding: 0 20px;
 }
 
+
+/* ========== SECCIÓN HERO (Cinematográfica) ========== */
+.hero.cinematic {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Ocupa el 100% de la pantalla */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    background: none;
+}
+
+.hero-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: 0;
+    transform: translateX(-50%) translateY(-50%);
+    object-fit: cover;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Capa oscura semi-transparente */
+    z-index: 1;
+}
+
+.cinematic-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
 /* ========== LANDING CINEMATIC ========== */
 .hero-cinematic {
     position: relative;
@@ -57,7 +100,7 @@ body {
     height: auto;
     transform: translateX(-50%) translateY(-50%);
     object-fit: cover;
-    z-index: -2;
+    z-index: 0;
 }
 
 .hero-overlay {
@@ -67,7 +110,7 @@ body {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
-    z-index: -1;
+    z-index: 1;
 }
 
 .hero-cinematic-content {
@@ -141,7 +184,9 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border-radius: 20px;
     display: flex;
+    flex-direction: column;
     align-items: center;
+    padding: 0 20px;
     justify-content: center;
     font-size: 4rem;
     color: white;
@@ -154,15 +199,23 @@ body {
     height: 300px;
 }
 
-.placeholder-project {
-    width: 100%;
-    height: 200px;
-    border-radius: 10px;
+.cinematic-title {
+    font-size: 4rem; /* Título grueso y elegante */
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: fadeInUp 1s ease backwards;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+.cinematic-subtitle {
+    font-size: 1.5rem; /* Subtítulo fino y más pequeño */
+    font-weight: 300;
+    color: #ffffff;
+    margin-bottom: 2.5rem;
+    letter-spacing: 1px;
+    animation: fadeInUp 1s ease 0.2s backwards;
 }
 
 @keyframes fadeInUp {
@@ -177,17 +230,26 @@ body {
 }
 
 /* ========== BOTONES ========== */
-.btn {
-    padding: 12px 30px;
-    border-radius: 8px;
+.btn-pill {
+    padding: 15px 40px;
+    background-color: #f8fafc; /* Gris muy clarito/blanco */
+    color: #020617; /* Texto negro */
+    border-radius: 50px; /* Forma de píldora */
     text-decoration: none;
     font-weight: 600;
-    transition: var(--transition);
+    font-size: 1.1rem;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
     border: none;
     cursor: pointer;
     display: inline-block;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s ease 0.4s backwards;
 }
 
+.btn-pill:hover {
+    transform: scale(1.05); /* Animación sutil de crecimiento */
+    background-color: #ffffff;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
@@ -580,13 +642,12 @@ body {
 
 /* Tablets */
 @media (max-width: 1024px) {
-    .hero .container,
     .about .container {
         grid-template-columns: 1fr;
     }
 
-    .hero-title {
-        font-size: 2.5rem;
+    .cinematic-title {
+        font-size: 3rem;
     }
 
     .section-title {
@@ -601,9 +662,6 @@ body {
 
 /* Móviles grandes */
 @media (max-width: 768px) {
-    .hamburger {
-        display: flex;
-    }
 
     .nav-links {
         position: absolute;
@@ -620,39 +678,27 @@ body {
         border-bottom: 1px solid var(--border-color);
     }
 
-    .nav-links.active {
-        max-height: 300px;
-    }
 
-    .nav-links a {
-        padding: 1rem;
-        display: block;
-        border-bottom: 1px solid var(--border-color);
-    }
 
-    .hamburger.active span:nth-child(1) {
-        transform: rotate(45deg) translate(10px, 10px);
-    }
 
-    .hamburger.active span:nth-child(2) {
-        opacity: 0;
-    }
 
-    .hamburger.active span:nth-child(3) {
-        transform: rotate(-45deg) translate(7px, -7px);
-    }
+
+
+
+
+
+
+
 
     .hero-title {
         font-size: 2rem;
     }
 
-    .hero-subtitle {
-        font-size: 1rem;
+    .cinematic-subtitle {
+        font-size: 1.1rem;
     }
 
-    .hero-buttons {
-        flex-direction: column;
-    }
+
 
     .about-stats {
         grid-template-columns: 1fr;
@@ -684,19 +730,16 @@ body {
         padding: 0 15px;
     }
 
-    .hero {
-        padding: 50px 15px;
+
+
+    .cinematic-title {
+        font-size: 2rem;
     }
 
-    .hero-title {
-        font-size: 1.5rem;
+    .cinematic-subtitle {
+        font-size: 1.1rem;
     }
 
-    .hero-subtitle {
-        font-size: 0.95rem;
-    }
-
-    .hero-image,
     .placeholder-avatar,
     .placeholder-large {
         width: 200px;
@@ -732,9 +775,7 @@ body {
         padding: 1.5rem;
     }
 
-    .nav-links.active {
-        max-height: 400px;
-    }
+
 }
 
 /* ========== UTILIDADES ========== */
