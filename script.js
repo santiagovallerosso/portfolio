@@ -1,4 +1,23 @@
 
+function validateContactForm(name, email, message) {
+  const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
+  const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
+  const cleanMessage = typeof message === 'string' ? message.trim() : (message ? String(message).trim() : "");
+
+  // Validación básica
+  if (!cleanName || !cleanEmail || !cleanMessage) {
+    return { isValid: false, error: "Por favor completa todos los campos" };
+  }
+
+  // Validación de email
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  if (!emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
+  return { isValid: true };
+}
+
 /**
  * @file script.js
  * @description Production-grade DOM scroll & section tracker with cached offsets.
@@ -60,17 +79,18 @@ function validateContactForm(name, email, message) {
 // ========== SMOOTH SCROLL ==========
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener("click", function (e) {
-    const href = this.getAttribute("href");
-    if (href === "#") return;
+    anchor.addEventListener("click", function (e) {
+      const href = this.getAttribute("href");
+      if (href === "#") return;
 
-    const target = document.querySelector(href);
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({
-        behavior: "smooth",
-      });
-    }
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+    });
   });
 });
 
@@ -160,6 +180,48 @@ function handleParallaxScroll() {
   if (cinematicVideo) cinematicVideo.style.transform = "translateY(" + scrolled * 0.4 + "px)";
 }
 
+function handleParallaxScroll() {
+    const scrollPosition = window.pageYOffset;
+    if (hero) {
+        hero.style.backgroundPosition = 'center ' + (scrollPosition * 0.5) + 'px';
+    } else if (heroCinematic && cinematicVideo) {
+        cinematicVideo.style.transform = 'translateX(-50%) translateY(calc(-50% + ' + (scrollPosition * 0.3) + 'px))';
+    }
+}
+if (typeof window !== "undefined") {
+    window.addEventListener('scroll', handleParallaxScroll);
+}
+
+// ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
+if (typeof document !== "undefined") {
+    const style = document.createElement("style");
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
 const isMobileDevice = () => window.innerWidth <= 768;
 
 window.addEventListener("scroll", () => {
@@ -234,14 +296,26 @@ function handleScroll() {
                     newActiveId = section.id;
                 }
             }
-        });
-    }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-    sections.forEach(section => {
-        observer.observe(section);
-    });
+        .project-card {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }`;
+    document.head.appendChild(style);
 }
 
+// ========== SCROLLSPY (from user instructions) ==========
+let sections = [];
+let navItems = [];
+if (typeof document !== "undefined") {
+    sections = document.querySelectorAll('section[id]');
+    navItems = document.querySelectorAll('.nav-links a');
+}
 // Inicializar de inmediato para rastrear los enlaces de navegación
 initStickyNavbar();
 // Caching de elementos del DOM para evitar consultas constantes durante el scroll
@@ -279,17 +353,43 @@ const observerOptions = {
     threshold: 0
 };
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const newActiveId = entry.target.getAttribute("id");
+// Colección local para almacenar los offsets calculados de cada sección
+let sectionOffsets = [];
 
-            if (newActiveId !== currentActiveId) {
-                // Removemos la clase active de los enlaces anteriores
-                if (currentActiveId && linksById[currentActiveId]) {
-                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
-                }
+/**
+ * Recalcula y actualiza las posiciones top y la altura de cada sección.
+ * Se debe ejecutar al cargar la página y al redimensionar la ventana (resize).
+ */
+function updateSectionOffsets() {
+  let domSections = sections;
+  if (typeof document !== "undefined") {
+    domSections = document.querySelectorAll("section");
+  }
+  sectionOffsets = Array.from(domSections).map(section => {
+    return {
+      id: section.getAttribute("id"),
+      top: section.offsetTop,
+      height: section.offsetHeight
+    };
+  });
+}
 
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+function setSectionOffsets(val) {
+    sectionOffsets = val;
+}
+
+/**
+ * Determina cuál es la sección visible actualmente en el viewport
+ * aplicando un umbral (threshold) para mejorar la usabilidad del scroll.
+ * @returns {string} ID de la sección activa
+ */
+function determineActiveSection() {
+  const scrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+  // Un margen de 150px suele ser ideal para activar el enlace antes de llegar al tope
+  const threshold = 150;
                 // Añadimos la clase active a los enlaces nuevos
                 if (newActiveId && linksById[newActiveId]) {
                     linksById[newActiveId].forEach(link => link.classList.add("active"));
@@ -300,17 +400,15 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observar cada sección
-sections.forEach(section => {
-    observer.observe(section);
-});
-// Intersection Observer para animar elementos cuando son visibles
-const observerOptionsAnim = {
-  root: null,
-  rootMargin: "0px",
-  threshold: 0.1,
-};
+  let activeSection = '';
 
+  for (const section of sectionOffsets) {
+    if (scrollPosition >= section.top - threshold && scrollPosition < section.top + section.height - threshold) {
+      activeSection = section.id;
+    }
+  }
+
+  return activeSection;
     if (newActiveId !== currentActiveId) {
         currentActiveId = newActiveId;
         updateActiveNavLink(newActiveId);
@@ -344,12 +442,80 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { initScrollCoordinator, handleScroll };
 }
 
-// Navegación Activa en Scroll
-const domSections = document.querySelectorAll('section');
+/**
+ * Actualiza la clase activa en los enlaces de navegación basándose en el ID actual
+ */
+function updateActiveNavLink() {
+  const activeSectionId = determineActiveSection();
 
-// Caché de posiciones de secciones
-let sectionOffsets = [];
+  navItems.forEach(item => {
+    // Removemos la clase de forma preventiva
+    item.classList.remove('active');
 
+    // Obtenemos el href (ej: "#services") y verificamos si coincide con la sección activa
+    const href = item.getAttribute('href');
+    if (href === `#${activeSectionId}`) {
+      item.classList.add('active');
+    }
+  });
+}
+
+// 2. Registro de Event Listeners de forma segura
+if (typeof window !== "undefined") {
+  window.addEventListener("DOMContentLoaded", () => {
+    updateSectionOffsets();
+    updateActiveNavLink();
+  });
+
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(() => {
+      if (window.requestAnimationFrame) {
+        window.requestAnimationFrame(updateSectionOffsets);
+      } else {
+        updateSectionOffsets();
+      }
+    });
+    if (typeof document !== "undefined" && document.body) {
+        observer.observe(document.body);
+    }
+  } else {
+    window.addEventListener("resize", updateSectionOffsets);
+  }
+  window.addEventListener("scroll", updateActiveNavLink);
+}
+
+// ========== AUTOPLAY HERO VIDEO ==========
+if (typeof document !== "undefined") {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Forzar autoplay de video de fondo si el navegador lo bloquea
+        const bgVideo = document.getElementById('hero-bg-video');
+        if (bgVideo) {
+            bgVideo.muted = true;
+            bgVideo.defaultMuted = true;
+            const playPromise = bgVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    document.body.addEventListener('click', () => {
+                        bgVideo.play();
+                    }, { once: true });
+                });
+            }
+        }
+
+        // Animación de entrada suave para la página
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.8s ease-in-out';
+
+        setTimeout(() => {
+            document.body.style.opacity = '1';
+        }, 100);
+
+        // Si es móvil, podemos aplicar algunos ajustes específicos aquí
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            const body = document.body;
+            body.classList.add('is-mobile');
+        }
+    });
 // Initialize section offsets cache to avoid layout thrashing during scroll
 function cacheSectionOffsets() {
     sectionOffsets = Array.from(domSections).map(section => ({
@@ -421,6 +587,40 @@ function initStickyNavbar() {
     const stickyNav = document.getElementById('main-nav');
     if (!stickyNav) return () => {};
     let lastScrollTop = 0;
+    if (typeof document === "undefined") return;
+    const stickyNav = document.querySelector('.sticky-nav');
+
+    if (stickyNav) {
+        // Start hidden
+        stickyNav.classList.add('hidden');
+
+        const handleScrollSticky = () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Only show sticky nav if scrolled past hero section
+            const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+            const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+            if (scrollTop > heroBottom) {
+                stickyNav.classList.remove('hidden');
+                if (scrollTop > lastScrollTop) {
+                    // Scroll down - hide
+                    stickyNav.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scroll up - show
+                    stickyNav.style.transform = 'translateY(0)';
+                }
+            } else {
+                stickyNav.classList.add('hidden');
+            }
+            lastScrollTop = scrollTop;
+        };
+
+        window.addEventListener('scroll', handleScrollSticky);
+
+        // Check initial scroll position
+        const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+        const heroBottom = heroSection ? heroSection.offsetHeight : 0;
 
     function handleScroll() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -429,6 +629,7 @@ function initStickyNavbar() {
         } else {
             stickyNav.classList.remove('hidden');
         }
+    }
         lastScrollTop = scrollTop;
 
         // Return cleanup function
@@ -450,6 +651,7 @@ function handleParallaxScroll() {
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
+    if (typeof document === "undefined") return;
     const modal = document.getElementById(modalId);
     const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
     const triggers = document.querySelectorAll(triggerSelector);
@@ -495,6 +697,9 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
     });
 }
 
+// Initialize Modals
+}
+
 const modal = document.getElementById("video-modal");
 const closeBtn = document.querySelector(".close-modal");
 const youtubePlayer = document.getElementById("youtube-player");
@@ -533,6 +738,14 @@ setupVideoModal(
     }
 );
 
+// ========== BACK TO TOP BUTTON ==========
+if (typeof document !== "undefined") {
+    const backToTopBtn = document.getElementById("back-to-top");
+
+    if (backToTopBtn) {
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 500) {
+          backToTopBtn.classList.add("visible");
 const backToTopBtn = document.getElementById("back-to-top");
 if (backToTopBtn) {
     let isScrolling = false;
@@ -578,9 +791,54 @@ function validateContactForm(name, email, message) {
             brandPlayer2.src = "https://www.youtube.com/embed/" + video2Id;
             brandPlayer2.style.display = 'block';
         } else {
-            brandPlayer2.src = '';
-            brandPlayer2.style.display = 'none';
+          backToTopBtn.classList.remove("visible");
         }
+      });
+
+      backToTopBtn.addEventListener("click", () => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      });
+    }
+}
+
+// ========== BRAND VIDEO MODAL OVERRIDE ==========
+// (Keep for backwards compat or specific structure if any)
+if (typeof document !== "undefined") {
+    const brandModal = document.getElementById("brand-modal");
+    const closeBrandBtn = document.querySelector(".close-brand-modal");
+    const brandPlayer1 = document.getElementById("brand-player-1");
+    const brandPlayer2 = document.getElementById("brand-player-2");
+    const brandCards = document.querySelectorAll(".brand-card");
+
+    if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
+      brandCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const video1Id = card.getAttribute("data-video-1");
+          const video2Id = card.getAttribute("data-video-2");
+
+          if (video1Id) {
+            brandPlayer1.src = `https://www.youtube.com/embed/${video1Id}`;
+            brandPlayer1.style.display = 'block';
+
+            if (video2Id) {
+                brandPlayer2.src = `https://www.youtube.com/embed/${video2Id}`;
+                brandPlayer2.style.display = 'block';
+            } else {
+                brandPlayer2.src = '';
+                brandPlayer2.style.display = 'none';
+            }
+
+            brandModal.classList.add("show");
+          }
+        });
+      });
+    }
+}
+
+// Language Translations
   // Validación de email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -612,6 +870,9 @@ const placeholders = {
 };
 
 function changeLanguage(lang) {
+  if (typeof document === "undefined") return;
+  if (!document.documentElement) return;
+
   document.documentElement.lang = lang;
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.lang === lang);
@@ -626,6 +887,24 @@ function changeLanguage(lang) {
   });
 }
 
+// Initialize language switcher
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          changeLanguage(e.target.dataset.lang);
+        });
+      });
+    });
+
+    // Call changeLanguage('es') on load as user wants Spanish
+    // Execute immediately since the script is deferred and DOM is ready
+    changeLanguage("es");
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { validateContactForm, updateSectionOffsets, getSectionOffsets, setSectionOffsets };
+}
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {

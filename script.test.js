@@ -1,3 +1,6 @@
+
+const fs = require('fs');
+
 let validateContactForm;
 
 
@@ -330,6 +333,8 @@ describe('updateSectionOffsets Tests', () => {
 
         expect(global.ResizeObserver).toHaveBeenCalled();
         expect(observeMock).toHaveBeenCalledWith(global.document.body);
+    });
+});
     test('Should reject email with special invalid characters', () => {
         const result = validateContactForm('John', 'john()@example.com', 'Hello world!');
         expect(result).toEqual({ isValid: false, error: 'Por favor ingresa un email válido' });
