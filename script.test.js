@@ -1,4 +1,40 @@
 
+global.document = {
+    addEventListener: () => {},
+    querySelector: () => ({ addEventListener: () => {}, classList: { toggle: () => {}, remove: () => {} }, getAttribute: () => '', style: {} }),
+    querySelectorAll: () => [],
+    getElementById: () => null,
+    documentElement: { lang: '' },
+    body: { innerHTML: '', appendChild: () => {} }
+};
+
+global.window = {
+    innerWidth: 1024,
+    pageYOffset: 0,
+    scrollY: 0,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    scrollTo: () => {},
+    alert: () => {}
+};
+
+global.IntersectionObserver = class {
+    constructor(callback, options) {}
+    observe(target) {}
+    unobserve(target) {}
+    disconnect() {}
+};
+
+
+global.IntersectionObserver = class {
+    constructor(callback, options) {}
+    observe(target) {}
+    unobserve(target) {}
+    disconnect() {}
+};
+
+const { validateContactForm } = require('./script.js');
+
 
 const fs = require('fs');
 

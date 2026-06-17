@@ -1,50 +1,53 @@
+
+/**
+ * @file script.js
+ * @description Production-grade DOM scroll & section tracker with cached offsets.
+ */
 // Call changeLanguage('es') on load as user wants Spanish
 // Execute immediately since the script is deferred and DOM is ready
 
 let cachedOffsets = null;
 
-/**
- * Calculates and caches the vertical offsets for section elements.
- * @param {string[]} sectionIds - Array of section IDs (e.g. ['home', 'about', 'services'])
- * @returns {Record<string, number>} Object mapping section ID to its vertical coordinate
- */
 function updateSectionOffsets(sectionIds) {
   if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
     cachedOffsets = {};
     return cachedOffsets;
   }
-
   const offsets = {};
   sectionIds.forEach((id) => {
-    // Standard mock selector for testing / modular usage
     const element = document.getElementById(id);
     if (element) {
-      // Offset calculation with standard window scroll offset inclusion
       offsets[id] = element.getBoundingClientRect().top + window.scrollY;
+    } else {
+      offsets[id] = 0;
     }
   });
   cachedOffsets = offsets;
   return offsets;
 }
+
 // ========== MENÚ HAMBURGUESA ==========
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
 
 if (hamburger && navLinks) {
   hamburger.addEventListener("click", () => {
-    hamburger.classList.toggle("active");
     navLinks.classList.toggle("active");
+    hamburger.classList.toggle("active");
   });
 
-  // Cerrar menú al hacer clic en un enlace
-  document.querySelectorAll(".nav-links a").forEach((link) => {
-    link.addEventListener("click", () => {
-      hamburger.classList.remove("active");
+  document.querySelectorAll(".nav-links a").forEach((n) =>
+    n.addEventListener("click", () => {
       navLinks.classList.remove("active");
-    });
-  });
+      hamburger.classList.remove("active");
+    })
+  );
 }
 
+function validateContactForm(name, email, message) {
+  const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
+  const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
+  const cleanMessage = typeof message === 'string' ? message.trim() : (message ? String(message).trim() : "");
 // ========== SMOOTH SCROLL ==========
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -68,7 +71,6 @@ function validateContactForm(name, email, message) {
   const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
   const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
 
-  // Validación básica
   if (!cleanName || !cleanEmail || !cleanMessage) {
     return { isValid: false, error: "Por favor completa todos los campos" };
   }
@@ -97,20 +99,27 @@ function setupContactForm(formElement) {
     const email = (emailInput ? emailInput.value.trim() : '') || '';
     const message = (messageInput ? messageInput.value.trim() : '') || '';
 
+    if (!name || !email || !message) {
+      window.alert("Por favor completa todos los campos");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      window.alert("Por favor ingresa un email válido");
     const validation = validateContactForm(name, email, message);
     if (!validation.isValid) {
       window.alert(validation.error);
       return;
     }
 
-    // Mostrar mensaje de éxito en la UI
     const submitBtn = formElement.querySelector('button[type="submit"]');
     if (submitBtn) {
         const originalText = submitBtn.textContent;
         const originalBg = submitBtn.style.background;
 
         submitBtn.textContent = '¡Mensaje enviado con éxito!';
-        submitBtn.style.background = '#10b981'; // Tailwind emerald-500
+        submitBtn.style.background = '#10b981';
         submitBtn.disabled = true;
 
         setTimeout(() => {
@@ -131,49 +140,28 @@ document.addEventListener("DOMContentLoaded", () => {
   setupContactForm(contactForm);
 });
 
-// ========== EFECTO PARALLAX SIMPLE ==========
 let hero = null;
 let heroCinematic = null;
 let cinematicVideo = null;
 
-document.addEventListener("DOMContentLoaded", () => {
-  hero = document.querySelector(".hero");
-  heroCinematic = document.querySelector(".hero-cinematic");
-  if (heroCinematic) {
-    cinematicVideo = heroCinematic.querySelector(".hero-video");
-  }
-});
-
-/**
- * Retrieves the current cached offsets, or recalculates them if the cache is empty.
- * @param {string[]} sectionIds
- * @returns {Record<string, number>}
- */
-function getSectionOffsets(sectionIds) {
-  if (!cachedOffsets) {
-    return updateSectionOffsets(sectionIds);
-  }
-  return cachedOffsets;
+function handleParallaxScroll() {
+  const scrolled = window.pageYOffset;
+  if (hero) hero.style.transform = "translateY(" + scrolled * 0.5 + "px)";
+  if (heroCinematic) heroCinematic.style.transform = "translateY(" + scrolled * 0.5 + "px)";
+  if (cinematicVideo) cinematicVideo.style.transform = "translateY(" + scrolled * 0.4 + "px)";
 }
 
-/**
- * Determines the currently active segment ID based on the scroll position.
- * @param {number} scrollY
- * @param {Record<string, number>} offsets
- * @returns {string|null} Active section ID or null
- */
-function determineActiveSection(scrollY, offsets) {
-  if (!offsets || Object.keys(offsets).length === 0) return null;
+const isMobileDevice = () => window.innerWidth <= 768;
 
-  let activeSection = null;
-  // Dynamic threshold of 100px before section enters viewport
-  const threshold = 100;
-
-  for (const [id, offset] of Object.entries(offsets)) {
-    if (scrollY >= offset - threshold) {
-      activeSection = id;
-    }
+window.addEventListener("scroll", () => {
+  if (!isMobileDevice()) {
+    handleParallaxScroll();
+  } else {
+    if (hero) hero.style.transform = "translateY(0)";
+    if (heroCinematic) heroCinematic.style.transform = "translateY(0)";
+    if (cinematicVideo) cinematicVideo.style.transform = "translateY(0)";
   }
+});
   return activeSection;
 }
 
@@ -199,39 +187,30 @@ style.textContent = `
         }
     }
 
-    @keyframes slideInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+let sectionOffsets = [];
+const domSections = document.querySelectorAll('section');
+
+function initScrollCoordinator() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return () => {};
+
+    updateSectionOffsets();
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+        window.removeEventListener('scroll', handleScroll);
+    };
+}
+
+function handleScroll() {
+    const scrollPosition = window.pageYOffset;
+    let newActiveId = null;
+
+    if (sectionOffsets && sectionOffsets.length > 0) {
+        sectionOffsets.forEach(section => {
+            if (section && scrollPosition >= section.top - 200) {
+                newActiveId = section.id;
+            }
+        });
     }
-
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .project-card {
-        animation: fadeInUp 0.6s ease forwards;
-        opacity: 0;
-    }`;
-
-    if (scrollHero) {
-        scrollHero.style.backgroundPosition = 'center ' + (scrollPosition * 0.5) + 'px';
-    } else if (scrollHeroCinematic && scrollCinematicVideo) {
-        scrollCinematicVideo.style.transform = 'translateX(-50%) translateY(calc(-50% + ' + (scrollPosition * 0.3) + 'px))';
-    }
-
     let newActiveId = "";
     // Performance improvement: Avoid offsetTop layout thrashing during scroll
     if (sectionOffsets && sectionOffsets.length > 0) {
@@ -315,11 +294,31 @@ const observerOptionsAnim = {
   threshold: 0.1,
 };
 
-const animObserver = new IntersectionObserver((entries, animObserver) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.style.animationPlayState = "running";
-      animObserver.unobserve(entry.target);
+    if (newActiveId !== currentActiveId) {
+        currentActiveId = newActiveId;
+        updateActiveNavLink(newActiveId);
+    }
+}
+
+let currentActiveId = "";
+const linksById = {};
+
+function initStickyNavbar() {
+    const navLinksAnchors = document.querySelectorAll(".nav-links a");
+    navLinksAnchors.forEach(link => {
+        const href = link.getAttribute("href");
+        if (!href) return;
+        const id = href.slice(1);
+        if (!linksById[id]) linksById[id] = [];
+        linksById[id].push(link);
+    });
+}
+initStickyNavbar();
+
+function updateActiveNavLink(id) {
+    document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+    if (linksById[id]) {
+        linksById[id].forEach(link => link.classList.add('active'));
     }
   });
 });
@@ -428,7 +427,6 @@ function handleParallaxScroll() {
     // mock
 }
 
-// ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
     const modal = document.getElementById(modalId);
     const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
@@ -436,7 +434,6 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
 
     if (!modal || !closeBtn || triggers.length === 0) return;
 
-    // Cache players
     const players = config.players.map(p => document.getElementById(p.id));
 
     triggers.forEach(trigger => {
@@ -447,6 +444,7 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
                 if (videoId && players[index]) {
                     hasVideo = true;
                     const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
+                    players[index].src = "https://www.youtube.com/embed/" + videoId + autoplayParam;
                     players[index].src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${autoplayParam}`;
                 }
             });
@@ -475,7 +473,6 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
     });
 }
 
-// ========== VIDEO MODAL ==========
 const modal = document.getElementById("video-modal");
 const closeBtn = document.querySelector(".close-modal");
 const youtubePlayer = document.getElementById("youtube-player");
@@ -486,6 +483,7 @@ if (modal && closeBtn && youtubePlayer) {
     card.addEventListener("click", () => {
       const videoId = card.getAttribute("data-youtube-id");
       if (videoId) {
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
         // Set the src with autoplay
         youtubePlayer.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1';
         modal.classList.add("show");
@@ -494,17 +492,11 @@ if (modal && closeBtn && youtubePlayer) {
   });
 }
 
-
-// Initialize Modals
 setupVideoModal(
     'video-modal',
     '.close-modal',
     '.portfolio-card',
-    {
-        players: [
-            { id: 'youtube-player', dataAttribute: 'data-youtube-id', autoplay: true }
-        ]
-    }
+    { players: [{ id: 'youtube-player', dataAttribute: 'data-youtube-id', autoplay: true }] }
 );
 
 setupVideoModal(
@@ -518,9 +510,8 @@ setupVideoModal(
         ]
     }
 );
-// ========== BACK TO TOP BUTTON ==========
-const backToTopBtn = document.getElementById("back-to-top");
 
+const backToTopBtn = document.getElementById("back-to-top");
 if (backToTopBtn) {
   window.addEventListener("scroll", () => {
     if (window.scrollY > 500) {
@@ -530,15 +521,16 @@ if (backToTopBtn) {
     }
   });
 
-
   backToTopBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
 
+const brandModal = document.getElementById("brand-modal");
+const closeBrandBtn = document.querySelector(".close-brand-modal");
+const brandPlayer1 = document.getElementById("brand-player-1");
+const brandPlayer2 = document.getElementById("brand-player-2");
+const brandCards = document.querySelectorAll(".brand-card");
 function validateContactForm(name, email, message) {
   const cleanName = (typeof name === 'string' ? name : (name == null ? "" : String(name))).trim();
   const cleanEmail = (typeof email === 'string' ? email : (email == null ? "" : String(email))).trim();
@@ -549,6 +541,17 @@ function validateContactForm(name, email, message) {
     return { isValid: false, error: "Por favor completa todos los campos" };
   }
 
+      if (video1Id) {
+        brandPlayer1.src = "https://www.youtube.com/embed/" + video1Id;
+        brandPlayer1.style.display = 'block';
+
+        if (video2Id) {
+            brandPlayer2.src = "https://www.youtube.com/embed/" + video2Id;
+            brandPlayer2.style.display = 'block';
+        } else {
+            brandPlayer2.src = '';
+            brandPlayer2.style.display = 'none';
+        }
   // Validación de email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -565,6 +568,59 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         initStickyNavbar();
         changeLanguage("es");
     });
+  });
+}
+
+const translations = {
+  es: { nav_work: "TRABAJOS" },
+  en: { nav_work: "WORK" },
+  pt: { nav_work: "TRABALHOS" },
+};
+const placeholders = {
+  es: { contact_name: "Tu nombre" },
+  en: { contact_name: "Your name" },
+  pt: { contact_name: "Seu nome" },
+};
+
+function changeLanguage(lang) {
+  document.documentElement.lang = lang;
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.dataset.i18n;
+    if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.dataset.i18nPlaceholder;
+    if (placeholders[lang] && placeholders[lang][key]) el.placeholder = placeholders[lang][key];
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      changeLanguage(e.target.dataset.lang);
+    });
+  });
+});
+
+changeLanguage("es");
+
+if (typeof module !== 'undefined') {
+    module.exports = {
+        initStickyNavbar: typeof initStickyNavbar !== 'undefined' ? initStickyNavbar : undefined,
+        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
+        handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
+        isMobileDevice: typeof isMobileDevice !== 'undefined' ? isMobileDevice : undefined,
+        validateContactForm: typeof validateContactForm !== 'undefined' ? validateContactForm : undefined,
+        updateSectionOffsets: typeof updateSectionOffsets !== 'undefined' ? updateSectionOffsets : undefined,
+        getSectionOffsets: typeof sectionOffsets !== 'undefined' ? () => sectionOffsets : undefined,
+        setSectionOffsets: (val) => { if (typeof sectionOffsets !== 'undefined') sectionOffsets = val; },
+        initScrollCoordinator: typeof initScrollCoordinator !== 'undefined' ? initScrollCoordinator : undefined,
+        handleScroll: typeof handleScroll !== 'undefined' ? handleScroll : undefined,
+    };
+}
 }
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
