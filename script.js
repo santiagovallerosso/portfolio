@@ -1,4 +1,20 @@
 
+// Performance optimization: Throttling de scroll usando requestAnimationFrame
+let isScrolling = false;
+
+function throttledScrollHandler(originalHandler) {
+  return function(event) {
+    if (!isScrolling) {
+      window.requestAnimationFrame(() => {
+        originalHandler(event);
+        isScrolling = false;
+      });
+      isScrolling = true;
+    }
+  };
+}
+
+let sectionOffsets = [];
 function validateContactForm(name, email, message) {
   const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
   const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
@@ -26,6 +42,7 @@ function validateContactForm(name, email, message) {
 // Execute immediately since the script is deferred and DOM is ready
 
 let cachedOffsets = null;
+let cachedEntries = null;
 
 /**
  * Calculates and caches the vertical offsets for section elements.
@@ -191,7 +208,41 @@ function animateCounter(element) {
   });
 
   cachedOffsets = offsets;
+  cachedEntries = Object.entries(offsets);
   return offsets;
+}
+
+function getSectionOffsets(sectionIds) {
+  if (!cachedOffsets) {
+    return updateSectionOffsets(sectionIds);
+  }
+  return cachedOffsets;
+}
+
+function determineActiveSection(scrollY, offsets, entries) {
+  if (!offsets) return null;
+
+  // Use the pre-calculated entries if provided (from cachedEntries), otherwise fallback to the slower Object.entries for ad-hoc usage
+  const iterationTarget = entries || Object.entries(offsets);
+
+  if (iterationTarget.length === 0) return null;
+
+  let activeSection = null;
+  const threshold = 100;
+
+  for (let i = 0; i < iterationTarget.length; i++) {
+    const id = iterationTarget[i][0];
+    const offset = iterationTarget[i][1];
+    if (scrollY >= offset - threshold) {
+      activeSection = id;
+    }
+  }
+  return activeSection;
+}
+
+function invalidateOffsetCache() {
+  cachedOffsets = null;
+  cachedEntries = null;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -352,21 +403,41 @@ initStickyNavbar();
 const sections = document.querySelectorAll("section");
 const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
-// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
-const linksById = {};
-navLinksAnchors.forEach(link => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const id = href.slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
+function validateContactForm(name, email, message) {
+    if (name === null || email === null || message === null ||
+        name === undefined || email === undefined || message === undefined) {
+        return { isValid: false, error: 'Por favor completa todos los campos' };
     }
     linksById[id].push(link);
 });
 
-// Guardamos el ID actual para no modificar el DOM innecesariamente
-let currentActiveId = "";
+    const strName = String(name).trim();
+    const strEmail = String(email).trim();
+    const strMessage = String(message).trim();
 
+    if (!strName || !strEmail || !strMessage) {
+        return { isValid: false, error: 'Por favor completa todos los campos' };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(strEmail)) {
+        return { isValid: false, error: 'Por favor ingresa un email válido' };
+    }
+
+    return { isValid: true };
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = {
+        validateContactForm,
+        updateSectionOffsets,
+        getSectionOffsets,
+        determineActiveSection,
+        invalidateOffsetCache,
+        setSectionOffsets: (val) => { sectionOffsets = val; },
+        throttledScrollHandler
+    };
+}
 
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
 const observerOptions = {
