@@ -1,4 +1,20 @@
 
+// Performance optimization: Throttling de scroll usando requestAnimationFrame
+let isScrolling = false;
+
+function throttledScrollHandler(originalHandler) {
+  return function(event) {
+    if (!isScrolling) {
+      window.requestAnimationFrame(() => {
+        originalHandler(event);
+        isScrolling = false;
+      });
+      isScrolling = true;
+    }
+  };
+}
+
+let sectionOffsets = [];
 function validateContactForm(name, email, message) {
   const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
   const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
@@ -26,6 +42,7 @@ function validateContactForm(name, email, message) {
 // Execute immediately since the script is deferred and DOM is ready
 
 let cachedOffsets = null;
+let cachedEntries = null;
 
 /**
  * Calculates and caches the vertical offsets for section elements.
@@ -113,6 +130,12 @@ function validateContactForm(name, email, message) {
 
 
 
+        // Aquí puedes integrar tu servicio de email
+
+        // Por ahora, solo mostrar mensaje de éxito
+        alert('¡Mensaje enviado! Gracias por contactarme.');
+        contactForm.reset();
+    });
   return { isValid: true };
 }
 
@@ -192,6 +215,41 @@ function animateCounter(element) {
 
   cachedOffsets = offsets;
   return offsets;
+  cachedEntries = Object.entries(offsets);
+  return offsets;
+}
+
+function getSectionOffsets(sectionIds) {
+  if (!cachedOffsets) {
+    return updateSectionOffsets(sectionIds);
+  }
+  return cachedOffsets;
+}
+
+function determineActiveSection(scrollY, offsets, entries) {
+  if (!offsets) return null;
+
+  // Use the pre-calculated entries if provided (from cachedEntries), otherwise fallback to the slower Object.entries for ad-hoc usage
+  const iterationTarget = entries || Object.entries(offsets);
+
+  if (iterationTarget.length === 0) return null;
+
+  let activeSection = null;
+  const threshold = 100;
+
+  for (let i = 0; i < iterationTarget.length; i++) {
+    const id = iterationTarget[i][0];
+    const offset = iterationTarget[i][1];
+    if (scrollY >= offset - threshold) {
+      activeSection = id;
+    }
+  }
+  return activeSection;
+}
+
+function invalidateOffsetCache() {
+  cachedOffsets = null;
+  cachedEntries = null;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -360,6 +418,34 @@ navLinksAnchors.forEach(link => {
     const id = href.slice(1);
     if (!linksById[id]) {
         linksById[id] = [];
+
+// ========== SCROLLSPY (from user instructions) ==========
+let sections = [];
+let navItems = [];
+if (typeof document !== "undefined") {
+    sections = document.querySelectorAll('section[id]');
+    navItems = document.querySelectorAll('.nav-links a');
+}
+// Inicializar de inmediato para rastrear los enlaces de navegación
+initStickyNavbar();
+// Caching de elementos del DOM para evitar consultas constantes durante el scroll
+const sections = document.querySelectorAll("section");
+const navLinksAnchors = document.querySelectorAll(".nav-links a");
+
+function validateContactForm(name, email, message) {
+    if (name === null || email === null || message === null ||
+        name === undefined || email === undefined || message === undefined) {
+        return { isValid: false, error: 'Por favor completa todos los campos' };
+    }
+    linksById[id].push(link);
+});
+
+    const strName = String(name).trim();
+    const strEmail = String(email).trim();
+    const strMessage = String(message).trim();
+
+    if (!strName || !strEmail || !strMessage) {
+        return { isValid: false, error: 'Por favor completa todos los campos' };
     }
     linksById[id].push(link);
 });
@@ -367,6 +453,26 @@ navLinksAnchors.forEach(link => {
 // Guardamos el ID actual para no modificar el DOM innecesariamente
 let currentActiveId = "";
 
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(strEmail)) {
+        return { isValid: false, error: 'Por favor ingresa un email válido' };
+    }
+
+    return { isValid: true };
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = {
+        validateContactForm,
+        updateSectionOffsets,
+        getSectionOffsets,
+        determineActiveSection,
+        invalidateOffsetCache,
+        setSectionOffsets: (val) => { sectionOffsets = val; },
+        throttledScrollHandler
+    };
+}
 
 // Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
 const observerOptions = {
@@ -423,6 +529,20 @@ function determineActiveSection() {
 }, observerOptions);
 
   let activeSection = '';
+
+  for (const section of sectionOffsets) {
+    if (scrollPosition >= section.top - threshold && scrollPosition < section.top + section.height - threshold) {
+      activeSection = section.id;
+    }
+  }
+
+  return activeSection;
+    if (newActiveId !== currentActiveId) {
+        currentActiveId = newActiveId;
+        updateActiveNavLink(newActiveId);
+    }
+}
+
 
   for (const section of sectionOffsets) {
     if (scrollPosition >= section.top - threshold && scrollPosition < section.top + section.height - threshold) {
@@ -590,6 +710,27 @@ function getSectionOffsets() {
     return cachedOffsets;
 }
 
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(updateSectionOffsets);
+    observer.observe(document.body);
+} else {
+    window.addEventListener('resize', updateSectionOffsets);
+}
+
+function getSectionOffsets() {
+    return cachedOffsets;
+}
+
 function isMobileDevice() {
     return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
@@ -615,6 +756,35 @@ function initStickyNavbar() {
     if (stickyNav) {
         // Start hidden
         stickyNav.classList.add('hidden');
+
+        const handleScrollSticky = () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Only show sticky nav if scrolled past hero section
+            const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+            const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
+            if (scrollTop > heroBottom) {
+                stickyNav.classList.remove('hidden');
+                if (scrollTop > lastScrollTop) {
+                    // Scroll down - hide
+                    stickyNav.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scroll up - show
+                    stickyNav.style.transform = 'translateY(0)';
+                }
+            } else {
+                stickyNav.classList.add('hidden');
+            }
+            lastScrollTop = scrollTop;
+        };
+
+        window.addEventListener('scroll', handleScrollSticky);
+
+        // Check initial scroll position
+        const heroSection = document.querySelector('.hero') || document.querySelector('.hero-cinematic');
+        const heroBottom = heroSection ? heroSection.offsetHeight : 0;
+
 
         const handleScrollSticky = () => {
             let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -695,6 +865,31 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
                 }
             });
 
+
+// ========== UNIFIED VIDEO MODAL LOGIC ==========
+function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
+    if (typeof document === "undefined") return;
+    const modal = document.getElementById(modalId);
+    const closeBtn = modal ? modal.querySelector(closeBtnSelector) : null;
+    const triggers = document.querySelectorAll(triggerSelector);
+
+    if (!modal || !closeBtn || triggers.length === 0) return;
+
+    const players = config.players.map(p => document.getElementById(p.id));
+
+    triggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            let hasVideo = false;
+            config.players.forEach((playerConfig, index) => {
+                const videoId = trigger.getAttribute(playerConfig.dataAttribute);
+                if (videoId && players[index]) {
+                    hasVideo = true;
+                    const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
+                    players[index].src = "https://www.youtube.com/embed/" + videoId + autoplayParam;
+                    players[index].src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${autoplayParam}`;
+                }
+            });
+
             if (hasVideo) {
                 modal.classList.add('show');
             }
@@ -712,6 +907,21 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
 
     closeBtn.addEventListener('click', closeModal);
 
+
+    const closeModal = () => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            players.forEach(player => {
+                if (player) player.src = '';
+            });
+        }, 300);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
+// ========== DETECTAR DISPOSITIVO MÓVIL ==========
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     modal.addEventListener('click', (e) => {
         if (!e.target.closest('.modal-content')) {
             closeModal();
@@ -859,6 +1069,19 @@ if (typeof document !== "undefined") {
       });
     }
 }
+
+// Language Translations
+  // Validación de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
+  return { isValid: true };
+}
+
 
 // Language Translations
   // Validación de email
