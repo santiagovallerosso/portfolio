@@ -75,8 +75,9 @@ function validateContactForm(name, email, message) {
   }
 
   // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
   }
 
@@ -126,14 +127,8 @@ function setupContactForm(formElement) {
             submitBtn.disabled = false;
             formElement.reset();
         }, 3000);
-    } else {
-      offsets[id] = 0;
     }
   });
-
-  cachedOffsets = offsets;
-  return offsets;
-}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -265,14 +260,6 @@ navLinksAnchors.forEach(link => {
         linksById[id] = [];
     }
     linksById[id].push(link);
-navLinksAnchors.forEach((link) => {
-  const href = link.getAttribute("href");
-  if (!href) return;
-  const id = href.slice(1);
-  if (!linksById[id]) {
-    linksById[id] = [];
-  }
-  linksById[id].push(link);
 });
 
 // Guardamos el ID actual para no modificar el DOM innecesariamente
@@ -350,13 +337,11 @@ function updateSectionOffsets(sectionIds) {
     });
     cachedOffsets = offsets;
     return offsets;
-    observer.observe(document.body);
-} else {
-    window.addEventListener('resize', updateSectionOffsets);
 }
 
 function getSectionOffsets() {
     return sectionOffsets;
+}
 
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -371,8 +356,6 @@ function invalidateOffsetCache() {
 function setSectionOffsets(val) {
     sectionOffsets = val;
 }
-
-});
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
@@ -561,8 +544,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     initStickyNavbar
   };
 }
-  });
-});
 
 
 // Call changeLanguage('es') on load as user wants Spanish
