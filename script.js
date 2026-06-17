@@ -64,24 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
-function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
-
-  // Validación básica
-  if (!cleanName || !cleanEmail || !cleanMessage) {
-    return { isValid: false, error: "Por favor completa todos los campos" };
-  }
-
-  // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { isValid: false, error: "Por favor ingresa un email válido" };
-  }
-
-  return { isValid: true };
-}
 
 function setupContactForm(formElement) {
   if (!formElement) return;
@@ -533,7 +515,7 @@ function validateContactForm(name, email, message) {
   }
 
   // Validación de email
-  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   // Prevent extremely long emails from causing regex performance issues
   if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
