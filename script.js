@@ -101,16 +101,19 @@ if (aboutSection) {
 }
 
 function animateCounter(element) {
-    const finalValue = parseInt(element.textContent);
+    const originalText = element.textContent;
+    const finalValue = parseInt(originalText);
+    const suffix = originalText.includes('+') ? '+' : originalText.includes('%') ? '%' : '';
     let currentValue = 0;
     const increment = finalValue / 50;
+
     const interval = setInterval(() => {
         currentValue += increment;
         if (currentValue >= finalValue) {
-            element.textContent = finalValue + (element.textContent.includes('+') ? '+' : element.textContent.includes('%') ? '%' : '');
+            element.textContent = finalValue + suffix;
             clearInterval(interval);
         } else {
-            element.textContent = Math.floor(currentValue) + (element.textContent.includes('+') ? '+' : element.textContent.includes('%') ? '%' : '');
+            element.textContent = Math.floor(currentValue) + suffix;
         }
     }, 30);
 }
