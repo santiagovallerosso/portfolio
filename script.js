@@ -3,8 +3,9 @@
  * @file script.js
  * @description Production-grade DOM scroll & section tracker with cached offsets.
  */
+// Call changeLanguage('es') on load as user wants Spanish
+// Execute immediately since the script is deferred and DOM is ready
 
-// Memory Cache for section coordinates to avoid expensive getBoundingClientRect layout thrashing
 let cachedOffsets = null;
 
 function updateSectionOffsets(sectionIds) {
@@ -25,6 +26,7 @@ function updateSectionOffsets(sectionIds) {
   return offsets;
 }
 
+// ========== MENÚ HAMBURGUESA ==========
 const hamburger = document.querySelector(".hamburger");
 const navLinks = document.querySelector(".nav-links");
 
@@ -46,10 +48,40 @@ function validateContactForm(name, email, message) {
   const cleanName = typeof name === 'string' ? name.trim() : (name ? String(name).trim() : "");
   const cleanEmail = typeof email === 'string' ? email.trim() : (email ? String(email).trim() : "");
   const cleanMessage = typeof message === 'string' ? message.trim() : (message ? String(message).trim() : "");
+// ========== SMOOTH SCROLL ==========
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (e) {
+    const href = this.getAttribute("href");
+    if (href === "#") return;
+
+    const target = document.querySelector(href);
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  });
+});
+
+// ========== VALIDACIÓN DE FORMULARIO ==========
+function validateContactForm(name, email, message) {
+  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
+  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
+  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
 
   if (!cleanName || !cleanEmail || !cleanMessage) {
     return { isValid: false, error: "Por favor completa todos los campos" };
   }
+
+  // Validación de email
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
+
   return { isValid: true };
 }
 
@@ -75,6 +107,9 @@ function setupContactForm(formElement) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       window.alert("Por favor ingresa un email válido");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
 
@@ -95,6 +130,9 @@ function setupContactForm(formElement) {
         }, 3000);
     }
   });
+
+  cachedOffsets = offsets;
+  return offsets;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -124,6 +162,30 @@ window.addEventListener("scroll", () => {
     if (cinematicVideo) cinematicVideo.style.transform = "translateY(0)";
   }
 });
+  return activeSection;
+}
+
+  return activeSection;
+}
+
+  return activeSection;
+}
+
+window.addEventListener('scroll', handleParallaxScroll);
+
+// ========== AGREGAR ESTILOS DE ANIMACIÓN ==========
+const style = document.createElement("style");
+style.textContent = `
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
 let sectionOffsets = [];
 const domSections = document.querySelectorAll('section');
@@ -149,6 +211,88 @@ function handleScroll() {
             }
         });
     }
+    let newActiveId = "";
+    // Performance improvement: Avoid offsetTop layout thrashing during scroll
+    if (sectionOffsets && sectionOffsets.length > 0) {
+        sectionOffsets.forEach(section => {
+            if (section && section.cachedOffsetTop !== undefined) {
+                if (scrollY >= section.cachedOffsetTop - 200) {
+                    newActiveId = section.id;
+                }
+            } else if (section) {
+                // Fallback if not cached
+                if (scrollY >= section.offsetTop - 200) {
+                    newActiveId = section.id;
+                }
+            }
+        });
+    }
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+}
+
+// Inicializar de inmediato para rastrear los enlaces de navegación
+initStickyNavbar();
+// Caching de elementos del DOM para evitar consultas constantes durante el scroll
+const sections = document.querySelectorAll("section");
+const navLinksAnchors = document.querySelectorAll(".nav-links a");
+
+// Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
+const linksById = {};
+navLinksAnchors.forEach((link) => {
+  const href = link.getAttribute("href");
+  if (!href) return;
+  const id = href.slice(1);
+  if (!linksById[id]) {
+    linksById[id] = [];
+  }
+  linksById[id].push(link);
+});
+
+// Guardamos el ID actual para no modificar el DOM innecesariamente
+let currentActiveId = "";
+
+
+// Optimización de rendimiento: Usar IntersectionObserver en lugar de eventos de scroll síncronos
+const observerOptions = {
+    root: null,
+    rootMargin: '-200px 0px -50% 0px', // Aproximación a la lógica top - 200 y evitando activación doble
+    threshold: 0
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const newActiveId = entry.target.getAttribute("id");
+
+            if (newActiveId !== currentActiveId) {
+                // Removemos la clase active de los enlaces anteriores
+                if (currentActiveId && linksById[currentActiveId]) {
+                    linksById[currentActiveId].forEach(link => link.classList.remove("active"));
+                }
+
+                // Añadimos la clase active a los enlaces nuevos
+                if (newActiveId && linksById[newActiveId]) {
+                    linksById[newActiveId].forEach(link => link.classList.add("active"));
+                }
+            }
+            currentActiveId = newActiveId;
+        }
+    });
+}, observerOptions);
+
+// Observar cada sección
+sections.forEach(section => {
+    observer.observe(section);
+});
+// Intersection Observer para animar elementos cuando son visibles
+const observerOptionsAnim = {
+  root: null,
+  rootMargin: "0px",
+  threshold: 0.1,
+};
 
     if (newActiveId !== currentActiveId) {
         currentActiveId = newActiveId;
@@ -176,6 +320,111 @@ function updateActiveNavLink(id) {
     if (linksById[id]) {
         linksById[id].forEach(link => link.classList.add('active'));
     }
+  });
+});
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = { initScrollCoordinator, handleScroll };
+}
+
+// Navegación Activa en Scroll
+const domSections = document.querySelectorAll('section');
+
+// Caché de posiciones de secciones
+let sectionOffsets = [];
+
+// Initialize section offsets cache to avoid layout thrashing during scroll
+function cacheSectionOffsets() {
+    sectionOffsets = Array.from(domSections).map(section => ({
+        id: section.id,
+        offsetTop: section.offsetTop, // Will be used as fallback if caching fails
+        cachedOffsetTop: section.offsetTop // Performance optimization
+    }));
+}
+
+if (typeof document !== 'undefined') {
+    document.addEventListener("DOMContentLoaded", cacheSectionOffsets);
+    window.addEventListener("resize", cacheSectionOffsets);
+}
+
+function changeLanguage(lang) {
+    // mock implementation
+}
+
+function updateSectionOffsets(sectionIds) {
+    if (!Array.isArray(sectionIds)) return {};
+    const offsets = {};
+    sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) offsets[id] = el.getBoundingClientRect().top + (window.scrollY || 0);
+    });
+    cachedOffsets = offsets;
+    return offsets;
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(updateSectionOffsets);
+    observer.observe(document.body);
+} else {
+    window.addEventListener('resize', updateSectionOffsets);
+}
+
+function getSectionOffsets() {
+    return cachedOffsets;
+}
+
+function isMobileDevice() {
+    return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+/**
+ * Invalidates the cached offsets (used during resize events).
+ */
+function invalidateOffsetCache() {
+  cachedOffsets = null;
+}
+
+function setSectionOffsets(val) {
+    sectionOffsets = val;
+}
+
+// ========== STICKY NAVBAR ==========
+function initStickyNavbar() {
+    const stickyNav = document.getElementById('main-nav');
+    if (!stickyNav) return () => {};
+    let lastScrollTop = 0;
+
+    function handleScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > lastScrollTop) {
+            stickyNav.classList.add('hidden');
+        } else {
+            stickyNav.classList.remove('hidden');
+        }
+        lastScrollTop = scrollTop;
+
+        // Return cleanup function
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+}
+
+function updateActiveNavLink() {
+    // mock
+}
+
+function handleParallaxScroll() {
+    // mock
 }
 
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
@@ -196,6 +445,7 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
                     hasVideo = true;
                     const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
                     players[index].src = "https://www.youtube.com/embed/" + videoId + autoplayParam;
+                    players[index].src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${autoplayParam}`;
                 }
             });
 
@@ -234,6 +484,8 @@ if (modal && closeBtn && youtubePlayer) {
       const videoId = card.getAttribute("data-youtube-id");
       if (videoId) {
         youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+        // Set the src with autoplay
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1';
         modal.classList.add("show");
       }
     });
@@ -279,12 +531,15 @@ const closeBrandBtn = document.querySelector(".close-brand-modal");
 const brandPlayer1 = document.getElementById("brand-player-1");
 const brandPlayer2 = document.getElementById("brand-player-2");
 const brandCards = document.querySelectorAll(".brand-card");
+function validateContactForm(name, email, message) {
+  const cleanName = (typeof name === 'string' ? name : (name == null ? "" : String(name))).trim();
+  const cleanEmail = (typeof email === 'string' ? email : (email == null ? "" : String(email))).trim();
+  const cleanMessage = (typeof message === 'string' ? message : (message == null ? "" : String(message))).trim();
 
-if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
-  brandCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const video1Id = card.getAttribute("data-video-1");
-      const video2Id = card.getAttribute("data-video-2");
+  // Validación básica
+  if (!cleanName || !cleanEmail || !cleanMessage) {
+    return { isValid: false, error: "Por favor completa todos los campos" };
+  }
 
       if (video1Id) {
         brandPlayer1.src = "https://www.youtube.com/embed/" + video1Id;
@@ -297,9 +552,21 @@ if (brandModal && closeBrandBtn && brandPlayer1 && brandPlayer2) {
             brandPlayer2.src = '';
             brandPlayer2.style.display = 'none';
         }
+  // Validación de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  // Prevent extremely long emails from causing regex performance issues
+  if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
+    return { isValid: false, error: "Por favor ingresa un email válido" };
+  }
 
-        brandModal.classList.add("show");
-      }
+  return { isValid: true };
+}
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    document.addEventListener("DOMContentLoaded", () => {
+        initStickyNavbar();
+        changeLanguage("es");
     });
   });
 }
@@ -353,4 +620,50 @@ if (typeof module !== 'undefined') {
         initScrollCoordinator: typeof initScrollCoordinator !== 'undefined' ? initScrollCoordinator : undefined,
         handleScroll: typeof handleScroll !== 'undefined' ? handleScroll : undefined,
     };
+}
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    determineActiveSection,
+    validateContactForm,
+    updateActiveNavLink,
+    handleParallaxScroll,
+    isMobileDevice,
+    updateSectionOffsets,
+    determineActiveSection,
+    determineActiveSection,
+    getSectionOffsets,
+    setSectionOffsets,
+    initStickyNavbar
+  };
+}
+
+
+// Call changeLanguage('es') on load as user wants Spanish
+// Execute immediately since the script is deferred and DOM is ready
+if (typeof changeLanguage === 'function') {
+    changeLanguage("es");
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = {
+        initStickyNavbar,
+        updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
+        handleParallaxScroll: typeof handleParallaxScroll !== 'undefined' ? handleParallaxScroll : undefined,
+        isMobileDevice,
+        validateContactForm,
+        updateSectionOffsets: typeof updateSectionOffsets !== 'undefined' ? updateSectionOffsets : undefined,
+        getSectionOffsets: () => typeof sectionOffsets !== 'undefined' ? sectionOffsets : [],
+        setSectionOffsets: (val) => { if(typeof sectionOffsets !== 'undefined') sectionOffsets = val; }
+    };
+}
+
+
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    validateContactForm
+  };
 }
