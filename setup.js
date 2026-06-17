@@ -20,3 +20,8 @@ global.ResizeObserver = class ResizeObserver {
     disconnect() {}
 };
 global.window.requestAnimationFrame = jest.fn(cb => cb());
+global.IntersectionObserver = class IntersectionObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+};

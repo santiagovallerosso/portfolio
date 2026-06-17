@@ -64,24 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
-function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
 
-  // Validación básica
-  if (!cleanName || !cleanEmail || !cleanMessage) {
-    return { isValid: false, error: "Por favor completa todos los campos" };
-  }
-
-  // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { isValid: false, error: "Por favor ingresa un email válido" };
-  }
-
-  return { isValid: true };
-}
 
 function setupContactForm(formElement) {
   if (!formElement) return;
@@ -133,7 +116,6 @@ function setupContactForm(formElement) {
 
   cachedOffsets = offsets;
   return offsets;
-}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -257,14 +239,6 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
-navLinksAnchors.forEach(link => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const id = href.slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
-    }
-    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
@@ -327,9 +301,6 @@ const animObserver = new IntersectionObserver((entries, animObserver) => {
   });
 });
 
-if (typeof module !== 'undefined') {
-    module.exports = { initScrollCoordinator, handleScroll };
-}
 
 // Navegación Activa en Scroll
 const domSections = document.querySelectorAll('section');
@@ -341,22 +312,7 @@ function changeLanguage(lang) {
     // mock implementation
 }
 
-function updateSectionOffsets(sectionIds) {
-    if (!Array.isArray(sectionIds)) return {};
-    const offsets = {};
-    sectionIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) offsets[id] = el.getBoundingClientRect().top + (window.scrollY || 0);
-    });
-    cachedOffsets = offsets;
-    return offsets;
-    observer.observe(document.body);
-} else {
-    window.addEventListener('resize', updateSectionOffsets);
-}
 
-function getSectionOffsets() {
-    return sectionOffsets;
 
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -371,8 +327,6 @@ function invalidateOffsetCache() {
 function setSectionOffsets(val) {
     sectionOffsets = val;
 }
-
-});
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
@@ -389,7 +343,6 @@ function initStickyNavbar() {
         }
         lastScrollTop = scrollTop;
 
-    lastScrollTop = scrollTop;
         // Return cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
@@ -407,8 +360,6 @@ function handleParallaxScroll() {
     // mock
 }
 
-function isMobileDevice() {
-    return window.innerWidth < 768;
 
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
@@ -561,8 +512,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     initStickyNavbar
   };
 }
-  });
-});
 
 
 // Call changeLanguage('es') on load as user wants Spanish
@@ -584,8 +533,3 @@ if (typeof module !== 'undefined') {
     };
 }
 
-}
-
-
-
- ;
