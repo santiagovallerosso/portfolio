@@ -98,16 +98,9 @@ function setupContactForm(formElement) {
     const email = (emailInput ? emailInput.value.trim() : '') || '';
     const message = (messageInput ? messageInput.value.trim() : '') || '';
 
-    // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
-      return;
-    }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
 
@@ -129,6 +122,9 @@ function setupContactForm(formElement) {
         }, 3000);
     }
   });
+
+  cachedOffsets = offsets;
+  return offsets;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -229,9 +225,15 @@ style.textContent = `
     }
 
     let newActiveId = "";
+    // Performance improvement: Avoid offsetTop layout thrashing during scroll
     if (sectionOffsets && sectionOffsets.length > 0) {
         sectionOffsets.forEach(section => {
-            if (section) {
+            if (section && section.cachedOffsetTop !== undefined) {
+                if (scrollY >= section.cachedOffsetTop - 200) {
+                    newActiveId = section.id;
+                }
+            } else if (section) {
+                // Fallback if not cached
                 if (scrollY >= section.offsetTop - 200) {
                     newActiveId = section.id;
                 }
@@ -314,7 +316,7 @@ const animObserver = new IntersectionObserver((entries, animObserver) => {
   });
 });
 
-if (typeof module !== 'undefined') {
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { initScrollCoordinator, handleScroll };
 }
 
@@ -323,6 +325,20 @@ const domSections = document.querySelectorAll('section');
 
 // Caché de posiciones de secciones
 let sectionOffsets = [];
+
+// Initialize section offsets cache to avoid layout thrashing during scroll
+function cacheSectionOffsets() {
+    sectionOffsets = Array.from(domSections).map(section => ({
+        id: section.id,
+        offsetTop: section.offsetTop, // Will be used as fallback if caching fails
+        cachedOffsetTop: section.offsetTop // Performance optimization
+    }));
+}
+
+if (typeof document !== 'undefined') {
+    document.addEventListener("DOMContentLoaded", cacheSectionOffsets);
+    window.addEventListener("resize", cacheSectionOffsets);
+}
 
 function changeLanguage(lang) {
     // mock implementation
@@ -341,6 +357,21 @@ function updateSectionOffsets(sectionIds) {
 
 function getSectionOffsets() {
     return sectionOffsets;
+}
+
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(updateSectionOffsets);
+    observer.observe(document.body);
+} else {
+    window.addEventListener('resize', updateSectionOffsets);
+}
+
+function getSectionOffsets() {
+    return cachedOffsets;
 }
 
 function isMobileDevice() {
@@ -408,7 +439,7 @@ function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
                 if (videoId && players[index]) {
                     hasVideo = true;
                     const autoplayParam = playerConfig.autoplay ? '?autoplay=1' : '';
-                    players[index].src = `https://www.youtube.com/embed/${videoId}${autoplayParam}`;
+                    players[index].src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}${autoplayParam}`;
                 }
             });
 
@@ -448,7 +479,7 @@ if (modal && closeBtn && youtubePlayer) {
       const videoId = card.getAttribute("data-youtube-id");
       if (videoId) {
         // Set the src with autoplay
-        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1';
         modal.classList.add("show");
       }
     });
@@ -501,9 +532,9 @@ if (backToTopBtn) {
 }
 
 function validateContactForm(name, email, message) {
-  const cleanName = (typeof name === 'string' ? name : String(name || "")).trim();
-  const cleanEmail = (typeof email === 'string' ? email : String(email || "")).trim();
-  const cleanMessage = (typeof message === 'string' ? message : String(message || "")).trim();
+  const cleanName = (typeof name === 'string' ? name : (name == null ? "" : String(name))).trim();
+  const cleanEmail = (typeof email === 'string' ? email : (email == null ? "" : String(email))).trim();
+  const cleanMessage = (typeof message === 'string' ? message : (message == null ? "" : String(message))).trim();
 
   // Validación básica
   if (!cleanName || !cleanEmail || !cleanMessage) {
@@ -511,7 +542,8 @@ function validateContactForm(name, email, message) {
   }
 
   // Validación de email
-  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   // Prevent extremely long emails from causing regex performance issues
   if (cleanEmail.length > 254 || !emailRegex.test(cleanEmail)) {
     return { isValid: false, error: "Por favor ingresa un email válido" };
@@ -527,13 +559,27 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     });
 }
 
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    validateContactForm,
+    updateActiveNavLink,
+    handleParallaxScroll,
+    isMobileDevice,
+    updateSectionOffsets,
+    getSectionOffsets,
+    setSectionOffsets,
+    initStickyNavbar
+  };
+}
+
+
 // Call changeLanguage('es') on load as user wants Spanish
 // Execute immediately since the script is deferred and DOM is ready
 if (typeof changeLanguage === 'function') {
     changeLanguage("es");
 }
 
-if (typeof module !== 'undefined') {
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = {
         initStickyNavbar,
         updateActiveNavLink: typeof updateActiveNavLink !== 'undefined' ? updateActiveNavLink : undefined,
@@ -546,3 +592,11 @@ if (typeof module !== 'undefined') {
     };
 }
 
+
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    validateContactForm
+  };
+}
