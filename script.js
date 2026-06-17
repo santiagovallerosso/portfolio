@@ -254,14 +254,6 @@ const navLinksAnchors = document.querySelectorAll(".nav-links a");
 
 // Agrupamos los enlaces por ID para soportar múltiples menús (ej. desktop y mobile) apuntando a la misma sección
 const linksById = {};
-navLinksAnchors.forEach(link => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const id = href.slice(1);
-    if (!linksById[id]) {
-        linksById[id] = [];
-    }
-    linksById[id].push(link);
 navLinksAnchors.forEach((link) => {
   const href = link.getAttribute("href");
   if (!href) return;
@@ -367,6 +359,10 @@ function getSectionOffsets() {
     return sectionOffsets;
 }
 
+function getSectionOffsets() {
+    return sectionOffsets;
+}
+
 if (typeof ResizeObserver !== 'undefined') {
     const observer = new ResizeObserver(updateSectionOffsets);
     observer.observe(document.body);
@@ -379,7 +375,7 @@ function getSectionOffsets() {
 }
 
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 /**
  * Invalidates the cached offsets (used during resize events).
@@ -391,8 +387,6 @@ function invalidateOffsetCache() {
 function setSectionOffsets(val) {
     sectionOffsets = val;
 }
-
-});
 
 // ========== STICKY NAVBAR ==========
 function initStickyNavbar() {
@@ -409,7 +403,6 @@ function initStickyNavbar() {
         }
         lastScrollTop = scrollTop;
 
-    lastScrollTop = scrollTop;
         // Return cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
@@ -426,10 +419,6 @@ function updateActiveNavLink() {
 function handleParallaxScroll() {
     // mock
 }
-
-function isMobileDevice() {
-    return window.innerWidth < 768;
-
 
 // ========== UNIFIED VIDEO MODAL LOGIC ==========
 function setupVideoModal(modalId, closeBtnSelector, triggerSelector, config) {
