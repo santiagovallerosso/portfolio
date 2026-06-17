@@ -64,25 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== VALIDACIÓN DE FORMULARIO ==========
-function validateContactForm(name, email, message) {
-  const cleanName = (name || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanMessage = (message || "").trim();
-
-  // Validación básica
-  if (!cleanName || !cleanEmail || !cleanMessage) {
-    return { isValid: false, error: "Por favor completa todos los campos" };
-  }
-
-  // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { isValid: false, error: "Por favor ingresa un email válido" };
-  }
-
-  return { isValid: true };
-}
-
 function setupContactForm(formElement) {
   if (!formElement) return;
 
@@ -97,16 +78,9 @@ function setupContactForm(formElement) {
     const email = (emailInput ? emailInput.value.trim() : '') || '';
     const message = (messageInput ? messageInput.value.trim() : '') || '';
 
-    // Validación básica
-    if (!name || !email || !message) {
-      window.alert("Por favor completa todos los campos");
-      return;
-    }
-
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      window.alert("Por favor ingresa un email válido");
+    const validation = validateContactForm(name, email, message);
+    if (!validation.isValid) {
+      window.alert(validation.error);
       return;
     }
 
@@ -126,14 +100,8 @@ function setupContactForm(formElement) {
             submitBtn.disabled = false;
             formElement.reset();
         }, 3000);
-    } else {
-      offsets[id] = 0;
     }
   });
-
-  cachedOffsets = offsets;
-  return offsets;
-}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -350,13 +318,11 @@ function updateSectionOffsets(sectionIds) {
     });
     cachedOffsets = offsets;
     return offsets;
-    observer.observe(document.body);
-} else {
-    window.addEventListener('resize', updateSectionOffsets);
 }
 
 function getSectionOffsets() {
     return sectionOffsets;
+}
 
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -561,8 +527,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     initStickyNavbar
   };
 }
-  });
-});
 
 
 // Call changeLanguage('es') on load as user wants Spanish
