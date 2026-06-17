@@ -57,19 +57,6 @@ if (contactForm) {
         }
 
         // Aquí puedes integrar tu servicio de email
-        // Opción 1: Formspree
-        // const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-        //     method: 'POST',
-        //     body: JSON.stringify({ name, email, message }),
-        //     headers: { 'Content-Type': 'application/json' }
-        // });
-
-        // Opción 2: EmailJS (requiere librería)
-        // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-        //     from_name: name,
-        //     from_email: email,
-        //     message: message
-        // });
 
         // Por ahora, solo mostrar mensaje de éxito
         alert('¡Mensaje enviado! Gracias por contactarme.');
